@@ -1,0 +1,19 @@
+# --- Java & Maven ---
+target/
+*.class
+*.jar
+*.log
+
+# --- IntelliJ IDEA ---
+.idea/
+*.iml
+
+# --- SQLite Database (IMPORTANT) ---
+# We do NOT want to version control the live database file!
+*.db
+*.sqlite
+pharmacy.db
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
