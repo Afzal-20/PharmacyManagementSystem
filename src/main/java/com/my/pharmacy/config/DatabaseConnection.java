@@ -6,52 +6,33 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
 
-    // The single instance of the connection (Singleton Pattern)
-    private static Connection instance = null;
+    // CHANGED: New filename to bypass the lock on the old file
+    private static final String URL = "jdbc:sqlite:pharmacy_v2.db";
+    private static Connection connection = null;
 
-    // The name of the database file. SQLite will create this in the project root.
-    private static final String DB_URL = "jdbc:sqlite:pharmacy.db";
-
-    // Private constructor prevents other classes from saying "new DatabaseConnection()"
-    private DatabaseConnection() {}
-
-    /**
-     * Returns the active database connection.
-     * If one doesn't exist, it creates it.
-     */
     public static Connection getInstance() {
         try {
-            if (instance == null || instance.isClosed()) {
-                // 1. Load the SQLite Driver (Crucial step!)
-                Class.forName("org.sqlite.JDBC");
-
-                // 2. Establish the connection
-                instance = DriverManager.getConnection(DB_URL);
-
-                // 3. Performance & Safety Settings
-                // Enable Foreign Keys (SQLite disables them by default)
-                instance.createStatement().execute("PRAGMA foreign_keys = ON;");
-                // Enable Write-Ahead Logging (WAL) for better concurrency
-                instance.createStatement().execute("PRAGMA journal_mode = WAL;");
-
-                System.out.println("Database connected successfully.");
+            // Check if connection is closed or null, then create a new one
+            if (connection == null || connection.isClosed()) {
+                connection = DriverManager.getConnection(URL);
+                // Optimization: Enable WAL mode for better concurrency (prevents locks)
+                try (java.sql.Statement stmt = connection.createStatement()) {
+                    stmt.execute("PRAGMA journal_mode=WAL;");
+                }
             }
-        } catch (ClassNotFoundException | SQLException e) {
-            System.err.println("CRITICAL: Database Connection Failed!");
+            return connection;
+        } catch (SQLException e) {
             e.printStackTrace();
-            // In a real app, you would show a popup here.
+            return null;
         }
-        return instance;
     }
 
-    /**
-     * Call this when shutting down the app to close the file safely.
-     */
+    // Explicitly close the connection when the app shuts down
     public static void closeConnection() {
         try {
-            if (instance != null && !instance.isClosed()) {
-                instance.close();
-                System.out.println("Database connection closed.");
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("🔌 Database connection closed.");
             }
         } catch (SQLException e) {
             e.printStackTrace();

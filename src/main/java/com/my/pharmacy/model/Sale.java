@@ -31,7 +31,7 @@ public class Sale {
 
     // --- Getters & Properties ---
 
-    public int getID(){ return id.get();}
+    public int getId(){ return id.get();}
     public void setId(int value){id.set(value);}
     public IntegerProperty idProperty(){return id;}
 
@@ -39,7 +39,7 @@ public class Sale {
     public void setInvoiceNumber(String value){invoiceNumber.set(value);}
     public StringProperty invoiceNumberProperty(){return invoiceNumber;}
 
-    public LocalDateTime getTimeStamp(){return timestamp.get();}
+    public LocalDateTime getTimestamp(){return timestamp.get();}
     public void setTimestamp(LocalDateTime value){timestamp.set(value);}
     public ObjectProperty<LocalDateTime> timeStampProperty(){return timestamp;}
 
