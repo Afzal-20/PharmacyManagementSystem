@@ -80,4 +80,16 @@ public class Product {
     public String toString() {
         return name.get(); // Useful for ComboBoxes (Drop-downs)
     }
+
+    /**
+     * Search Helper: Combines all searchable text into one string.
+     * allows finding "Panadol" by typing "Paracetamol" (Generic Name).
+     */
+    public String getSearchKeywords() {
+        // We combine: Name + Generic Name + Manufacturer + ID
+        return (getName() + " " +
+                getGenericName() + " " +
+                getManufacturer() + " " +
+                getId()).toLowerCase();
+    }
 }
