@@ -41,9 +41,9 @@ public class ProductDAOImpl implements ProductDAO {
     public void addProduct(Product p) {
         String sql = "INSERT INTO products(name, generic_name, manufacturer, supplier_id, tax_rate, pack_size, min_stock_alert) VALUES(?,?,?,?,?,?,?)";
 
-        Connection conn = DatabaseConnection.getInstance();
-        // FIX: Only the PreparedStatement is in the try block
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        // 1. Pass 'Statement.RETURN_GENERATED_KEYS' to the prepareStatement method
+        try (Connection conn = DatabaseConnection.getInstance();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, p.getName());
             pstmt.setString(2, p.getGenericName());
@@ -53,8 +53,18 @@ public class ProductDAOImpl implements ProductDAO {
             pstmt.setInt(6, p.getPackSize());
             pstmt.setInt(7, p.getMinStockAlert());
 
-            pstmt.executeUpdate();
-            System.out.println("✅ Product Saved: " + p.getName());
+            int affectedRows = pstmt.executeUpdate();
+
+            // 2. Retrieve the ID
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int newId = generatedKeys.getInt(1);
+                        p.setId(newId); // CRITICAL: Update the Java object with the DB ID
+                        System.out.println("✅ Product Saved with ID: " + newId);
+                    }
+                }
+            }
 
         } catch (SQLException e) {
             System.err.println("Error saving product: " + e.getMessage());

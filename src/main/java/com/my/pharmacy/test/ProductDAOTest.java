@@ -1,37 +1,36 @@
 package com.my.pharmacy.test;
 
+import com.my.pharmacy.config.DatabaseConnection;
 import com.my.pharmacy.dao.ProductDAO;
 import com.my.pharmacy.dao.ProductDAOImpl;
 import com.my.pharmacy.model.Product;
-import javafx.collections.ObservableList;
 
 public class ProductDAOTest {
     public static void main(String[] args) {
-        System.out.println("--- TESTING PRODUCT DAO (DATABASE) ---");
+        System.out.println("--- TESTING PRODUCT DAO (ID GENERATION) ---");
 
-        ProductDAO dao = new ProductDAOImpl();
+        try {
+            ProductDAO dao = new ProductDAOImpl();
 
-        // 1. Create a Product Object
-        Product newProduct = new Product(0, "Amoxil", "Amoxicillin", "GSK", 1, 0.10, 12, 20);
+            // 1. Create a Product Object (ID is 0 initially)
+            Product newProduct = new Product(0, "Panadol Extra", "Paracetamol", "GSK", 1, 0.15, 10, 50);
+            System.out.println("Before Save ID: " + newProduct.getId()); // Should be 0
 
-        // 2. Save it to DB
-        System.out.println("Saving product...");
-        dao.addProduct(newProduct);
+            // 2. Save it to DB
+            System.out.println("Saving product...");
+            dao.addProduct(newProduct);
 
-        // 3. Read it back
-        System.out.println("Reading database...");
-        ObservableList<Product> products = dao.getAllProducts();
+            // 3. CHECK: Did the ID update?
+            System.out.println("After Save ID:  " + newProduct.getId());
 
-        boolean found = false;
-        for (Product p : products) {
-            System.out.println("ID: " + p.getId() + " | Name: " + p.getName());
-            if (p.getName().equals("Amoxil")) found = true;
-        }
+            if (newProduct.getId() > 0) {
+                System.out.println("✅ SUCCESS: ID was generated and assigned back to the object!");
+            } else {
+                System.out.println("❌ FAILURE: ID is still 0. logic for 'RETURN_GENERATED_KEYS' is missing.");
+            }
 
-        if (found) {
-            System.out.println("✅ SUCCESS: Data persisted to SQLite!");
-        } else {
-            System.out.println("❌ FAILURE: Product not found in DB.");
+        } finally {
+            DatabaseConnection.closeConnection();
         }
     }
 }

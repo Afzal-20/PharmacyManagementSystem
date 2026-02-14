@@ -23,9 +23,7 @@ public class SaleTest {
         SaleItem item2 = new SaleItem(0, 0, 0, 1, 120.0, "Cough Syrup", "B2");
         sale.getItems().add(item2);
 
-        // 3. Recalculate
-        sale.recalculateGrandTotal();
-        System.out.println("Grand Total: " + sale.getTotalAmount());
+
 
         if (sale.getTotalAmount() == 170.0) {
             System.out.println("✅ Grand Total Calculation Correct (50 + 120 = 170)");
