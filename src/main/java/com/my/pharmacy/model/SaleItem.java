@@ -1,44 +1,37 @@
 package com.my.pharmacy.model;
 
-import javafx.beans.property.*;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.*;
 
 public class SaleItem {
-
     private final IntegerProperty id;
     private final IntegerProperty saleId;
+    private final IntegerProperty productId; // <--- NEW FIELD
     private final IntegerProperty batchId;
     private final IntegerProperty quantity;
-    private final DoubleProperty unitPriceSold; // Locks price at moment of sale
-    private final DoubleProperty subTotal;      // Auto-calculated
-
-    // UI Helpers (Not stored in 'sale_items' table, but needed for the Cart View)
+    private final DoubleProperty unitPrice;
+    private final DoubleProperty subTotal;
     private final StringProperty productName;
     private final StringProperty batchNo;
 
-    public SaleItem() {
-        this(0, 0, 0, 0, 0.0, "Unknown", "N/A");
-    }
-
-    public SaleItem(int id, int saleId, int batchId, int quantity,
-                    double unitPriceSold, String productName, String batchNo) {
+    // Updated Constructor with 'productId'
+    public SaleItem(int id, int saleId, int productId, int batchId,
+                    int quantity, double unitPrice, String productName, String batchNo) {
         this.id = new SimpleIntegerProperty(id);
         this.saleId = new SimpleIntegerProperty(saleId);
+        this.productId = new SimpleIntegerProperty(productId); // <--- Initialize
         this.batchId = new SimpleIntegerProperty(batchId);
         this.quantity = new SimpleIntegerProperty(quantity);
-        this.unitPriceSold = new SimpleDoubleProperty(unitPriceSold);
-
+        this.unitPrice = new SimpleDoubleProperty(unitPrice);
         this.productName = new SimpleStringProperty(productName);
         this.batchNo = new SimpleStringProperty(batchNo);
 
-        // --- THE REACTIVE MATH MAGIC ---
-        // This binds the subTotal to (Quantity * Price).
-        // If you change the quantity in the UI, this updates automatically.
+        // Reactive Subtotal: Quantity * UnitPrice
         this.subTotal = new SimpleDoubleProperty();
-        this.subTotal.bind(this.quantity.multiply(this.unitPriceSold));
+        this.subTotal.bind(this.quantity.multiply(this.unitPrice));
     }
 
-    // --- Getters & Property Accessors ---
+    // --- Getters & Properties ---
 
     public int getId() { return id.get(); }
     public void setId(int value) { id.set(value); }
@@ -48,25 +41,32 @@ public class SaleItem {
     public void setSaleId(int value) { saleId.set(value); }
     public IntegerProperty saleIdProperty() { return saleId; }
 
+    // --- NEW GETTERS FOR PRODUCT ID ---
+    public int getProductId() { return productId.get(); }
+    public void setProductId(int value) { productId.set(value); }
+    public IntegerProperty productIdProperty() { return productId; }
+    // ----------------------------------
+
     public int getBatchId() { return batchId.get(); }
+    public void setBatchId(int value) { batchId.set(value); }
     public IntegerProperty batchIdProperty() { return batchId; }
 
     public int getQuantity() { return quantity.get(); }
     public void setQuantity(int value) { quantity.set(value); }
     public IntegerProperty quantityProperty() { return quantity; }
 
-    public double getUnitPriceSold() { return unitPriceSold.get(); }
-    public DoubleProperty unitPriceSoldProperty() { return unitPriceSold; }
+    public double getUnitPrice() { return unitPrice.get(); }
+    public void setUnitPrice(double value) { unitPrice.set(value); }
+    public DoubleProperty unitPriceProperty() { return unitPrice; }
 
-    // Read-Only because it's calculated
     public double getSubTotal() { return subTotal.get(); }
     public DoubleProperty subTotalProperty() { return subTotal; }
 
-    // UI Helpers
     public String getProductName() { return productName.get(); }
+    public void setProductName(String value) { productName.set(value); }
     public StringProperty productNameProperty() { return productName; }
 
     public String getBatchNo() { return batchNo.get(); }
+    public void setBatchNo(String value) { batchNo.set(value); }
     public StringProperty batchNoProperty() { return batchNo; }
-
 }

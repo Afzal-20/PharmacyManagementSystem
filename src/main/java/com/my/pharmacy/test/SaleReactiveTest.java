@@ -12,8 +12,8 @@ public class SaleReactiveTest {
 
         // 1. Add an Item (2 packs @ $50 each)
         System.out.println("\n[ACTION] Adding 2 packs of Panadol ($50 each)...");
-        SaleItem item1 = new SaleItem(1, 1, 1, 2, 50.0, "Panadol", "B1");
-        sale.getItems().add(item1);
+// SaleItem(id, saleId, PRODUCT_ID, batchId, qty, price, name, batchNo)
+        SaleItem item1 = new SaleItem(1, 1, 1, 1, 2, 50.0, "Panadol", "B1");        sale.getItems().add(item1);
 
         // Check Total (Should be 100.0)
         System.out.println("Total: " + sale.getTotalAmount());
