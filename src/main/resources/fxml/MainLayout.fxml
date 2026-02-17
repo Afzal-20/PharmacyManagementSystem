@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="mainContainer" prefHeight="600.0" prefWidth="900.0"
+<BorderPane fx:id="mainLayout" prefHeight="600.0" prefWidth="900.0"
             stylesheets="@../styles/style.css"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.my.pharmacy.controller.MainController">

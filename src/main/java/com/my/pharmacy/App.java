@@ -44,6 +44,7 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
+        com.my.pharmacy.config.DatabaseSetup.initialize();
         launch();
     }
 }

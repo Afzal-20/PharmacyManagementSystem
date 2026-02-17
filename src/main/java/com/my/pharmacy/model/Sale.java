@@ -1,77 +1,61 @@
 package com.my.pharmacy.model;
 
-import javafx.beans.Observable;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Sale {
+    private int id;
+    private Timestamp saleDate;
+    private double totalAmount;
 
-    private final IntegerProperty id;
-    private final StringProperty invoiceNumber;
-    private final ObjectProperty<LocalDateTime> timestamp;
-    private final DoubleProperty totalAmount;
-    private final StringProperty paymentMethod;
+    // NEW Wholesale Fields
+    private String paymentMode;  // 'CASH', 'CREDIT', 'CHECK'
+    private int customerId;      // Link to Customer Ledger
+    private int salesmanId;      // Link to User (Commission)
 
-    // THE FIX: An ObservableList that watches the 'subTotal' of its items
-    private final ObservableList<SaleItem> items;
+    private List<SaleItem> items = new ArrayList<>();
 
+    // Constructor for reading from Database (DAO uses this)
+    public Sale(int id, Timestamp saleDate, double totalAmount, String paymentMode, int customerId, int salesmanId) {
+        this.id = id;
+        this.saleDate = saleDate;
+        this.totalAmount = totalAmount;
+        this.paymentMode = paymentMode;
+        this.customerId = customerId;
+        this.salesmanId = salesmanId;
+    }
+
+    // Default Constructor for creating a NEW sale in the POS
     public Sale() {
-        this(0, "INV-NEW", LocalDateTime.now(), 0.0, "CASH");
+        this.saleDate = new Timestamp(System.currentTimeMillis());
+        this.paymentMode = "CASH"; // Default
     }
 
-    public Sale(int id, String invoiceNumber, LocalDateTime timestamp,
-                double totalAmount, String paymentMethod) {
-        this.id = new SimpleIntegerProperty(id);
-        this.invoiceNumber = new SimpleStringProperty(invoiceNumber);
-        this.timestamp = new SimpleObjectProperty<>(timestamp);
-        this.paymentMethod = new SimpleStringProperty(paymentMethod);
-
-        // 1. Initialize Total (Default 0.0)
-        this.totalAmount = new SimpleDoubleProperty(0.0);
-
-        // 2. THE REACTIVE MAGIC (Extractor)
-        // This tells the list: "Fire an update event if an item is added/removed OR if an item's subTotal changes."
-        this.items = FXCollections.observableArrayList(item ->
-                new Observable[]{item.subTotalProperty()}
-        );
-
-        // 3. Bind Grand Total to the Sum of Items
-        // This line replaces the manual 'recalculateGrandTotal()' method entirely.
-        this.totalAmount.bind(Bindings.createDoubleBinding(() ->
-                        items.stream().mapToDouble(SaleItem::getSubTotal).sum(),
-                this.items // Dependency: Re-run this calculation whenever the list changes
-        ));
+    public void addItem(SaleItem item) {
+        items.add(item);
+        totalAmount += item.getSubTotal();
     }
 
-    // --- Getters & Properties ---
-    public int getId() { return id.get(); }
-    public void setId(int value) { id.set(value); }
-    public IntegerProperty idProperty() { return id; }
+    // --- Getters and Setters ---
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public String getInvoiceNumber() { return invoiceNumber.get(); }
-    public void setInvoiceNumber(String value) { invoiceNumber.set(value); }
-    public StringProperty invoiceNumberProperty() { return invoiceNumber; }
+    public Timestamp getSaleDate() { return saleDate; }
+    public void setSaleDate(Timestamp saleDate) { this.saleDate = saleDate; }
 
-    public LocalDateTime getTimestamp() { return timestamp.get(); }
-    public void setTimestamp(LocalDateTime value) { timestamp.set(value); }
-    public ObjectProperty<LocalDateTime> timestampProperty() { return timestamp; }
+    public double getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
 
-    public double getTotalAmount() { return totalAmount.get(); }
-    // No setter needed for totalAmount because it is bound!
-    public DoubleProperty totalAmountProperty() { return totalAmount; }
+    public String getPaymentMode() { return paymentMode; }
+    public void setPaymentMode(String paymentMode) { this.paymentMode = paymentMode; }
 
-    public String getPaymentMethod() { return paymentMethod.get(); }
-    public void setPaymentMethod(String value) { paymentMethod.set(value); }
-    public StringProperty paymentMethodProperty() { return paymentMethod; }
+    public int getCustomerId() { return customerId; }
+    public void setCustomerId(int customerId) { this.customerId = customerId; }
 
-    public ObservableList<SaleItem> getItems() { return items; }
+    public int getSalesmanId() { return salesmanId; }
+    public void setSalesmanId(int salesmanId) { this.salesmanId = salesmanId; }
 
-    public String getFormattedDate() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm a");
-        return timestamp.get().format(formatter);
-    }
+    public List<SaleItem> getItems() { return items; }
+    public void setItems(List<SaleItem> items) { this.items = items; }
 }

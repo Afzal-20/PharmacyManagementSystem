@@ -1,74 +1,78 @@
 package com.my.pharmacy.model;
 
-import javafx.beans.property.*;
-import java.time.LocalDate;
+import com.my.pharmacy.util.FormatterUtil;
 
 public class Batch {
-    // We use JavaFX Properties (Smart Variables) instead of int/double
-    private final IntegerProperty batchId;
-    private final IntegerProperty productId;
-    private final StringProperty batchNo;
-    private final ObjectProperty<LocalDate> expiryDate;
-    private final DoubleProperty purchasePrice;
-    private final DoubleProperty salePrice;
-    private final IntegerProperty qtyOnHand;
+    private int batchId;
+    private int productId;
+    private String batchNo;
+    private String expiryDate;
+    private int qtyOnHand;      // Always in smallest unit (e.g. Tablets)
 
-    // Constructor
-    public Batch(int batchId, int productId, String batchNo, LocalDate expiryDate,
-                 double purchasePrice, double salePrice, int qtyOnHand) {
-        this.batchId = new SimpleIntegerProperty(batchId);
-        this.productId = new SimpleIntegerProperty(productId);
-        this.batchNo = new SimpleStringProperty(batchNo);
-        this.expiryDate = new SimpleObjectProperty<>(expiryDate);
-        this.purchasePrice = new SimpleDoubleProperty(purchasePrice);
-        this.salePrice = new SimpleDoubleProperty(salePrice);
-        this.qtyOnHand = new SimpleIntegerProperty(qtyOnHand);
+    // The "Triple Pricing" Architecture
+    private double costPrice;   // Your Purchase Price
+    private double tradePrice;  // Wholesale Price (TP)
+    private double retailPrice; // Consumer Price (RP)
+    private double taxPercent;
+
+    private Product product; // Link to parent product
+
+    public Batch(int batchId, int productId, String batchNo, String expiryDate,
+                 int qtyOnHand, double costPrice, double tradePrice, double retailPrice, double taxPercent) {
+        this.batchId = batchId;
+        this.productId = productId;
+        this.batchNo = batchNo;
+        this.expiryDate = expiryDate;
+        this.qtyOnHand = qtyOnHand;
+        this.costPrice = costPrice;
+        this.tradePrice = tradePrice;
+        this.retailPrice = retailPrice;
+        this.taxPercent = taxPercent;
     }
 
-    // --- 1. Batch ID ---
-    public int getBatchId() { return batchId.get(); }
-    public void setBatchId(int value) { batchId.set(value); }
-    public IntegerProperty batchIdProperty() { return batchId; }
-
-    // --- 2. Product ID (This was missing!) ---
-    public int getProductId() { return productId.get(); }
-    public void setProductId(int value) { productId.set(value); }
-    public IntegerProperty productIdProperty() { return productId; }
-
-    // --- 3. Batch Number ---
-    public String getBatchNo() { return batchNo.get(); }
-    public void setBatchNo(String value) { batchNo.set(value); }
-    public StringProperty batchNoProperty() { return batchNo; }
-
-    // --- 4. Expiry Date ---
-    public LocalDate getExpiryDate() { return expiryDate.get(); }
-    public void setExpiryDate(LocalDate value) { expiryDate.set(value); }
-    public ObjectProperty<LocalDate> expiryDateProperty() { return expiryDate; }
-
-    // --- 5. Purchase Price (This was missing!) ---
-    public double getPurchasePrice() { return purchasePrice.get(); }
-    public void setPurchasePrice(double value) { purchasePrice.set(value); }
-    public DoubleProperty purchasePriceProperty() { return purchasePrice; }
-
-    // --- 6. Sale Price (This was missing!) ---
-    public double getSalePrice() { return salePrice.get(); }
-    public void setSalePrice(double value) { salePrice.set(value); }
-    public DoubleProperty salePriceProperty() { return salePrice; }
-
-    // --- 7. Quantity on Hand ---
-    public int getQtyOnHand() { return qtyOnHand.get(); }
-    public void setQtyOnHand(int value) { qtyOnHand.set(value); }
-    public IntegerProperty qtyOnHandProperty() { return qtyOnHand; }
-
-    // --- Business Logic: Check Expiration ---
-    public boolean isExpired() {
-        if (expiryDate.get() == null) return false;
-        return expiryDate.get().isBefore(LocalDate.now());
+    // Helper: Calculate Margin %
+    public double getMarginPercentage() {
+        if (tradePrice == 0) return 0;
+        return ((retailPrice - tradePrice) / tradePrice) * 100;
     }
 
-    // --- Helper for Console Output ---
-    @Override
-    public String toString() {
-        return batchNo.get(); // Useful for debugging or ComboBoxes
+    // Getters and Setters
+    public int getBatchId() { return batchId; }
+    public void setBatchId(int batchId) { this.batchId = batchId; }
+
+    public int getProductId() { return productId; }
+    public void setProductId(int productId) { this.productId = productId; }
+
+    public String getBatchNo() { return batchNo; }
+    public void setBatchNo(String batchNo) { this.batchNo = batchNo; }
+
+    public String getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(String expiryDate) { this.expiryDate = expiryDate; }
+
+    public int getQtyOnHand() { return qtyOnHand; }
+    public void setQtyOnHand(int qtyOnHand) { this.qtyOnHand = qtyOnHand; }
+
+    public double getCostPrice() { return costPrice; }
+    public void setCostPrice(double costPrice) { this.costPrice = costPrice; }
+
+    public double getTradePrice() { return tradePrice; }
+    public void setTradePrice(double tradePrice) { this.tradePrice = tradePrice; }
+
+    public double getRetailPrice() { return retailPrice; }
+    public void setRetailPrice(double retailPrice) { this.retailPrice = retailPrice; }
+
+    public double getTaxPercent() { return taxPercent; }
+    public void setTaxPercent(double taxPercent) { this.taxPercent = taxPercent; }
+
+    public Product getProduct() { return product; }
+    public void setProduct(Product product) { this.product = product; }
+
+    // For UI Display (Table Columns)
+    public String getFormattedRetailPrice() {
+        return FormatterUtil.formatPrice(retailPrice);
+    }
+
+    public String getFormattedTradePrice() {
+        return FormatterUtil.formatPrice(tradePrice);
     }
 }

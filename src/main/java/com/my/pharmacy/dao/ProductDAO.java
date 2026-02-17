@@ -1,18 +1,19 @@
 package com.my.pharmacy.dao;
 
 import com.my.pharmacy.model.Product;
-import javafx.collections.ObservableList;
+import java.util.List;
 
 public interface ProductDAO {
-    // CRUD Operations
+    // 1. Create
     void addProduct(Product product);
+
+    // 2. Read
+    List<Product> getAllProducts();
+    Product getProductById(int id); // Useful for scanning barcodes later
+
+    // 3. Update (For fixing typos or changing pack size)
     void updateProduct(Product product);
+
+    // 4. Delete (Removes product if no sales exist)
     void deleteProduct(int id);
-
-    // Read Operations
-    Product getProduct(int id);
-    ObservableList<Product> getAllProducts();
-
-    // Search Operation (The foundation for your Search Bar)
-    ObservableList<Product> searchProducts(String query);
 }

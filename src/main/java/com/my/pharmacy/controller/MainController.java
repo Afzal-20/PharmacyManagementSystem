@@ -1,36 +1,48 @@
 package com.my.pharmacy.controller;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.layout.BorderPane;
+import java.io.IOException;
+import java.net.URL;
 
 public class MainController {
 
-    @FXML
-    private BorderPane mainContainer;
+    @FXML private BorderPane mainLayout;
 
     @FXML
-    public void showPOS() {
+    private void showPOS() {
+        // Path adjusted to match your project root /fxml/
+        loadView("/fxml/POSView.fxml");
+    }
+
+    @FXML
+    private void showInventory() {
+        loadView("/fxml/InventoryView.fxml");
+    }
+
+    @FXML
+    private void showHistory() {
+        // This empty method fixes the 'Error resolving onAction' crash
+        System.out.println("Sales History clicked - Feature pending.");
+    }
+
+    private void loadView(String fxmlPath) {
         try {
-            // 1. Load the POS View
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/POSView.fxml"));
-            javafx.scene.Parent posView = loader.load();
+            URL resource = getClass().getResource(fxmlPath);
+            if (resource == null) {
+                System.err.println("❌ ERROR: FXML file not found at " + fxmlPath);
+                return;
+            }
 
-            // 2. Set it into the CENTER of the Main Layout
-            mainContainer.setCenter(posView);
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent view = loader.load();
+            mainLayout.setCenter(view);
 
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
+            System.err.println("❌ ERROR: Failed to load " + fxmlPath);
             e.printStackTrace();
         }
-    }
-
-    @FXML
-    public void showInventory() {
-        System.out.println("Navigating to Inventory Screen...");
-        // TODO: Load Inventory View
-    }
-
-    @FXML
-    public void showHistory() {
-        System.out.println("Navigating to History Screen...");
     }
 }

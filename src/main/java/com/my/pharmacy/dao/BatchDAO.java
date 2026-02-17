@@ -1,18 +1,23 @@
 package com.my.pharmacy.dao;
 
 import com.my.pharmacy.model.Batch;
-import javafx.collections.ObservableList;
+import java.util.List;
 
 public interface BatchDAO {
-    // Save a new batch (e.g., when buying stock)
+    // 1. Create (Purchasing new stock)
     void addBatch(Batch batch);
 
-    // Update stock quantity (e.g., after a sale)
-    void updateBatchStock(int batchId, int newQuantity);
+    // 2. Read
+    List<Batch> getAllBatches();
+    Batch getBatchById(int id);
+    List<Batch> getBatchesByProductId(int productId); // Useful for "View History"
 
-    // Get all batches for a specific product (e.g., checking stock for "Panadol")
-    ObservableList<Batch> getBatchesByProductId(int productId);
+    // 3. Update (Fixing pricing or expiry errors)
+    void updateBatch(Batch batch);
 
-    // Get all batches (e.g., for the "Inventory" screen)
-    ObservableList<Batch> getAllBatches();
+    // 4. Delete
+    void deleteBatch(int id);
+
+    // 5. Transactional (Selling)
+    void reduceStock(int batchId, int quantity);
 }

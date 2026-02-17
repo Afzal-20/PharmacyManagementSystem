@@ -1,11 +1,13 @@
 package com.my.pharmacy.dao;
 
 import com.my.pharmacy.model.Sale;
+import java.util.List;
 
 public interface SaleDAO {
-    // This method handles the entire transaction:
-    // 1. Save Sale Header
-    // 2. Save All Items
-    // 3. Deduct Stock from Batches
-    void saveSale(Sale sale) throws Exception;
+    // 1. Transaction
+    void saveSale(Sale sale);
+
+    // 2. Reporting
+    List<Sale> getAllSales();
+    Sale getSaleById(int id); // For "Reprint Invoice"
 }

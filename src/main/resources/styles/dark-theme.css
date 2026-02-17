@@ -1,0 +1,117 @@
+/* === GLOBAL DARK THEME === */
+.root {
+    -fx-base: #1e1e1e; /* The main dark background */
+    -fx-background: #1e1e1e;
+    -fx-control-inner-background: #1e1e1e;
+    -fx-font-family: 'Segoe UI', sans-serif;
+}
+
+/* === SIDEBAR (Darker Shade) === */
+.sidebar {
+    -fx-background-color: #121212; /* Almost Black */
+}
+
+.app-title {
+    -fx-text-fill: #00ffcc; /* Neon Cyan */
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 20 0;
+}
+
+/* === BUTTONS === */
+.button {
+    -fx-background-color: #333333;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #444444;
+}
+
+/* Navigation Buttons */
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #bdc3c7;
+    -fx-font-size: 14px;
+    -fx-alignment: BASELINE_LEFT;
+    -fx-padding: 12 20 12 20;
+}
+
+.nav-button:hover {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: #00ffcc; /* Neon Hover */
+}
+
+.nav-button:focused {
+    -fx-background-color: #00ffcc;
+    -fx-text-fill: #121212; /* Black Text on Neon */
+    -fx-border-width: 0 0 0 4;
+    -fx-border-color: white;
+}
+
+/* ACTION BUTTONS (Add, Checkout) */
+.action-btn {
+    -fx-background-color: #00b894; /* Green */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+/* === INPUT FIELDS === */
+.text-field {
+    -fx-background-color: #2d2d2d;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #7f8c8d;
+    -fx-border-color: #555555;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.text-field:focused {
+    -fx-border-color: #00ffcc; /* Neon Focus Border */
+}
+
+/* === TABLE VIEW === */
+.table-view {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #2d2d2d;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 35;
+    -fx-border-color: #333333;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: white;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #252525; /* Slightly lighter for striping */
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #00b894; /* Selection Color */
+    -fx-text-fill: white;
+}
+
+/* === LABELS === */
+.label {
+    -fx-text-fill: white;
+}
+
+/* Special ID for Grand Total */
+#lblGrandTotal {
+    -fx-text-fill: #00ffcc; /* Neon Total */
+}

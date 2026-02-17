@@ -1,95 +1,54 @@
 package com.my.pharmacy.model;
 
-import javafx.beans.property.*;
-
 public class Product {
+    private int id;
+    private String name;
+    private String genericName;   // NEW: e.g. Paracetamol
+    private String manufacturer;  // NEW: e.g. GSK
+    private String description;
+    private int packSize;         // NEW: e.g. 10 (1 Box = 10 Strips)
+    private int minStockLevel;
+    private String shelfLocation;
 
-    // 1. Use JavaFX Properties (Smart Variables)
-    // These wrapper classes let the UI "listen" for changes automatically.
-    private final IntegerProperty id;
-    private final StringProperty name;
-    private final StringProperty genericName;
-    private final StringProperty manufacturer;
-    private final IntegerProperty supplierId;
-    private final DoubleProperty taxRate;
-    private final IntegerProperty packSize;     // e.g., 10 tablets per strip
-    private final IntegerProperty minStockAlert; // e.g., Warn if below 50
-
-    // 2. Constructor (Empty) - Required for some Database tools
-    public Product() {
-        this(0, "", "", "", 0, 0.0, 1, 10);
-    }
-
-    // 3. Constructor (Full) - Used when loading from Database
     public Product(int id, String name, String genericName, String manufacturer,
-                   int supplierId, double taxRate, int packSize, int minStockAlert) {
-        this.id = new SimpleIntegerProperty(id);
-        this.name = new SimpleStringProperty(name);
-        this.genericName = new SimpleStringProperty(genericName);
-        this.manufacturer = new SimpleStringProperty(manufacturer);
-        this.supplierId = new SimpleIntegerProperty(supplierId);
-        this.taxRate = new SimpleDoubleProperty(taxRate);
-        this.packSize = new SimpleIntegerProperty(packSize);
-        this.minStockAlert = new SimpleIntegerProperty(minStockAlert);
+                   String description, int packSize, int minStockLevel, String shelfLocation) {
+        this.id = id;
+        this.name = name;
+        this.genericName = genericName;
+        this.manufacturer = manufacturer;
+        this.description = description;
+        this.packSize = packSize;
+        this.minStockLevel = minStockLevel;
+        this.shelfLocation = shelfLocation;
     }
 
-    // 4. Getters & Setters (The JavaFX Pattern)
-    // pattern: getX(), setX(), xProperty()
+    // Getters and Setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    // ID
-    public int getId() { return id.get(); }
-    public void setId(int value) { id.set(value); }
-    public IntegerProperty idProperty() { return id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    // Name
-    public String getName() { return name.get(); }
-    public void setName(String value) { name.set(value); }
-    public StringProperty nameProperty() { return name; }
+    public String getGenericName() { return genericName; }
+    public void setGenericName(String genericName) { this.genericName = genericName; }
 
-    // Generic Name
-    public String getGenericName() { return genericName.get(); }
-    public void setGenericName(String value) { genericName.set(value); }
-    public StringProperty genericNameProperty() { return genericName; }
+    public String getManufacturer() { return manufacturer; }
+    public void setManufacturer(String manufacturer) { this.manufacturer = manufacturer; }
 
-    // Manufacturer
-    public String getManufacturer() { return manufacturer.get(); }
-    public void setManufacturer(String value) { manufacturer.set(value); }
-    public StringProperty manufacturerProperty() { return manufacturer; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    // Supplier ID
-    public int getSupplierId() { return supplierId.get(); }
-    public void setSupplierId(int value) { supplierId.set(value); }
-    public IntegerProperty supplierIdProperty() { return supplierId; }
+    public int getPackSize() { return packSize; }
+    public void setPackSize(int packSize) { this.packSize = packSize; }
 
-    // Tax Rate
-    public double getTaxRate() { return taxRate.get(); }
-    public void setTaxRate(double value) { taxRate.set(value); }
-    public DoubleProperty taxRateProperty() { return taxRate; }
+    public int getMinStockLevel() { return minStockLevel; }
+    public void setMinStockLevel(int minStockLevel) { this.minStockLevel = minStockLevel; }
 
-    // Pack Size
-    public int getPackSize() { return packSize.get(); }
-    public void setPackSize(int value) { packSize.set(value); }
-    public IntegerProperty packSizeProperty() { return packSize; }
-
-    // Min Stock Alert
-    public int getMinStockAlert() { return minStockAlert.get(); }
-    public void setMinStockAlert(int value) { minStockAlert.set(value); }
-    public IntegerProperty minStockAlertProperty() { return minStockAlert; }
+    public String getShelfLocation() { return shelfLocation; }
+    public void setShelfLocation(String shelfLocation) { this.shelfLocation = shelfLocation; }
 
     @Override
     public String toString() {
-        return name.get(); // Useful for ComboBoxes (Drop-downs)
-    }
-
-    /**
-     * Search Helper: Combines all searchable text into one string.
-     * allows finding "Panadol" by typing "Paracetamol" (Generic Name).
-     */
-    public String getSearchKeywords() {
-        // We combine: Name + Generic Name + Manufacturer + ID
-        return (getName() + " " +
-                getGenericName() + " " +
-                getManufacturer() + " " +
-                getId()).toLowerCase();
+        return name + " (" + manufacturer + ")";
     }
 }

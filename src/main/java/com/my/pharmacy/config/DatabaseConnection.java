@@ -3,39 +3,34 @@ package com.my.pharmacy.config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DatabaseConnection {
 
-    // CHANGED: New filename to bypass the lock on the old file
+    // We keep your V2 filename
     private static final String URL = "jdbc:sqlite:pharmacy_v2.db";
-    private static Connection connection = null;
 
-    public static Connection getInstance() {
+    /**
+     * Returns a NEW connection every time.
+     * Essential for transactions (Sales) to work without locking the whole app.
+     */
+    public static Connection getConnection() throws SQLException {
         try {
-            // Check if connection is closed or null, then create a new one
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(URL);
-                // Optimization: Enable WAL mode for better concurrency (prevents locks)
-                try (java.sql.Statement stmt = connection.createStatement()) {
-                    stmt.execute("PRAGMA journal_mode=WAL;");
-                }
-            }
-            return connection;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+            // Ensure driver is loaded
+            Class.forName("org.sqlite.JDBC");
 
-    // Explicitly close the connection when the app shuts down
-    public static void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("🔌 Database connection closed.");
+            // Create a fresh connection
+            Connection conn = DriverManager.getConnection(URL);
+
+            // Keep your WAL optimization (Great for concurrency)
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("PRAGMA journal_mode=WAL;");
+                stmt.execute("PRAGMA foreign_keys=ON;"); // Enforce relationships
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+
+            return conn;
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("SQLite JDBC Driver not found!", e);
         }
     }
 }
