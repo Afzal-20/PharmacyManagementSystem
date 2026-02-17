@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="mainContainer" prefHeight="600.0" prefWidth="900.0"
+            stylesheets="@../styles/style.css"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.my.pharmacy.controller.MainController">
+
+    <left>
+        <VBox styleClass="sidebar" prefWidth="220.0" spacing="5">
+            <padding>
+                <Insets top="20" right="0" bottom="20" left="0"/>
+            </padding>
+
+            <VBox alignment="CENTER">
+                <Label text="PHARMACY" styleClass="app-title"/>
+                <Label text="SYSTEM" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                <padding>
+                    <Insets bottom="30"/>
+                </padding>
+            </VBox>
+
+            <Button text="🛒  Point of Sale" maxWidth="Infinity" styleClass="nav-button" onAction="#showPOS"/>
+            <Button text="📦  Inventory" maxWidth="Infinity" styleClass="nav-button" onAction="#showInventory"/>
+            <Button text="📜  Sales History" maxWidth="Infinity" styleClass="nav-button" onAction="#showHistory"/>
+
+            <VBox VBox.vgrow="ALWAYS" />
+
+            <Button text="🚪  Logout" maxWidth="Infinity" styleClass="nav-button" style="-fx-text-fill: #e74c3c;"/>
+
+        </VBox>
+    </left>
+
+    <center>
+        <VBox alignment="CENTER" style="-fx-background-color: #ecf0f1;">
+            <Label text="Welcome, Admin" textFill="#2c3e50">
+                <font>
+                    <Font name="System Bold" size="28.0"/>
+                </font>
+            </Label>
+            <Label text="Select an option from the sidebar to begin." textFill="#7f8c8d">
+                <font>
+                    <Font size="16.0"/>
+                </font>
+            </Label>
+        </VBox>
+    </center>
+
+</BorderPane>

@@ -1,0 +1,40 @@
+/* GLOBAL FONT */
+.root {
+    -fx-font-family: 'Segoe UI', sans-serif;
+}
+
+/* SIDEBAR STYLES */
+.sidebar {
+    -fx-background-color: #2c3e50; /* Dark Blue */
+}
+
+.app-title {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 20 0;
+}
+
+/* NAVIGATION BUTTONS */
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #bdc3c7; /* Light Grey */
+    -fx-font-size: 14px;
+    -fx-alignment: BASELINE_LEFT;
+    -fx-padding: 12 20 12 20;
+    -fx-cursor: hand;
+    -fx-background-radius: 0;
+}
+
+.nav-button:hover {
+    -fx-background-color: #34495e; /* Slightly Lighter Blue */
+    -fx-text-fill: white;
+}
+
+/* The "Active" button (when selected) */
+.nav-button:focused {
+    -fx-background-color: #1abc9c; /* Teal Green */
+    -fx-text-fill: white;
+    -fx-border-width: 0 0 0 4; /* Left Border */
+    -fx-border-color: white;
+}
