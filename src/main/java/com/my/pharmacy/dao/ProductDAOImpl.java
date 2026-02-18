@@ -12,11 +12,11 @@ public class ProductDAOImpl implements ProductDAO {
 
     // --- 1. CREATE ---
     @Override
-    public void addProduct(Product product) {
+    public int addProduct(Product product) {
         String sql = "INSERT INTO products (name, generic_name, manufacturer, description, pack_size, min_stock_level, shelf_location) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, product.getName());
             pstmt.setString(2, product.getGenericName());
@@ -27,11 +27,16 @@ public class ProductDAOImpl implements ProductDAO {
             pstmt.setString(7, product.getShelfLocation());
 
             pstmt.executeUpdate();
-            System.out.println("✅ Product Added: " + product.getName());
 
+            // Get the ID SQLite just created
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return -1; // Indicates failure
     }
 
     // --- 2. READ (ALL) ---

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="20" style="-fx-padding: 30; -fx-background-color: #f4f7f6;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.my.pharmacy.controller.PurchaseController">
+
+    <Label text="STOCK PURCHASE ENTRY" style="-fx-text-fill: #2c3e50;">
+        <font><Font name="System Bold" size="22.0"/></font>
+    </Label>
+
+    <GridPane hgap="15" vgap="15">
+        <columnConstraints>
+            <ColumnConstraints minWidth="150" prefWidth="150" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="200" />
+            <ColumnConstraints minWidth="150" prefWidth="150" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="200" />
+        </columnConstraints>
+
+        <Label text="Select Dealer (Supplier):" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="dealerComboBox" maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+
+        <Label text="Medicine:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="productComboBox" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+
+        <Label text="Batch No:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="batchNoField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Expiry (MM/YY):" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+        <TextField fx:id="expiryField" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+
+        <Label text="Cost Price (Box):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="costField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Trade Price (Box):" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+        <TextField fx:id="tradeField" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+
+        <Label text="Quantity (Boxes):" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="qtyField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <Separator/>
+
+    <HBox spacing="15" alignment="CENTER_RIGHT">
+        <Button text="Reset Fields" onAction="#initialize"
+                style="-fx-background-color: #bdc3c7; -fx-padding: 10 20;"/>
+        <Button text="SAVE PURCHASE &amp; UPDATE STOCK" onAction="#handleSavePurchase"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25;"/>
+    </HBox>
+</VBox>

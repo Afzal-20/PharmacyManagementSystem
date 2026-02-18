@@ -28,6 +28,10 @@
 
             <Button text="🛒  Point of Sale" maxWidth="Infinity" styleClass="nav-button" onAction="#showPOS"/>
             <Button text="📦  Inventory" maxWidth="Infinity" styleClass="nav-button" onAction="#showInventory"/>
+            <Button text="➕  Stock Purchase" maxWidth="Infinity" styleClass="nav-button" onAction="#showPurchaseEntry"/>
+
+            <Button text="👥  Customers" maxWidth="Infinity" styleClass="nav-button" onAction="#showCustomers"/>
+            <Button text="🏢  Dealers" maxWidth="Infinity" styleClass="nav-button" onAction="#showDealers"/>
             <Button text="📜  Sales History" maxWidth="Infinity" styleClass="nav-button" onAction="#showHistory"/>
 
             <VBox VBox.vgrow="ALWAYS" />

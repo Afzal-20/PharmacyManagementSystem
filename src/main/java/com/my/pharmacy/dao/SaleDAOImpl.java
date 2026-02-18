@@ -3,16 +3,14 @@ package com.my.pharmacy.dao;
 import com.my.pharmacy.config.DatabaseConnection;
 import com.my.pharmacy.model.Sale;
 import com.my.pharmacy.model.SaleItem;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SaleDAOImpl implements SaleDAO {
 
-    private BatchDAO batchDAO = new BatchDAOImpl();
+    private final BatchDAO batchDAO = new BatchDAOImpl();
 
-    // --- 1. SAVE SALE (Complex Transaction) ---
     @Override
     public void saveSale(Sale sale) {
         String insertSaleSQL = "INSERT INTO sales (total_amount, payment_mode, customer_id, salesman_id) VALUES (?, ?, ?, ?)";
@@ -21,9 +19,9 @@ public class SaleDAOImpl implements SaleDAO {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // Begin Transaction
+            conn.setAutoCommit(false); // Start Transaction for Safety
 
-            // A. Insert Sale Header
+            // 1. Insert Sale Header
             try (PreparedStatement pstmt = conn.prepareStatement(insertSaleSQL, Statement.RETURN_GENERATED_KEYS)) {
                 pstmt.setDouble(1, sale.getTotalAmount());
                 pstmt.setString(2, sale.getPaymentMode());
@@ -35,7 +33,7 @@ public class SaleDAOImpl implements SaleDAO {
                 int saleId = 0;
                 if (rs.next()) saleId = rs.getInt(1);
 
-                // B. Insert Items & Reduce Stock
+                // 2. Insert Items & Update Inventory
                 try (PreparedStatement itemStmt = conn.prepareStatement(insertItemSQL)) {
                     for (SaleItem item : sale.getItems()) {
                         itemStmt.setInt(1, saleId);
@@ -48,14 +46,14 @@ public class SaleDAOImpl implements SaleDAO {
                         itemStmt.setDouble(8, item.getDiscountPercent());
                         itemStmt.addBatch();
 
-                        // C. Update Inventory
+                        // Update Stock (Hybrid: Deducts individual units)
                         batchDAO.reduceStock(item.getBatchId(), item.getQuantity() + item.getBonusQty());
                     }
                     itemStmt.executeBatch();
                 }
             }
-            conn.commit(); // Commit Transaction
-            System.out.println("✅ Sale Saved Successfully!");
+            conn.commit(); // Save all changes
+            System.out.println("✅ Sale and stock levels updated successfully.");
 
         } catch (SQLException e) {
             try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
@@ -65,58 +63,36 @@ public class SaleDAOImpl implements SaleDAO {
         }
     }
 
-    // --- 2. GET ALL SALES (For Reports) ---
     @Override
     public List<Sale> getAllSales() {
         List<Sale> sales = new ArrayList<>();
         String sql = "SELECT * FROM sales ORDER BY sale_date DESC";
-
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-
             while (rs.next()) {
-                Sale sale = new Sale(
-                        rs.getInt("id"),
-                        rs.getTimestamp("sale_date"),
-                        rs.getDouble("total_amount"),
-                        rs.getString("payment_mode"),
-                        rs.getInt("customer_id"),
-                        rs.getInt("salesman_id")
-                );
-                sales.add(sale);
+                sales.add(new Sale(rs.getInt("id"), rs.getTimestamp("sale_date"),
+                        rs.getDouble("total_amount"), rs.getString("payment_mode"),
+                        rs.getInt("customer_id"), rs.getInt("salesman_id")));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
         return sales;
     }
 
-    // --- 3. GET SALE BY ID (For Reprinting) ---
     @Override
     public Sale getSaleById(int id) {
         String sql = "SELECT * FROM sales WHERE id = ?";
-        Sale sale = null;
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setInt(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    sale = new Sale(
-                            rs.getInt("id"),
-                            rs.getTimestamp("sale_date"),
-                            rs.getDouble("total_amount"),
-                            rs.getString("payment_mode"),
-                            rs.getInt("customer_id"),
-                            rs.getInt("salesman_id")
-                    );
-                    // Fetch items for this sale? (Optional: implement getItemsBySaleId if needed)
+                    return new Sale(rs.getInt("id"), rs.getTimestamp("sale_date"),
+                            rs.getDouble("total_amount"), rs.getString("payment_mode"),
+                            rs.getInt("customer_id"), rs.getInt("salesman_id"));
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return sale;
+        } catch (SQLException e) { e.printStackTrace(); }
+        return null;
     }
 }

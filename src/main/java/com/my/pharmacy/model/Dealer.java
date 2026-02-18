@@ -1,28 +1,29 @@
 package com.my.pharmacy.model;
 
-public class Customer {
+public class Dealer {
     private int id;
     private String name;
+    private String companyName;
     private String phone;
     private String address;
-    private String type; // e.g., "WHOLESALE" or "RETAIL"
+    private String licenseNo;
 
-    // Constructor for existing data (from DB)
-    public Customer(int id, String name, String phone, String address, String type) {
+    public Dealer(int id, String name, String companyName, String phone, String address, String licenseNo) {
         this.id = id;
         this.name = name;
+        this.companyName = companyName;
         this.phone = phone;
         this.address = address;
-        this.type = type;
+        this.licenseNo = licenseNo;
     }
 
-    // Getters and Setters
+    // Getters
     public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
     public String getName() { return name; }
+    public String getCompanyName() { return companyName; }
     public String getPhone() { return phone; }
     public String getAddress() { return address; }
-    public String getType() { return type; }
+    public String getLicenseNo() { return licenseNo; }
 
     @Override
     public String toString() { return name; }

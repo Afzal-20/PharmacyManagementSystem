@@ -5,43 +5,51 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.my.pharmacy.controller.POSController"
             prefHeight="700.0" prefWidth="1200.0">
 
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #2c3e50; -fx-padding: 15;">
-            <Label text="SEARCH MEDICINE:" textFill="WHITE">
-                <font>
-                    <Font name="System Bold" size="14.0"/>
-                </font>
-            </Label>
-            <TextField fx:id="searchField" promptText="Type Name, Generic, or Batch..." prefWidth="400.0"
-                       style="-fx-font-size: 14; -fx-padding: 8;"/>
-            <Button text="REFRESH STOCK" onAction="#loadStockData"
-                    style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;"/>
-        </HBox>
+        <VBox spacing="10" style="-fx-background-color: #2c3e50; -fx-padding: 15;">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="SEARCH MEDICINE:" textFill="WHITE">
+                    <font><Font name="System Bold" size="14.0"/></font>
+                </Label>
+                <TextField fx:id="searchField" promptText="Type Name, Generic, or Batch..." prefWidth="400.0"
+                           style="-fx-font-size: 14; -fx-padding: 8;"/>
+                <Button text="REFRESH" onAction="#loadStockData"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <HBox fx:id="customerSection" spacing="10" alignment="CENTER_LEFT">
+                <Label text="SELECT CUSTOMER:" textFill="WHITE">
+                    <font><Font name="System Bold" size="14.0"/></font>
+                </Label>
+                <ComboBox fx:id="customerComboBox" prefWidth="300.0" promptText="Select Dealer/Client"
+                          style="-fx-font-size: 14;"/>
+                <Button text="+" onAction="#handleAddNewCustomer"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
     </top>
 
     <center>
         <SplitPane dividerPositions="0.6">
             <VBox spacing="5" style="-fx-padding: 10;">
-                <Label text="AVAILABLE STOCK (Select to Add)" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Label text="AVAILABLE STOCK" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                 <TableView fx:id="productTable" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="colName" text="Medicine Name" prefWidth="180"/>
                         <TableColumn fx:id="colGeneric" text="Generic" prefWidth="120"/>
                         <TableColumn fx:id="colBatch" text="Batch No" prefWidth="100"/>
                         <TableColumn fx:id="colExpiry" text="Expiry" prefWidth="100"/>
-                        <TableColumn fx:id="colStock" text="Stock" prefWidth="80"/>
-                        <TableColumn fx:id="colPrice" text="Price (RP)" prefWidth="100"/>
+                        <TableColumn fx:id="colStock" text="Stock (Units)" prefWidth="80"/>
+                        <TableColumn fx:id="colPrice" text="Rate" prefWidth="100"/>
                     </columns>
-                    <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-                    </columnResizePolicy>
+                    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                 </TableView>
-                <Button text="ADD SELECTED TO CART" onAction="#handleAddToCart"
-                        maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-padding: 10;"/>
+                <Button text="ADD TO CART" onAction="#handleAddToCart" maxWidth="Infinity"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-padding: 12; -fx-font-weight: bold;"/>
             </VBox>
 
             <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #ecf0f1;">
@@ -53,23 +61,18 @@
                         <TableColumn fx:id="colCartPrice" text="Rate" prefWidth="80"/>
                         <TableColumn fx:id="colCartTotal" text="Total" prefWidth="80"/>
                     </columns>
-                    <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-                    </columnResizePolicy>
+                    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                 </TableView>
 
-                <HBox spacing="20" alignment="CENTER_RIGHT" style="-fx-padding: 10; -fx-background-color: white; -fx-border-color: #bdc3c7;">
+                <HBox spacing="20" alignment="CENTER_RIGHT" style="-fx-padding: 15; -fx-background-color: white; -fx-border-color: #bdc3c7;">
                     <Label fx:id="totalLabel" text="Total: 0.00" textFill="#c0392b">
-                        <font>
-                            <Font name="System Bold" size="24.0"/>
-                        </font>
+                        <font><Font name="System Bold" size="28.0"/></font>
                     </Label>
                 </HBox>
 
-                <Button fx:id="checkoutButton" text="COMPLETE SALE (CHECKOUT)" onAction="#handleCheckout"
-                        maxWidth="Infinity" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 15; -fx-font-weight: bold;"/>
+                <Button text="COMPLETE SALE" onAction="#handleCheckout" maxWidth="Infinity"
+                        style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 18; -fx-padding: 15; -fx-font-weight: bold;"/>
             </VBox>
         </SplitPane>
     </center>
-
 </BorderPane>

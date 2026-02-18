@@ -6,9 +6,17 @@ import com.my.pharmacy.model.Product;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 public class InventoryController {
 
@@ -19,8 +27,8 @@ public class InventoryController {
     @FXML private TableColumn<Product, String> colManufacturer;
     @FXML private TableColumn<Product, Integer> colPackSize;
 
-    private ProductDAO productDAO = new ProductDAOImpl();
-    private ObservableList<Product> productList = FXCollections.observableArrayList();
+    private final ProductDAO productDAO = new ProductDAOImpl();
+    private final ObservableList<Product> productList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -41,7 +49,26 @@ public class InventoryController {
 
     @FXML
     private void handleAddNewProduct() {
-        // Placeholder for the Add Product Dialog
-        System.out.println("Add Product Dialog Triggered");
+        String mode = com.my.pharmacy.util.ConfigUtil.getAppMode();
+        String fxmlPath = mode.equals("WHOLESALE")
+                ? "/fxml/AddProductWholesale.fxml"
+                : "/fxml/AddProductRetail.fxml";
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Stage stage = new Stage();
+            stage.setScene(new Scene(loader.load()));
+            stage.setTitle("Add New Product - " + mode);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            // Refresh the table after the dialog is closed
+            loadInventoryData();
+        } catch (IOException e) {
+            System.err.println("Error loading dialog: " + fxmlPath);
+            e.printStackTrace();
+        }
     }
+
+
 }
