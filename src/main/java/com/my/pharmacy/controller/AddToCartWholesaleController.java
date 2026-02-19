@@ -18,34 +18,45 @@ public class AddToCartWholesaleController {
 
     public void setBatchData(Batch batch) {
         this.selectedBatch = batch;
-        this.productNameLabel.setText(batch.getProduct().getName());
+        this.productNameLabel.setText(batch.getProduct().getName() + " (Batch: " + batch.getBatchNo() + ")");
     }
 
     @FXML
     private void handleSave() {
         try {
+            // Validation
+            if (qtyField.getText().isEmpty()) return;
+
             int boxes = Integer.parseInt(qtyField.getText());
-            int bonusUnits = Integer.parseInt(bonusField.getText());
-            double discount = Double.parseDouble(discountField.getText());
+            int bonusUnits = bonusField.getText().isEmpty() ? 0 : Integer.parseInt(bonusField.getText());
+            double discPercent = discountField.getText().isEmpty() ? 0 : Double.parseDouble(discountField.getText());
 
-            // Hybrid Math: Convert boxes to units
-            int units = boxes * selectedBatch.getProduct().getPackSize();
-            double unitPrice = selectedBatch.getTradePrice() / selectedBatch.getProduct().getPackSize();
+            // Unit Conversions
+            int packSize = selectedBatch.getProduct().getPackSize();
+            int totalUnits = boxes * packSize;
+            double unitPrice = selectedBatch.getTradePrice() / packSize;
 
+            // Check Stock Availability
+            if (totalUnits > selectedBatch.getQtyOnHand()) {
+                System.err.println("Insufficient Stock!");
+                return;
+            }
+
+            // Create SaleItem with the specific Batch ID for the DAO
             createdItem = new SaleItem(
                     selectedBatch.getProductId(),
-                    selectedBatch.getBatchId(),
-                    units,
+                    selectedBatch.getId(), // Crucial for stock deduction
+                    totalUnits,
                     unitPrice,
                     bonusUnits,
-                    discount
+                    discPercent
             );
             createdItem.setProductName(selectedBatch.getProduct().getName());
 
             confirmed = true;
             closeWindow();
         } catch (NumberFormatException e) {
-            // Add alert here if needed
+            System.err.println("Invalid input numeric values.");
         }
     }
 

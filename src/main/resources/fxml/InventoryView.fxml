@@ -2,34 +2,36 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15" style="-fx-padding: 20; -fx-background-color: white;"
-      xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+<VBox spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.my.pharmacy.controller.InventoryController">
 
     <HBox alignment="CENTER_LEFT" spacing="20">
-        <Label text="INVENTORY MANAGEMENT" style="-fx-text-fill: #2c3e50;">
-            <font>
-                <Font name="System Bold" size="24.0"/>
-            </font>
+        <Label text="DETAILED BATCH INVENTORY" style="-fx-text-fill: #2c3e50;">
+            <font><Font name="System Bold" size="22.0"/></font>
         </Label>
-        <Region HBox.hgrow="ALWAYS" />
-        <Button text="+ ADD NEW PRODUCT" onAction="#handleAddNewProduct"
-                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+        <Pane HBox.hgrow="ALWAYS" />
+        <Button text="+ Add New Product" onAction="#handleAddNewProduct"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
     </HBox>
 
-    <TableView fx:id="inventoryTable" VBox.vgrow="ALWAYS">
+    <TableView fx:id="inventoryTable" VBox.vgrow="ALWAYS" style="-fx-background-radius: 5;">
         <columns>
-            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
             <TableColumn fx:id="colName" text="Medicine Name" prefWidth="200"/>
-            <TableColumn fx:id="colGeneric" text="Generic Name" prefWidth="150"/>
-            <TableColumn fx:id="colManufacturer" text="Manufacturer" prefWidth="150"/>
-            <TableColumn fx:id="colPackSize" text="Pack Size" prefWidth="100"/>
+            <TableColumn fx:id="colBatch" text="Batch #" prefWidth="100"/>
+            <TableColumn fx:id="colExpiry" text="Expiry" prefWidth="100"/>
+            <TableColumn fx:id="colPackSize" text="Pack Size" prefWidth="90"/>
+            <TableColumn fx:id="colStock" text="Stock (Units)" prefWidth="100"/>
+            <TableColumn fx:id="colTradePrice" text="Trade Price" prefWidth="110"/>
+            <TableColumn fx:id="colRetailPrice" text="Retail Price" prefWidth="110"/>
         </columns>
-        <columnResizePolicy>
-            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-        </columnResizePolicy>
     </TableView>
 
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Label text="Note: Select a specific batch above to sell from POS."
+               style="-fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
+    </HBox>
 </VBox>

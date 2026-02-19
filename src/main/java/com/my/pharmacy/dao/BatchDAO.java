@@ -1,6 +1,9 @@
 package com.my.pharmacy.dao;
 
 import com.my.pharmacy.model.Batch;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 public interface BatchDAO {
@@ -19,5 +22,6 @@ public interface BatchDAO {
     void deleteBatch(int id);
 
     // 5. Transactional (Selling)
-    void reduceStock(int batchId, int quantity);
+
+    void reduceStock(Connection conn, int batchId, int qty) throws SQLException;
 }

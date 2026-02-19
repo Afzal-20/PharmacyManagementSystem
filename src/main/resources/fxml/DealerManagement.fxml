@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox spacing="20" style="-fx-padding: 20; -fx-background-color: #f4f7f6;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.my.pharmacy.controller.DealerController">
+
+    <VBox spacing="15" prefWidth="350" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+        <Label text="Register New Dealer" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+
+        <TextField fx:id="nameField" promptText="Contact Person Name"/>
+        <TextField fx:id="companyField" promptText="Company/Distribution Name"/>
+        <TextField fx:id="phoneField" promptText="Phone Number"/>
+        <TextField fx:id="licenseField" promptText="Drug License No."/>
+        <TextArea fx:id="addressField" promptText="Business Address" prefHeight="80"/>
+
+        <HBox spacing="10">
+            <Button text="Clear" onAction="#clearFields" style="-fx-background-color: #bdc3c7;" prefWidth="100"/>
+            <Button text="Save Dealer" onAction="#handleSave" style="-fx-background-color: #27ae60; -fx-text-fill: white;" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+        </HBox>
+    </VBox>
+
+    <VBox spacing="10" HBox.hgrow="ALWAYS">
+        <TextField fx:id="searchField" promptText="Search by Company or License..."/>
+
+        <TableView fx:id="dealerTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colCompany" text="Company" prefWidth="150"/>
+                <TableColumn fx:id="colName" text="Contact Person" prefWidth="120"/>
+                <TableColumn fx:id="colPhone" text="Phone" prefWidth="100"/>
+                <TableColumn fx:id="colLicense" text="License #" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </VBox>
+</HBox>

@@ -113,15 +113,21 @@ public class BatchDAOImpl implements BatchDAO {
     }
 
     @Override
-    public void reduceStock(int batchId, int qty) {
+    public void reduceStock(Connection conn, int batchId, int qty) throws SQLException {
         String sql = "UPDATE batches SET qty_on_hand = qty_on_hand - ? WHERE id = ? AND qty_on_hand >= ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        // Note: We DO NOT use try-with-resources for 'conn' because we don't want to close it here
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, qty);
             pstmt.setInt(2, batchId);
             pstmt.setInt(3, qty);
-            pstmt.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected == 0) {
+                // This happens if the batch ID is wrong or stock is insufficient
+                throw new SQLException("Stock deduction failed for Batch ID: " + batchId + " (Insufficient stock or invalid ID)");
+            }
+            System.out.println("✅ Batch ID " + batchId + " stock reduced by " + qty);
+        }
     }
 
     private Batch mapResultSetToBatch(ResultSet rs) throws SQLException {

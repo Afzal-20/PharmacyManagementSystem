@@ -47,7 +47,7 @@ public class SaleDAOImpl implements SaleDAO {
                         itemStmt.addBatch();
 
                         // Update Stock (Hybrid: Deducts individual units)
-                        batchDAO.reduceStock(item.getBatchId(), item.getQuantity() + item.getBonusQty());
+                        batchDAO.reduceStock(conn, item.getBatchId(), item.getQuantity() + item.getBonusQty());
                     }
                     itemStmt.executeBatch();
                 }
