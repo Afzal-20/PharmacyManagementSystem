@@ -9,8 +9,6 @@
 
     <VBox spacing="15" prefWidth="350" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
         <Label text="Manage Customers" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
-
-        <ComboBox fx:id="typeComboBox" promptText="Select Customer Type" maxWidth="Infinity"/>
         <TextField fx:id="nameField" promptText="Customer Name"/>
         <TextField fx:id="phoneField" promptText="Phone Number"/>
         <TextField fx:id="cnicField" promptText="CNIC / DL Number"/>
@@ -30,6 +28,7 @@
                 <TableColumn fx:id="colType" text="Type" prefWidth="100"/>
                 <TableColumn fx:id="colPhone" text="Phone" prefWidth="120"/>
                 <TableColumn fx:id="colAddress" text="Address" prefWidth="200"/>
+                <TableColumn fx:id="colCnic" text="CNIC" prefWidth="130"/>
             </columns>
         </TableView>
     </VBox>

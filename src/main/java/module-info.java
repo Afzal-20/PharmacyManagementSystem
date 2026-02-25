@@ -9,7 +9,8 @@ module com.my.pharmacy {
 
     // 3. Printing/PDF Modules
     requires layout;          // iText PDF Layout
-    requires kernel;          // iText PDF Kernel
+    requires kernel;
+    requires itextpdf;          // iText PDF Kernel
 
     // 4. Permissions (Opening packages to JavaFX)
     opens com.my.pharmacy to javafx.fxml;

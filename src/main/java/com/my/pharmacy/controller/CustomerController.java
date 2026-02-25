@@ -13,17 +13,16 @@ import javafx.scene.control.cell.PropertyValueFactory;
 public class CustomerController {
 
     @FXML private TextField nameField, phoneField, cnicField, searchField;
-    @FXML private ComboBox<String> typeComboBox;
     @FXML private TextArea addressField;
     @FXML private TableView<Customer> customerTable;
     @FXML private TableColumn<Customer, String> colName, colType, colPhone, colAddress;
+    @FXML private TableColumn<Customer, String> colCnic;
 
     private final CustomerDAO customerDAO = new CustomerDAOImpl();
     private final ObservableList<Customer> masterData = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
-        typeComboBox.setItems(FXCollections.observableArrayList("RETAIL", "WHOLESALE"));
         setupTable();
         loadData();
         setupSearch();
@@ -34,6 +33,8 @@ public class CustomerController {
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
         colPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
         colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+        colCnic.setCellValueFactory(new PropertyValueFactory<>("cnic"));
+
     }
 
     private void loadData() {
@@ -49,8 +50,8 @@ public class CustomerController {
                 String lowerCaseFilter = newVal.toLowerCase();
 
                 return customer.getName().toLowerCase().contains(lowerCaseFilter) ||
-                        customer.getPhone().contains(newVal) ||
-                        customer.getType().toLowerCase().contains(lowerCaseFilter);
+                        (customer.getPhone() != null && customer.getPhone().contains(newVal)) ||
+                        (customer.getCnic() != null && customer.getCnic().contains(newVal));
             });
         });
         customerTable.setItems(filteredData);
@@ -58,21 +59,21 @@ public class CustomerController {
 
     @FXML
     private void handleSave() {
-        if (nameField.getText().isEmpty() || typeComboBox.getValue() == null) {
-            showAlert("Validation Error", "Name and Customer Type are required.");
+        if (nameField.getText().isEmpty()) {
+            showAlert("Validation Error", "Name is required.");
             return;
         }
 
-        // FIXED: Added 0.0 for balance and null for area details
         Customer newCustomer = new Customer(
                 0,
                 nameField.getText(),
                 phoneField.getText(),
                 addressField.getText(),
-                typeComboBox.getValue(),
-                0.0,  // currentBalance
-                null, // areaCode
-                null  // areaName
+                "REGULAR",     // Hardcoded type
+                0.0,          // currentBalance
+                null,         // areaCode
+                null,         // areaName
+                cnicField.getText() // Added CNIC
         );
 
         customerDAO.addCustomer(newCustomer);
@@ -87,7 +88,6 @@ public class CustomerController {
         phoneField.clear();
         cnicField.clear();
         addressField.clear();
-        typeComboBox.getSelectionModel().clearSelection();
     }
 
     private void showAlert(String title, String content) {

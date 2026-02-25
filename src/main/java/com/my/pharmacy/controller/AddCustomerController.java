@@ -22,7 +22,7 @@ public class AddCustomerController {
 
         // FIXED: Added 0.0 (balance) and null (area code/name)
         Customer customer = new Customer(0, nameField.getText(), phoneField.getText(),
-                addressField.getText(), "WHOLESALE", 0.0, null, null);
+                addressField.getText(), "REGULAR", 0.0, null, null, "");
         customerDAO.addCustomer(customer);
 
         this.savedCustomer = customerDAO.getAllCustomers().stream()

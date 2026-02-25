@@ -102,6 +102,7 @@ public class DatabaseSetup {
                     "FOREIGN KEY(batch_id) REFERENCES batches(id))");
 
             // Migration logic
+            addColumnIfMissing(stmt, "customers", "cnic", "TEXT");
             addColumnIfMissing(stmt, "customers", "current_balance", "REAL DEFAULT 0.0");
             addColumnIfMissing(stmt, "customers", "area_code", "TEXT");
             addColumnIfMissing(stmt, "customers", "area_name", "TEXT");

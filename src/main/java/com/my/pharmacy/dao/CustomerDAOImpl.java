@@ -10,7 +10,7 @@ public class CustomerDAOImpl implements CustomerDAO {
 
     @Override
     public void addCustomer(Customer customer) {
-        String sql = "INSERT INTO customers (name, phone, address, type, current_balance, area_code, area_name) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO customers (name, phone, address, type, current_balance, area_code, area_name, cnic) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, customer.getName());
@@ -20,6 +20,7 @@ public class CustomerDAOImpl implements CustomerDAO {
             pstmt.setDouble(5, customer.getCurrentBalance());
             pstmt.setString(6, customer.getAreaCode());
             pstmt.setString(7, customer.getAreaName());
+            pstmt.setString(8, customer.getCnic());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -42,7 +43,8 @@ public class CustomerDAOImpl implements CustomerDAO {
                         rs.getString("type"),
                         rs.getDouble("current_balance"),
                         rs.getString("area_code"),
-                        rs.getString("area_name")
+                        rs.getString("area_name"),
+                        rs.getString("cnic")
                 ));
             }
         } catch (SQLException e) {
@@ -67,7 +69,8 @@ public class CustomerDAOImpl implements CustomerDAO {
                             rs.getString("type"),
                             rs.getDouble("current_balance"),
                             rs.getString("area_code"),
-                            rs.getString("area_name")
+                            rs.getString("area_name"),
+                            rs.getString("cnic")
                     );
                 }
             }
