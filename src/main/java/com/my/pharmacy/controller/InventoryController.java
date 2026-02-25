@@ -38,15 +38,8 @@ public class InventoryController {
     }
 
     private void setupColumns() {
-        // Accessing Nested Product Name
-        colName.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getProduct().getName()));
-
-        // Accessing Nested Product Pack Size
-        colPackSize.setCellValueFactory(data ->
-                new SimpleObjectProperty<>(data.getValue().getProduct().getPackSize()));
-
-        // Batch specific fields
+        colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getProduct().getName()));
+        colPackSize.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getProduct().getPackSize()));
         colBatch.setCellValueFactory(new PropertyValueFactory<>("batchNo"));
         colExpiry.setCellValueFactory(new PropertyValueFactory<>("expiryDate"));
         colStock.setCellValueFactory(new PropertyValueFactory<>("qtyOnHand"));
@@ -68,6 +61,31 @@ public class InventoryController {
         openDialog(fxmlPath, "Add New Product");
     }
 
+    @FXML
+    private void handleAdjustStock() {
+        Batch selected = inventoryTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Required", "Please select a batch from the table to adjust.");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/StockAdjustmentDialog.fxml"));
+            Stage stage = new Stage();
+            stage.setScene(new Scene(loader.load()));
+            stage.setTitle("Adjust Stock: " + selected.getProduct().getName());
+            stage.initModality(Modality.APPLICATION_MODAL);
+
+            StockAdjustmentController controller = loader.getController();
+            controller.setBatchData(selected);
+
+            stage.showAndWait();
+            loadInventoryData(); // Refresh table after dialog closes
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void openDialog(String fxmlPath, String title) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -80,5 +98,13 @@ public class InventoryController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

@@ -14,6 +14,8 @@
             <font><Font name="System Bold" size="22.0"/></font>
         </Label>
         <Pane HBox.hgrow="ALWAYS" />
+        <Button text="✎ Adjust Stock" onAction="#handleAdjustStock"
+                style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
         <Button text="+ Add New Product" onAction="#handleAddNewProduct"
                 style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
     </HBox>
@@ -31,7 +33,7 @@
     </TableView>
 
     <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Label text="Note: Select a specific batch above to sell from POS."
+        <Label text="Note: Select a specific batch above to adjust stock."
                style="-fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
     </HBox>
 </VBox>

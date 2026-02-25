@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.StringConverter;
+import java.util.Optional;
 
 public class PurchaseController {
 
@@ -48,9 +49,12 @@ public class PurchaseController {
             Dealer selectedDealer = dealerComboBox.getSelectionModel().getSelectedItem();
 
             if (selectedProduct == null || selectedDealer == null) {
-                showAlert("Validation Error", "Please select both a Dealer and a Product.");
+                showAlert(Alert.AlertType.ERROR, "Validation Error", "Please select both a Dealer and a Product.");
                 return;
             }
+
+            String batchNo = batchNoField.getText();
+            String expiry = expiryField.getText();
 
             // Box-to-Unit Math
             int packSize = selectedProduct.getPackSize();
@@ -63,21 +67,48 @@ public class PurchaseController {
             double compDisc = Double.parseDouble(compDiscField.getText());
             double salesTax = Double.parseDouble(taxField.getText());
 
+            // --- STRICT DUPLICATE BATCH GUARD ---
+            Batch existingBatch = batchDAO.getExactBatchMatch(selectedProduct.getId(), batchNo, expiry, unitCost, unitTrade, unitRetail);
+
+            if (existingBatch != null) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Exact Batch Found");
+                alert.setHeaderText("An exact match for Batch '" + batchNo + "' was found in your inventory.");
+                alert.setContentText("Do you want to merge these " + totalBoxes + " boxes into the existing stock?");
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.isPresent() && result.get() == ButtonType.OK) {
+
+                    // Since all prices and dates match exactly, we only need to update the quantity
+                    existingBatch.setQtyOnHand(existingBatch.getQtyOnHand() + totalUnits);
+
+                    // Ensure the latest tax and discounts are applied
+                    existingBatch.setCompanyDiscount(compDisc);
+                    existingBatch.setSalesTax(salesTax);
+
+                    batchDAO.updateBatch(existingBatch);
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Stock merged perfectly. Total Units added: " + totalUnits);
+                    clearFields();
+                }
+                return; // Stop execution whether they clicked OK or Cancel
+            }
+
+            // Create new Batch if no exact duplicate exists (e.g. price change or new expiry)
             Batch newBatch = new Batch(
-                    0, selectedProduct.getId(), batchNoField.getText(), expiryField.getText(),
+                    0, selectedProduct.getId(), batchNo, expiry,
                     totalUnits, unitCost, unitTrade, unitRetail, 0.0, compDisc, salesTax
             );
 
             batchDAO.addBatch(newBatch);
-
-            showAlert("Success", "Purchased " + totalBoxes + " boxes. Total Units added: " + totalUnits);
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Purchased " + totalBoxes + " boxes. New batch created for distinct pricing/expiry.");
             clearFields();
 
         } catch (NumberFormatException e) {
-            showAlert("Input Error", "Please enter valid numeric values for Quantity and Prices.");
+            showAlert(Alert.AlertType.ERROR, "Input Error", "Please enter valid numeric values for Quantity and Prices.");
         }
     }
 
+    @FXML
     private void clearFields() {
         batchNoField.clear();
         expiryField.clear();
@@ -89,8 +120,8 @@ public class PurchaseController {
         taxField.setText("0.0");
     }
 
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);

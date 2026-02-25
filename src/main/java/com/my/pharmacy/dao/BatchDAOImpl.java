@@ -97,7 +97,6 @@ public class BatchDAOImpl implements BatchDAO {
             pstmt.setDouble(10, b.getSalesTax());
             pstmt.setInt(11, b.getId());
             pstmt.executeUpdate();
-            System.out.println("✅ Batch " + b.getBatchNo() + " updated.");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
@@ -108,7 +107,6 @@ public class BatchDAOImpl implements BatchDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
-            System.out.println("🗑️ Batch deactivated (ID: " + id + ")");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
@@ -119,11 +117,66 @@ public class BatchDAOImpl implements BatchDAO {
             pstmt.setInt(1, qty);
             pstmt.setInt(2, batchId);
             pstmt.setInt(3, qty);
-            int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected == 0) {
+            if (pstmt.executeUpdate() == 0) {
                 throw new SQLException("Stock deduction failed for Batch ID: " + batchId);
             }
         }
+    }
+
+    @Override
+    public void adjustStockWithAudit(int batchId, int oldQty, int newQty, String reason, int userId) {
+        String updateBatchSql = "UPDATE batches SET qty_on_hand = ? WHERE id = ?";
+        String insertAuditSql = "INSERT INTO stock_adjustments_audit (batch_id, old_qty, new_qty, reason, user_id) VALUES (?, ?, ?, ?, ?)";
+
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement pstmt = conn.prepareStatement(updateBatchSql)) {
+                pstmt.setInt(1, newQty);
+                pstmt.setInt(2, batchId);
+                pstmt.executeUpdate();
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(insertAuditSql)) {
+                pstmt.setInt(1, batchId);
+                pstmt.setInt(2, oldQty);
+                pstmt.setInt(3, newQty);
+                pstmt.setString(4, reason);
+                pstmt.setInt(5, userId);
+                pstmt.executeUpdate();
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            e.printStackTrace();
+        } finally {
+            try { if (conn != null) conn.setAutoCommit(true); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+    // --- EXACT MATCH DUPLICATE GUARD IMPLEMENTATION ---
+    @Override
+    public Batch getExactBatchMatch(int productId, String batchNo, String expiryDate, double costPrice, double tradePrice, double retailPrice) {
+        String sql = "SELECT b.*, p.name, p.generic_name, p.manufacturer, p.description, p.pack_size, p.min_stock_level, p.shelf_location " +
+                "FROM batches b JOIN products p ON b.product_id = p.id " +
+                "WHERE b.product_id = ? AND b.batch_no = ? AND b.expiry_date = ? " +
+                "AND b.cost_price = ? AND b.trade_price = ? AND b.retail_price = ? AND b.is_active = 1";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, productId);
+            pstmt.setString(2, batchNo);
+            pstmt.setString(3, expiryDate);
+            pstmt.setDouble(4, costPrice);
+            pstmt.setDouble(5, tradePrice);
+            pstmt.setDouble(6, retailPrice);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return mapResultSetToBatch(rs);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return null;
     }
 
     private Batch mapResultSetToBatch(ResultSet rs) throws SQLException {

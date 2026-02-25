@@ -46,14 +46,13 @@ public class Batch {
         return retailPrice * (product != null ? product.getPackSize() : 1);
     }
 
-    // --- GETTERS & SETTERS ---
+    // --- GETTERS ---
     public int getId() { return id; }
     public int getBatchId() { return id; }
     public int getProductId() { return productId; }
     public String getBatchNo() { return batchNo; }
     public String getExpiryDate() { return expiryDate; }
     public int getQtyOnHand() { return qtyOnHand; }
-    public void setQtyOnHand(int qtyOnHand) { this.qtyOnHand = qtyOnHand; }
     public double getCostPrice() { return costPrice; }
     public double getTradePrice() { return tradePrice; }
     public double getRetailPrice() { return retailPrice; }
@@ -61,5 +60,15 @@ public class Batch {
     public double getCompanyDiscount() { return companyDiscount; }
     public double getSalesTax() { return salesTax; }
     public Product getProduct() { return product; }
+
+    // --- SETTERS (Required for Duplicate Merge Logic) ---
+    public void setId(int id) { this.id = id; }
+    public void setQtyOnHand(int qtyOnHand) { this.qtyOnHand = qtyOnHand; }
+    public void setExpiryDate(String expiryDate) { this.expiryDate = expiryDate; }
+    public void setCostPrice(double costPrice) { this.costPrice = costPrice; }
+    public void setTradePrice(double tradePrice) { this.tradePrice = tradePrice; }
+    public void setRetailPrice(double retailPrice) { this.retailPrice = retailPrice; }
+    public void setCompanyDiscount(double companyDiscount) { this.companyDiscount = companyDiscount; }
+    public void setSalesTax(double salesTax) { this.salesTax = salesTax; }
     public void setProduct(Product product) { this.product = product; }
 }
