@@ -10,13 +10,16 @@ public class CustomerDAOImpl implements CustomerDAO {
 
     @Override
     public void addCustomer(Customer customer) {
-        String sql = "INSERT INTO customers (name, phone, address, type) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO customers (name, phone, address, type, current_balance, area_code, area_name) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, customer.getName());
             pstmt.setString(2, customer.getPhone());
             pstmt.setString(3, customer.getAddress());
             pstmt.setString(4, customer.getType());
+            pstmt.setDouble(5, customer.getCurrentBalance());
+            pstmt.setString(6, customer.getAreaCode());
+            pstmt.setString(7, customer.getAreaName());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -36,7 +39,10 @@ public class CustomerDAOImpl implements CustomerDAO {
                         rs.getString("name"),
                         rs.getString("phone"),
                         rs.getString("address"),
-                        rs.getString("type")
+                        rs.getString("type"),
+                        rs.getDouble("current_balance"),
+                        rs.getString("area_code"),
+                        rs.getString("area_name")
                 ));
             }
         } catch (SQLException e) {
@@ -45,7 +51,6 @@ public class CustomerDAOImpl implements CustomerDAO {
         return customers;
     }
 
-    // --- ADDED THIS METHOD TO FIX THE ERROR ---
     @Override
     public Customer getCustomerById(int id) {
         String sql = "SELECT * FROM customers WHERE id = ?";
@@ -59,7 +64,10 @@ public class CustomerDAOImpl implements CustomerDAO {
                             rs.getString("name"),
                             rs.getString("phone"),
                             rs.getString("address"),
-                            rs.getString("type")
+                            rs.getString("type"),
+                            rs.getDouble("current_balance"),
+                            rs.getString("area_code"),
+                            rs.getString("area_name")
                     );
                 }
             }

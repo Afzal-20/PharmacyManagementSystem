@@ -28,7 +28,6 @@ public class AddProductController {
             Product product = new Product(0, nameField.getText(), genericField.getText(),
                     manufacturerField.getText(), "", packSize, 10, "");
 
-            // 1. Save product and get ID
             int productId = productDAO.addProduct(product);
 
             if (productId == -1) {
@@ -36,7 +35,6 @@ public class AddProductController {
                 return;
             }
 
-            // 2. Logic for Wholesale vs Retail
             int totalUnits;
             double tradePrice = 0.0;
             double retailPrice = 0.0;
@@ -50,14 +48,12 @@ public class AddProductController {
                 tradePrice = Double.parseDouble(tradePriceField.getText());
             }
 
-            // 3. Save Batch
+            // FIXED: Added 0.0 for companyDiscount and 0.0 for salesTax at the end
             Batch batch = new Batch(0, productId, batchField.getText(), expiryField.getText(),
                     totalUnits, Double.parseDouble(costField.getText()),
-                    tradePrice, retailPrice, 0.0);
+                    tradePrice, retailPrice, 0.0, 0.0, 0.0);
 
             batchDAO.addBatch(batch);
-
-            // 4. Success! Close the window
             closeWindow();
 
         } catch (NumberFormatException e) {

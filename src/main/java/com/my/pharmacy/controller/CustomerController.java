@@ -63,13 +63,16 @@ public class CustomerController {
             return;
         }
 
+        // FIXED: Added 0.0 for balance and null for area details
         Customer newCustomer = new Customer(
                 0,
                 nameField.getText(),
                 phoneField.getText(),
                 addressField.getText(),
-                typeComboBox.getValue()
-                // Note: If your Customer model has more fields like CNIC, add them here
+                typeComboBox.getValue(),
+                0.0,  // currentBalance
+                null, // areaCode
+                null  // areaName
         );
 
         customerDAO.addCustomer(newCustomer);

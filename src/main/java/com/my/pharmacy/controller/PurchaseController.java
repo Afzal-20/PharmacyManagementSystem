@@ -3,7 +3,6 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.StringConverter;
@@ -12,7 +11,8 @@ public class PurchaseController {
 
     @FXML private ComboBox<Dealer> dealerComboBox;
     @FXML private ComboBox<Product> productComboBox;
-    @FXML private TextField batchNoField, expiryField, qtyField, costField, tradeField;
+    @FXML private TextField batchNoField, expiryField, qtyField, costField, tradeField, retailField;
+    @FXML private TextField compDiscField, taxField;
 
     private final DealerDAO dealerDAO = new DealerDAOImpl();
     private final ProductDAO productDAO = new ProductDAOImpl();
@@ -52,30 +52,25 @@ public class PurchaseController {
                 return;
             }
 
-            // Calculations
-            int boxes = Integer.parseInt(qtyField.getText());
-            int totalUnits = boxes * selectedProduct.getPackSize();
+            // Box-to-Unit Math
+            int packSize = selectedProduct.getPackSize();
+            int totalBoxes = Integer.parseInt(qtyField.getText());
+            int totalUnits = totalBoxes * packSize;
 
-            // Note: We store Unit Prices in the DB for easier POS math later
-            double unitCost = Double.parseDouble(costField.getText()) / selectedProduct.getPackSize();
-            double unitTrade = Double.parseDouble(tradeField.getText()) / selectedProduct.getPackSize();
-            double unitRetail = unitTrade * 1.15; // Default 15% margin for retail if not specified
+            double unitCost = Double.parseDouble(costField.getText()) / packSize;
+            double unitTrade = Double.parseDouble(tradeField.getText()) / packSize;
+            double unitRetail = Double.parseDouble(retailField.getText()) / packSize;
+            double compDisc = Double.parseDouble(compDiscField.getText());
+            double salesTax = Double.parseDouble(taxField.getText());
 
             Batch newBatch = new Batch(
-                    0,
-                    selectedProduct.getId(),
-                    batchNoField.getText(),
-                    expiryField.getText(),
-                    totalUnits,
-                    unitCost,
-                    unitTrade,
-                    unitRetail,
-                    0.0 // Discount percent
+                    0, selectedProduct.getId(), batchNoField.getText(), expiryField.getText(),
+                    totalUnits, unitCost, unitTrade, unitRetail, 0.0, compDisc, salesTax
             );
 
             batchDAO.addBatch(newBatch);
 
-            showAlert("Success", "Stock updated! Total Units added: " + totalUnits);
+            showAlert("Success", "Purchased " + totalBoxes + " boxes. Total Units added: " + totalUnits);
             clearFields();
 
         } catch (NumberFormatException e) {
@@ -89,11 +84,15 @@ public class PurchaseController {
         qtyField.clear();
         costField.clear();
         tradeField.clear();
+        retailField.clear();
+        compDiscField.setText("0.0");
+        taxField.setText("0.0");
     }
 
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
+        alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
     }

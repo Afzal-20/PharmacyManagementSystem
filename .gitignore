@@ -13,7 +13,8 @@ target/
 *.db
 *.sqlite
 pharmacy.db
-
+wholesale_pharmacy.db
+retail_pharmacy.db
 # --- OS Specific ---
 .DS_Store
 Thumbs.db

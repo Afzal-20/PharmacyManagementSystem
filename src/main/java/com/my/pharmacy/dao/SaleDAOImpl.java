@@ -13,27 +13,37 @@ public class SaleDAOImpl implements SaleDAO {
 
     @Override
     public void saveSale(Sale sale) {
-        String insertSaleSQL = "INSERT INTO sales (total_amount, payment_mode, customer_id, salesman_id) VALUES (?, ?, ?, ?)";
+        String insertSaleSQL = "INSERT INTO sales (total_amount, amount_paid, balance_due, payment_mode, customer_id, salesman_id) VALUES (?, ?, ?, ?, ?, ?)";
         String insertItemSQL = "INSERT INTO sale_items (sale_id, product_id, batch_id, quantity, unit_price, sub_total, bonus_qty, discount_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String updateCustomerSQL = "UPDATE customers SET current_balance = current_balance + ? WHERE id = ?";
 
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // Start Transaction for Safety
+            conn.setAutoCommit(false);
 
             // 1. Insert Sale Header
             try (PreparedStatement pstmt = conn.prepareStatement(insertSaleSQL, Statement.RETURN_GENERATED_KEYS)) {
                 pstmt.setDouble(1, sale.getTotalAmount());
-                pstmt.setString(2, sale.getPaymentMode());
-                pstmt.setInt(3, sale.getCustomerId());
-                pstmt.setInt(4, sale.getSalesmanId());
+                pstmt.setDouble(2, sale.getAmountPaid());
+                pstmt.setDouble(3, sale.getBalanceDue());
+                pstmt.setString(4, sale.getPaymentMode());
+                pstmt.setInt(5, sale.getCustomerId());
+                pstmt.setInt(6, sale.getSalesmanId());
                 pstmt.executeUpdate();
 
                 ResultSet rs = pstmt.getGeneratedKeys();
                 int saleId = 0;
                 if (rs.next()) saleId = rs.getInt(1);
 
-                // 2. Insert Items & Update Inventory
+                // 2. Update Customer Khata Balance
+                try (PreparedStatement custStmt = conn.prepareStatement(updateCustomerSQL)) {
+                    custStmt.setDouble(1, sale.getBalanceDue());
+                    custStmt.setInt(2, sale.getCustomerId());
+                    custStmt.executeUpdate();
+                }
+
+                // 3. Insert Items & Update Inventory
                 try (PreparedStatement itemStmt = conn.prepareStatement(insertItemSQL)) {
                     for (SaleItem item : sale.getItems()) {
                         itemStmt.setInt(1, saleId);
@@ -46,20 +56,19 @@ public class SaleDAOImpl implements SaleDAO {
                         itemStmt.setDouble(8, item.getDiscountPercent());
                         itemStmt.addBatch();
 
-                        // Update Stock (Hybrid: Deducts individual units)
                         batchDAO.reduceStock(conn, item.getBatchId(), item.getQuantity() + item.getBonusQty());
                     }
                     itemStmt.executeBatch();
                 }
             }
-            conn.commit(); // Save all changes
-            System.out.println("✅ Sale and stock levels updated successfully.");
+            conn.commit();
+            System.out.println("✅ Sale, Khata, and stock levels updated successfully.");
 
         } catch (SQLException e) {
             try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
             e.printStackTrace();
         } finally {
-            try { if (conn != null) conn.setAutoCommit(true); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 
@@ -73,7 +82,8 @@ public class SaleDAOImpl implements SaleDAO {
             while (rs.next()) {
                 sales.add(new Sale(rs.getInt("id"), rs.getTimestamp("sale_date"),
                         rs.getDouble("total_amount"), rs.getString("payment_mode"),
-                        rs.getInt("customer_id"), rs.getInt("salesman_id")));
+                        rs.getInt("customer_id"), rs.getInt("salesman_id"),
+                        rs.getDouble("amount_paid"), rs.getDouble("balance_due")));
             }
         } catch (SQLException e) { e.printStackTrace(); }
         return sales;
@@ -89,7 +99,8 @@ public class SaleDAOImpl implements SaleDAO {
                 if (rs.next()) {
                     return new Sale(rs.getInt("id"), rs.getTimestamp("sale_date"),
                             rs.getDouble("total_amount"), rs.getString("payment_mode"),
-                            rs.getInt("customer_id"), rs.getInt("salesman_id"));
+                            rs.getInt("customer_id"), rs.getInt("salesman_id"),
+                            rs.getDouble("amount_paid"), rs.getDouble("balance_due"));
                 }
             }
         } catch (SQLException e) { e.printStackTrace(); }

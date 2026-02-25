@@ -20,10 +20,11 @@ public class AddCustomerController {
     private void handleSave() {
         if (nameField.getText().isEmpty()) return;
 
-        Customer customer = new Customer(0,nameField.getText(),phoneField.getText(),addressField.getText(),"WHOLESALE");
+        // FIXED: Added 0.0 (balance) and null (area code/name)
+        Customer customer = new Customer(0, nameField.getText(), phoneField.getText(),
+                addressField.getText(), "WHOLESALE", 0.0, null, null);
         customerDAO.addCustomer(customer);
 
-        // Fetch back the newly created customer (Simplified for shortcut)
         this.savedCustomer = customerDAO.getAllCustomers().stream()
                 .filter(c -> c.getName().equals(customer.getName()))
                 .findFirst().orElse(null);
