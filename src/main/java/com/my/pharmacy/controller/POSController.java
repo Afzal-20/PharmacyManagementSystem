@@ -34,6 +34,9 @@ public class POSController {
     @FXML private TableColumn<SaleItem, Double> colCartPrice, colCartTotal;
 
     @FXML private Label totalLabel;
+    @FXML private TextField amountPaidField;
+    @FXML private Label balanceDueLabel;
+
     @FXML private HBox customerSection;
     @FXML private ComboBox<Customer> customerComboBox;
 
@@ -47,6 +50,9 @@ public class POSController {
 
     private String currentMode;
 
+    // Default Walk-in Customer (ID 1 is standard for Counter Sales)
+    private final Customer WALK_IN_CUSTOMER = new Customer(1, "Counter Sale (Walk-in)", "", "", "RETAIL", 0.0, "", "");
+
     @FXML
     public void initialize() {
         this.currentMode = ConfigUtil.getAppMode();
@@ -54,6 +60,7 @@ public class POSController {
         loadStockData();
         setupSearchFilter();
         setupCustomerSelector();
+        setupPaymentListeners();
     }
 
     private void setupTableColumns() {
@@ -81,27 +88,34 @@ public class POSController {
     }
 
     private void setupCustomerSelector() {
-        if ("RETAIL".equals(currentMode)) {
-            customerSection.setVisible(false);
-            customerSection.setManaged(false);
-            return; // Exit early for retail
+        customerList.clear();
+
+        // Always add Walk-in as the first option
+        customerList.add(WALK_IN_CUSTOMER);
+
+        if ("WHOLESALE".equals(currentMode)) {
+            List<Customer> wholesaleClients = customerDAO.getAllCustomers().stream()
+                    .filter(c -> "WHOLESALE".equals(c.getType()))
+                    .toList();
+            customerList.addAll(wholesaleClients);
         }
 
-        // Filter to only show wholesale clients (customers who buy from you)
-        List<Customer> all = customerDAO.getAllCustomers();
-        List<Customer> wholesaleClients = all.stream()
-                .filter(c -> "WHOLESALE".equals(c.getType()))
-                .toList();
-
-        customerList.setAll(wholesaleClients);
         customerComboBox.setItems(customerList);
-
         customerComboBox.setConverter(new StringConverter<>() {
-            @Override public String toString(Customer c) { return c == null ? "" : c.getName() + " (" + c.getPhone() + ")"; }
+            @Override public String toString(Customer c) {
+                if (c == null) return "";
+                if (c.getId() == 1) return c.getName();
+                return c.getName() + " (Khata: " + c.getCurrentBalance() + ")";
+            }
             @Override public Customer fromString(String s) { return null; }
         });
 
-        if (!customerList.isEmpty()) customerComboBox.getSelectionModel().select(0);
+        customerComboBox.getSelectionModel().selectFirst();
+    }
+
+    private void setupPaymentListeners() {
+        amountPaidField.textProperty().addListener((obs, oldVal, newVal) -> calculateBalanceDue());
+        customerComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> calculateBalanceDue());
     }
 
     @FXML
@@ -151,7 +165,7 @@ public class POSController {
             if (controller.isConfirmed()) {
                 SaleItem item = controller.getCreatedItem();
                 if ((item.getQuantity() + item.getBonusQty()) > selected.getQtyOnHand()) {
-                    showAlert("Stock Error", "Insufficient stock including bonus units.");
+                    showAlert(Alert.AlertType.ERROR, "Stock Error", "Insufficient stock including bonus units.");
                     return;
                 }
                 cartData.add(item);
@@ -169,42 +183,100 @@ public class POSController {
             try {
                 int qty = Integer.parseInt(input);
                 if (qty > selected.getQtyOnHand()) {
-                    showAlert("Stock Error", "Insufficient stock.");
+                    showAlert(Alert.AlertType.ERROR, "Stock Error", "Insufficient stock.");
                     return;
                 }
                 SaleItem item = new SaleItem(selected.getProductId(), selected.getBatchId(), qty, selected.getRetailPrice(), 0, 0.0);
                 item.setProductName(selected.getProduct().getName());
                 cartData.add(item);
                 updateTotal();
-            } catch (NumberFormatException e) { showAlert("Error", "Invalid quantity."); }
+            } catch (NumberFormatException e) { showAlert(Alert.AlertType.ERROR, "Error", "Invalid quantity."); }
         });
     }
+
+    private void updateTotal() {
+        double total = calculateCartTotal();
+        totalLabel.setText(String.format("Total: %.2f", total));
+        amountPaidField.setText(String.format("%.2f", total));
+        calculateBalanceDue();
+    }
+
+    private void calculateBalanceDue() {
+        try {
+            double total = calculateCartTotal();
+            String paidText = amountPaidField.getText().trim();
+            double paid = paidText.isEmpty() ? 0.0 : Double.parseDouble(paidText);
+
+            Customer c = customerComboBox.getValue();
+            boolean isRetail = (c == null || "RETAIL".equals(c.getType()));
+
+            if (isRetail) {
+                if (paid >= total) {
+                    balanceDueLabel.setText(String.format("Change Due: %.2f", paid - total));
+                } else {
+                    balanceDueLabel.setText(String.format("Short Amount: %.2f", total - paid));
+                }
+            } else { // Wholesale
+                double balance = total - paid;
+                if (balance > 0) {
+                    balanceDueLabel.setText(String.format("Add to Khata: %.2f", balance));
+                } else if (balance < 0) {
+                    balanceDueLabel.setText(String.format("Advance Payment: %.2f", Math.abs(balance)));
+                } else {
+                    balanceDueLabel.setText("Fully Paid");
+                }
+            }
+        } catch (NumberFormatException e) {
+            balanceDueLabel.setText("Invalid Amount");
+        }
+    }
+
+    private double calculateCartTotal() { return cartData.stream().mapToDouble(SaleItem::getSubTotal).sum(); }
 
     @FXML
     private void handleCheckout() {
         if (cartData.isEmpty()) return;
-        Customer c = customerComboBox.getSelectionModel().getSelectedItem();
+
+        Customer c = customerComboBox.getValue();
+        boolean isRetail = (c == null || "RETAIL".equals(c.getType()));
         int customerId = (c != null) ? c.getId() : 1;
 
-        Sale sale = new Sale();
-        sale.setTotalAmount(calculateCartTotal());
-        sale.setPaymentMode("CASH");
-        sale.setCustomerId(customerId);
-        sale.setSalesmanId(1);
-        sale.setSaleDate(new Timestamp(System.currentTimeMillis()));
-        sale.setItems(cartData);
+        try {
+            double total = calculateCartTotal();
+            double paid = Double.parseDouble(amountPaidField.getText());
 
-        saleDAO.saveSale(sale);
-        showAlert("Success", "Sale Completed!");
-        cartData.clear();
-        loadStockData();
-        updateTotal();
+            // Strict Retail Validation
+            if (isRetail && paid < total) {
+                showAlert(Alert.AlertType.WARNING, "Payment Error", "Retail/Walk-in customers must pay the full amount.");
+                return;
+            }
+
+            // DB Logic: Retail leaves no Khata trace, Wholesale calculates difference
+            double dbBalanceDue = isRetail ? 0.0 : (total - paid);
+            double dbAmountPaid = isRetail ? total : paid;
+
+            Sale sale = new Sale(0, new Timestamp(System.currentTimeMillis()), total, "CASH",
+                    customerId, 1, dbAmountPaid, dbBalanceDue);
+
+            sale.setItems(cartData);
+            saleDAO.saveSale(sale);
+
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Sale Completed! Stock and Ledger updated.");
+
+            cartData.clear();
+            loadStockData();
+            updateTotal();
+
+            if ("WHOLESALE".equals(currentMode)) {
+                setupCustomerSelector();
+            }
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Input Error", "Please verify the Amount Paid is a valid number.");
+        }
     }
 
-    private void updateTotal() { totalLabel.setText(String.format("Total: %.2f", calculateCartTotal())); }
-    private double calculateCartTotal() { return cartData.stream().mapToDouble(SaleItem::getSubTotal).sum(); }
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
@@ -217,15 +289,10 @@ public class POSController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AddCustomerDialog.fxml"));
             Stage stage = new Stage();
             stage.setScene(new Scene(loader.load()));
-            stage.setTitle("Register New Dealer");
+            stage.setTitle("Register New Client");
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
-
-            AddCustomerController controller = loader.getController();
-            if (controller.getSavedCustomer() != null) {
-                customerList.setAll(customerDAO.getAllCustomers());
-                customerComboBox.getSelectionModel().select(controller.getSavedCustomer());
-            }
+            setupCustomerSelector();
         } catch (IOException e) { e.printStackTrace(); }
     }
 }

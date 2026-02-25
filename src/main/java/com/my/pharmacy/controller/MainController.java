@@ -56,6 +56,15 @@ public class MainController {
         // Manages Suppliers/Distributors
         loadView("/fxml/DealerManagement.fxml");
     }
+    @FXML
+    private void showItemLedger() {
+        loadView("/fxml/ItemLedger.fxml");
+    }
+
+    @FXML
+    private void showKhata() {
+        loadView("/fxml/KhataManagement.fxml");
+    }
 
     // --- Helper Methods ---
 

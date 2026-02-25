@@ -32,6 +32,8 @@
 
             <Button text="👥  Customers" maxWidth="Infinity" styleClass="nav-button" onAction="#showCustomers"/>
             <Button text="🏢  Dealers" maxWidth="Infinity" styleClass="nav-button" onAction="#showDealers"/>
+            <Button text="🔍  Item Ledger" maxWidth="Infinity" styleClass="nav-button" onAction="#showItemLedger"/>
+            <Button text="📘  Khata Ledgers" maxWidth="Infinity" styleClass="nav-button" onAction="#showKhata"/>
             <Button text="📜  Sales History" maxWidth="Infinity" styleClass="nav-button" onAction="#showHistory"/>
 
             <VBox VBox.vgrow="ALWAYS" />

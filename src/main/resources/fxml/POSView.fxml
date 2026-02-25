@@ -22,7 +22,7 @@
             </HBox>
 
             <HBox fx:id="customerSection" spacing="10" alignment="CENTER_LEFT">
-                <Label text="SELECT CUSTOMER:" textFill="WHITE">
+                <Label text="SELECT CUSTOMER / KHATA:" textFill="WHITE">
                     <font><Font name="System Bold" size="14.0"/></font>
                 </Label>
                 <ComboBox fx:id="customerComboBox" prefWidth="300.0" promptText="Select Dealer/Client"
@@ -65,13 +65,22 @@
                 </TableView>
 
                 <HBox spacing="20" alignment="CENTER_RIGHT" style="-fx-padding: 15; -fx-background-color: white; -fx-border-color: #bdc3c7;">
-                    <Label fx:id="totalLabel" text="Total: 0.00" textFill="#c0392b">
-                        <font><Font name="System Bold" size="28.0"/></font>
-                    </Label>
+                    <VBox alignment="CENTER_RIGHT" spacing="5">
+                        <Label fx:id="totalLabel" text="Total: 0.00" textFill="#c0392b">
+                            <font><Font name="System Bold" size="28.0"/></font>
+                        </Label>
+                        <HBox spacing="10" alignment="CENTER_RIGHT">
+                            <Label text="Amount Paid:" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+                            <TextField fx:id="amountPaidField" text="0.0" prefWidth="120" style="-fx-font-size: 16;"/>
+                        </HBox>
+                        <Label fx:id="balanceDueLabel" text="Balance Due (Khata): 0.00" textFill="#e67e22">
+                            <font><Font name="System Bold" size="14.0"/></font>
+                        </Label>
+                    </VBox>
                 </HBox>
 
-                <Button text="COMPLETE SALE" onAction="#handleCheckout" maxWidth="Infinity"
-                        style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 18; -fx-padding: 15; -fx-font-weight: bold;"/>
+                <Button text="COMPLETE SALE &amp; POST TO LEDGER" onAction="#handleCheckout" maxWidth="Infinity"
+                        style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 15; -fx-font-weight: bold;"/>
             </VBox>
         </SplitPane>
     </center>

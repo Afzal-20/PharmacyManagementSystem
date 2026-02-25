@@ -3,6 +3,7 @@ package com.my.pharmacy.dao;
 import com.my.pharmacy.config.DatabaseConnection;
 import com.my.pharmacy.model.Sale;
 import com.my.pharmacy.model.SaleItem;
+import com.my.pharmacy.model.SaleLedgerRecord;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,5 +106,28 @@ public class SaleDAOImpl implements SaleDAO {
             }
         } catch (SQLException e) { e.printStackTrace(); }
         return null;
+    }
+    @Override
+    public List<SaleLedgerRecord> getSalesHistoryByProductId(int productId) {
+        List<SaleLedgerRecord> history = new ArrayList<>();
+        String sql = "SELECT s.id, s.sale_date, si.quantity, si.unit_price, si.sub_total " +
+                "FROM sale_items si JOIN sales s ON si.sale_id = s.id " +
+                "WHERE si.product_id = ? ORDER BY s.sale_date DESC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, productId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    history.add(new SaleLedgerRecord(
+                            rs.getInt("id"),
+                            rs.getTimestamp("sale_date"),
+                            rs.getInt("quantity"),
+                            rs.getDouble("unit_price"),
+                            rs.getDouble("sub_total")
+                    ));
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return history;
     }
 }

@@ -80,6 +80,16 @@ public class DatabaseSetup {
                     "bonus_qty INTEGER DEFAULT 0, " +
                     "discount_percent REAL DEFAULT 0.0)");
 
+            // --- NEW: Payments Table for Khata Management ---
+            stmt.execute("CREATE TABLE IF NOT EXISTS payments (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "entity_id INTEGER, " +
+                    "entity_type TEXT, " + // 'CUSTOMER' or 'DEALER'
+                    "payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "amount REAL, " +
+                    "payment_mode TEXT, " +
+                    "description TEXT)");
+
             // --- NEW: Audit Table for Stock Adjustments ---
             stmt.execute("CREATE TABLE IF NOT EXISTS stock_adjustments_audit (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
