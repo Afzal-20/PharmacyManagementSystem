@@ -24,31 +24,26 @@ public class AddToCartWholesaleController {
     @FXML
     private void handleSave() {
         try {
-            // Validation
             if (qtyField.getText().isEmpty()) return;
 
+            // Box-Centric values directly from UI
             int boxes = Integer.parseInt(qtyField.getText());
-            int bonusUnits = bonusField.getText().isEmpty() ? 0 : Integer.parseInt(bonusField.getText());
-            double discPercent = discountField.getText().isEmpty() ? 0 : Double.parseDouble(discountField.getText());
+            int bonusBoxes = bonusField.getText().isEmpty() ? 0 : Integer.parseInt(bonusField.getText());
+            double discPercent = discountField.getText().isEmpty() ? 0.0 : Double.parseDouble(discountField.getText());
 
-            // Unit Conversions
-            int packSize = selectedBatch.getProduct().getPackSize();
-            int totalUnits = boxes * packSize;
-            double unitPrice = selectedBatch.getTradePrice() / packSize;
+            double unitPrice = selectedBatch.getTradePrice(); // Strict Box Rate
 
-            // Check Stock Availability
-            if (totalUnits > selectedBatch.getQtyOnHand()) {
+            if ((boxes + bonusBoxes) > selectedBatch.getQtyOnHand()) {
                 System.err.println("Insufficient Stock!");
                 return;
             }
 
-            // Create SaleItem with the specific Batch ID for the DAO
             createdItem = new SaleItem(
                     selectedBatch.getProductId(),
-                    selectedBatch.getId(), // Crucial for stock deduction
-                    totalUnits,
+                    selectedBatch.getId(),
+                    boxes,
                     unitPrice,
-                    bonusUnits,
+                    bonusBoxes,
                     discPercent
             );
             createdItem.setProductName(selectedBatch.getProduct().getName());

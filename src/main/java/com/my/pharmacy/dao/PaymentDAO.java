@@ -7,4 +7,5 @@ import java.util.List;
 public interface PaymentDAO {
     void recordPayment(Payment payment);
     List<LedgerRecord> getCustomerLedger(int customerId);
+    List<LedgerRecord> getDealerLedger(int dealerId);
 }

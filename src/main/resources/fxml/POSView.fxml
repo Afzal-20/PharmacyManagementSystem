@@ -59,6 +59,7 @@
                         <TableColumn fx:id="colCartName" text="Item" prefWidth="150"/>
                         <TableColumn fx:id="colCartQty" text="Qty" prefWidth="50"/>
                         <TableColumn fx:id="colCartPrice" text="Rate" prefWidth="80"/>
+                        <TableColumn fx:id="colCartDisc" text="Disc(Rs)" prefWidth="80"/>
                         <TableColumn fx:id="colCartTotal" text="Total" prefWidth="80"/>
                     </columns>
                     <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>

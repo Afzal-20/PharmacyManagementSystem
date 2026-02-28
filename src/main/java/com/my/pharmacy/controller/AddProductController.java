@@ -11,15 +11,13 @@ public class AddProductController {
     @FXML private TextField nameField, genericField, manufacturerField, packSizeField;
     @FXML private TextField batchField, expiryField, costField;
 
-    // Mode-specific fields
-    @FXML private TextField qtyBoxesField;   // Wholesale only
-    @FXML private TextField tradePriceField; // Wholesale only
-    @FXML private TextField qtyUnitsField;   // Retail only
-    @FXML private TextField retailPriceField;// Retail only
+    @FXML private TextField qtyBoxesField;
+    @FXML private TextField tradePriceField;
+    @FXML private TextField qtyUnitsField;
+    @FXML private TextField retailPriceField;
 
     private ProductDAO productDAO = new ProductDAOImpl();
     private BatchDAO batchDAO = new BatchDAOImpl();
-
 
     @FXML
     private void handleSave() {
@@ -35,22 +33,22 @@ public class AddProductController {
                 return;
             }
 
-            int totalUnits;
+            int totalBoxes;
             double tradePrice = 0.0;
             double retailPrice = 0.0;
 
-            if (qtyUnitsField != null) { // Retail
-                totalUnits = Integer.parseInt(qtyUnitsField.getText());
+            // PURE BOX-CENTRIC LOGIC
+            if (qtyUnitsField != null) {
+                // Note: Even if the UI says 'qtyUnits', we are treating it as Boxes now
+                totalBoxes = Integer.parseInt(qtyUnitsField.getText());
                 retailPrice = Double.parseDouble(retailPriceField.getText());
-            } else { // Wholesale
-                int boxes = Integer.parseInt(qtyBoxesField.getText());
-                totalUnits = boxes * packSize;
+            } else {
+                totalBoxes = Integer.parseInt(qtyBoxesField.getText());
                 tradePrice = Double.parseDouble(tradePriceField.getText());
             }
 
-            // FIXED: Added 0.0 for companyDiscount and 0.0 for salesTax at the end
             Batch batch = new Batch(0, productId, batchField.getText(), expiryField.getText(),
-                    totalUnits, Double.parseDouble(costField.getText()),
+                    totalBoxes, Double.parseDouble(costField.getText()),
                     tradePrice, retailPrice, 0.0, 0.0, 0.0);
 
             batchDAO.addBatch(batch);

@@ -18,6 +18,7 @@ public class PurchaseController {
     private final DealerDAO dealerDAO = new DealerDAOImpl();
     private final ProductDAO productDAO = new ProductDAOImpl();
     private final BatchDAO batchDAO = new BatchDAOImpl();
+    private final PaymentDAO paymentDAO = new PaymentDAOImpl();
 
     @FXML
     public void initialize() {
@@ -56,19 +57,25 @@ public class PurchaseController {
             String batchNo = batchNoField.getText();
             String expiry = expiryField.getText();
 
-            // Box-to-Unit Math
-            int packSize = selectedProduct.getPackSize();
+            // PURE BOX-CENTRIC MATH
             int totalBoxes = Integer.parseInt(qtyField.getText());
-            int totalUnits = totalBoxes * packSize;
+            double boxCost = Double.parseDouble(costField.getText());
+            double boxTrade = Double.parseDouble(tradeField.getText());
+            double boxRetail = Double.parseDouble(retailField.getText());
 
-            double unitCost = Double.parseDouble(costField.getText()) / packSize;
-            double unitTrade = Double.parseDouble(tradeField.getText()) / packSize;
-            double unitRetail = Double.parseDouble(retailField.getText()) / packSize;
             double compDisc = Double.parseDouble(compDiscField.getText());
             double salesTax = Double.parseDouble(taxField.getText());
 
-            // --- STRICT DUPLICATE BATCH GUARD ---
-            Batch existingBatch = batchDAO.getExactBatchMatch(selectedProduct.getId(), batchNo, expiry, unitCost, unitTrade, unitRetail);
+            // --- DEALER KHATA MATH ---
+            // Calculate the exact net cost of one box, then multiply by total boxes purchased
+            double netBoxCost = com.my.pharmacy.util.CalculationEngine.calculateNetPurchaseCost(boxCost, compDisc, salesTax);
+            double totalPayableToDealer = netBoxCost * totalBoxes;
+
+            // Log the purchase to the Dealer's Khata Ledger
+            Payment purchaseLedgerEntry = new Payment(0, selectedDealer.getId(), "DEALER", totalPayableToDealer, "PURCHASE",
+                    "Purchased " + totalBoxes + " boxes of " + selectedProduct.getName(), new java.sql.Timestamp(System.currentTimeMillis()));
+
+            Batch existingBatch = batchDAO.getExactBatchMatch(selectedProduct.getId(), batchNo, expiry, boxCost, boxTrade, boxRetail);
 
             if (existingBatch != null) {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -78,29 +85,24 @@ public class PurchaseController {
 
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.isPresent() && result.get() == ButtonType.OK) {
-
-                    // Since all prices and dates match exactly, we only need to update the quantity
-                    existingBatch.setQtyOnHand(existingBatch.getQtyOnHand() + totalUnits);
-
-                    // Ensure the latest tax and discounts are applied
+                    existingBatch.setQtyOnHand(existingBatch.getQtyOnHand() + totalBoxes);
                     existingBatch.setCompanyDiscount(compDisc);
                     existingBatch.setSalesTax(salesTax);
 
                     batchDAO.updateBatch(existingBatch);
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Stock merged perfectly. Total Units added: " + totalUnits);
+                    paymentDAO.recordPayment(purchaseLedgerEntry); // Updates Khata & History
+
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Stock merged perfectly. Dealer account updated by Rs. " + String.format("%.2f", totalPayableToDealer));
                     clearFields();
                 }
-                return; // Stop execution whether they clicked OK or Cancel
+                return;
             }
 
-            // Create new Batch if no exact duplicate exists (e.g. price change or new expiry)
-            Batch newBatch = new Batch(
-                    0, selectedProduct.getId(), batchNo, expiry,
-                    totalUnits, unitCost, unitTrade, unitRetail, 0.0, compDisc, salesTax
-            );
-
+            Batch newBatch = new Batch(0, selectedProduct.getId(), batchNo, expiry, totalBoxes, boxCost, boxTrade, boxRetail, 0.0, compDisc, salesTax);
             batchDAO.addBatch(newBatch);
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Purchased " + totalBoxes + " boxes. New batch created for distinct pricing/expiry.");
+            paymentDAO.recordPayment(purchaseLedgerEntry); // Updates Khata & History
+
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Purchased " + totalBoxes + " boxes. Dealer account updated by Rs. " + String.format("%.2f", totalPayableToDealer));
             clearFields();
 
         } catch (NumberFormatException e) {

@@ -112,6 +112,11 @@ public class DatabaseSetup {
             addColumnIfMissing(stmt, "sales", "amount_paid", "REAL DEFAULT 0.0");
             addColumnIfMissing(stmt, "sales", "balance_due", "REAL DEFAULT 0.0");
 
+            // Ensures ID 1 is ALWAYS the Walk-in customer, so real clients start at ID 2
+            stmt.execute("INSERT OR IGNORE INTO customers (id, name, phone, address, type, current_balance, cnic) " +
+                    "VALUES (1, 'Counter Sale (Walk-in)', '', '', 'REGULAR', 0.0, '')");
+            // -------------------------------
+
             System.out.println("✅ Database structure optimized for Khata and audit logging.");
 
         } catch (Exception e) {

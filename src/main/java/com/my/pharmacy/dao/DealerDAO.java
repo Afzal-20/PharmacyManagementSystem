@@ -9,4 +9,5 @@ public interface DealerDAO {
     Dealer getDealerById(int id);
     void updateDealer(Dealer dealer);
     void deleteDealer(int id);
+    void addBalance(int dealerId, double amount);
 }

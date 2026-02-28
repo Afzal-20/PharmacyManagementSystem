@@ -23,7 +23,8 @@ public class StockAdjustmentController {
         this.selectedBatch = batch;
         lblMedicineName.setText(batch.getProduct().getName());
         lblBatchNo.setText(batch.getBatchNo());
-        lblCurrentBoxes.setText(String.valueOf(batch.getBoxCount()));
+        // In the box-centric architecture, qtyOnHand IS the box count
+        lblCurrentBoxes.setText(String.valueOf(batch.getQtyOnHand()));
     }
 
     @FXML
@@ -31,11 +32,8 @@ public class StockAdjustmentController {
         try {
             int newBoxes = Integer.parseInt(newBoxesField.getText());
 
-            // Box-to-Unit Math
-            int packSize = selectedBatch.getProduct().getPackSize();
-            int newTotalUnits = newBoxes * packSize;
-
-            selectedBatch.setQtyOnHand(newTotalUnits);
+            // Directly update the stock with the box count. No packSize math.
+            selectedBatch.setQtyOnHand(newBoxes);
             batchDAO.updateBatch(selectedBatch);
 
             closeWindow();

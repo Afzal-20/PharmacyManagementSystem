@@ -2,6 +2,7 @@ package com.my.pharmacy.controller;
 
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
+import com.my.pharmacy.util.CalculationEngine;
 import com.my.pharmacy.util.ConfigUtil;
 import com.my.pharmacy.util.InvoiceGenerator;
 import javafx.collections.FXCollections;
@@ -21,10 +22,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
-
-
 public class POSController {
-
 
     @FXML private TextField searchField;
     @FXML private TableView<Batch> productTable;
@@ -35,7 +33,7 @@ public class POSController {
     @FXML private TableView<SaleItem> cartTable;
     @FXML private TableColumn<SaleItem, String> colCartName;
     @FXML private TableColumn<SaleItem, Integer> colCartQty;
-    @FXML private TableColumn<SaleItem, Double> colCartPrice, colCartTotal;
+    @FXML private TableColumn<SaleItem, Double> colCartPrice, colCartDisc, colCartTotal;
 
     @FXML private Label totalLabel;
     @FXML private TextField amountPaidField;
@@ -53,8 +51,6 @@ public class POSController {
     private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
 
     private String currentMode;
-
-    // Default Walk-in Customer (ID 1 is standard for Counter Sales)
     private final Customer WALK_IN_CUSTOMER = new Customer(1, "Counter Sale (Walk-in)", "", "", "REGULAR", 0.0, "", "", "");
 
     @FXML
@@ -85,6 +81,7 @@ public class POSController {
         colCartName.setCellValueFactory(new PropertyValueFactory<>("productName"));
         colCartQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colCartPrice.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
+        colCartDisc.setCellValueFactory(new PropertyValueFactory<>("discountAmount")); // New Column Mapping
         colCartTotal.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
 
         productTable.setItems(masterData);
@@ -93,13 +90,10 @@ public class POSController {
 
     private void setupCustomerSelector() {
         customerList.clear();
-
-        // Always add Walk-in as the first default option (ID 1)
         customerList.add(WALK_IN_CUSTOMER);
 
-        // Load ALL registered customers (assuming Walk-in is handled in-memory or is ID 1 in DB)
         List<Customer> allClients = customerDAO.getAllCustomers().stream()
-                .filter(c -> c.getId() != 1) // Prevent duplicate if Walk-in exists in DB
+                .filter(c -> c.getId() != 1)
                 .toList();
         customerList.addAll(allClients);
 
@@ -107,9 +101,7 @@ public class POSController {
         customerComboBox.setConverter(new StringConverter<>() {
             @Override public String toString(Customer c) {
                 if (c == null) return "";
-                if (c.getId() == 1) return c.getName(); // Clean name for Walk-in
-
-                // All registered customers show their Khata balance
+                if (c.getId() == 1) return c.getName();
                 return c.getName() + " (Khata: " + c.getCurrentBalance() + ")";
             }
             @Override public Customer fromString(String s) { return null; }
@@ -169,10 +161,6 @@ public class POSController {
 
             if (controller.isConfirmed()) {
                 SaleItem item = controller.getCreatedItem();
-                if ((item.getQuantity() + item.getBonusQty()) > selected.getQtyOnHand()) {
-                    showAlert(Alert.AlertType.ERROR, "Stock Error", "Insufficient stock including bonus units.");
-                    return;
-                }
                 cartData.add(item);
                 updateTotal();
             }
@@ -183,7 +171,7 @@ public class POSController {
         TextInputDialog dialog = new TextInputDialog("1");
         dialog.setTitle("Retail Entry");
         dialog.setHeaderText(selected.getProduct().getName());
-        dialog.setContentText("Enter Units:");
+        dialog.setContentText("Enter Boxes:");
         dialog.showAndWait().ifPresent(input -> {
             try {
                 int qty = Integer.parseInt(input);
@@ -206,6 +194,11 @@ public class POSController {
         calculateBalanceDue();
     }
 
+    // Routed through Calculation Engine
+    private double calculateCartTotal() {
+        return CalculationEngine.calculateGrandTotal(cartData.stream().map(SaleItem::getSubTotal).toList());
+    }
+
     private void calculateBalanceDue() {
         try {
             double total = calculateCartTotal();
@@ -213,18 +206,16 @@ public class POSController {
             double paid = paidText.isEmpty() ? 0.0 : Double.parseDouble(paidText);
 
             Customer c = customerComboBox.getValue();
-            // If it's the Walk-in customer (ID 1), enforce Cash Only logic
             boolean isWalkIn = (c == null || c.getId() == 1);
 
             if (isWalkIn) {
                 if (paid >= total) {
-                    balanceDueLabel.setText(String.format("Change Due: %.2f", paid - total));
+                    balanceDueLabel.setText(String.format("Change Due: %.2f", CalculationEngine.calculateChangeDue(total, paid)));
                 } else {
-                    balanceDueLabel.setText(String.format("Short Amount: %.2f", total - paid));
+                    balanceDueLabel.setText(String.format("Short Amount: %.2f", CalculationEngine.calculateBalanceDue(total, paid)));
                 }
             } else {
-                // All registered customers get Khata logic
-                double balance = total - paid;
+                double balance = CalculationEngine.calculateBalanceDue(total, paid);
                 if (balance > 0) {
                     balanceDueLabel.setText(String.format("Add to Khata: %.2f", balance));
                 } else if (balance < 0) {
@@ -238,8 +229,6 @@ public class POSController {
         }
     }
 
-    private double calculateCartTotal() { return cartData.stream().mapToDouble(SaleItem::getSubTotal).sum(); }
-
     @FXML
     private void handleCheckout() {
         if (cartData.isEmpty()) return;
@@ -252,14 +241,12 @@ public class POSController {
             double total = calculateCartTotal();
             double paid = Double.parseDouble(amountPaidField.getText());
 
-            // Strict Walk-in Validation
             if (isWalkIn && paid < total) {
                 showAlert(Alert.AlertType.WARNING, "Payment Error", "Walk-in customers must pay the full amount.");
                 return;
             }
 
-            // DB Logic: Walk-in leaves no Khata trace, Registered calculates difference
-            double dbBalanceDue = isWalkIn ? 0.0 : (total - paid);
+            double dbBalanceDue = isWalkIn ? 0.0 : CalculationEngine.calculateBalanceDue(total, paid);
             double dbAmountPaid = isWalkIn ? total : paid;
 
             Sale sale = new Sale(0, new Timestamp(System.currentTimeMillis()), total, "CASH",
@@ -267,7 +254,7 @@ public class POSController {
 
             sale.setItems(cartData);
             saleDAO.saveSale(sale);
-            // Generate PDF Receipt
+
             String desktopPath = System.getProperty("user.home") + "/Desktop/Invoice_" + sale.getId() + ".pdf";
             InvoiceGenerator.generateThermalReceipt(sale, c, desktopPath);
             showAlert(Alert.AlertType.INFORMATION, "Success", "Sale Completed! Stock and Ledger updated.");
@@ -275,7 +262,7 @@ public class POSController {
             cartData.clear();
             loadStockData();
             updateTotal();
-            setupCustomerSelector(); // Refresh to update balances
+            setupCustomerSelector();
 
         } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Input Error", "Please verify the Amount Paid is a valid number.");

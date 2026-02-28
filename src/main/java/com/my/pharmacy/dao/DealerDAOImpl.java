@@ -56,6 +56,18 @@ public class DealerDAOImpl implements DealerDAO {
         } catch (SQLException e) { e.printStackTrace(); }
         return null;
     }
+    @Override
+    public void addBalance(int dealerId, double amount) {
+        String sql = "UPDATE dealers SET current_balance = current_balance + ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setDouble(1, amount);
+            pstmt.setInt(2, dealerId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override public void updateDealer(Dealer d) { /* Implementation similar to Customer */ }
     @Override public void deleteDealer(int id) { /* Implementation similar to Customer */ }
