@@ -28,7 +28,7 @@
             <TableColumn fx:id="colPackSize" text="Pack Size" prefWidth="90"/>
             <TableColumn fx:id="colStock" text="Stock (Units)" prefWidth="100"/>
             <TableColumn fx:id="colTradePrice" text="Trade Price" prefWidth="110"/>
-            <TableColumn fx:id="colRetailPrice" text="Retail Price" prefWidth="110"/>
+
         </columns>
     </TableView>
 

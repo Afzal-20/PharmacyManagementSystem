@@ -3,7 +3,6 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.BatchDAO;
 import com.my.pharmacy.dao.BatchDAOImpl;
 import com.my.pharmacy.model.Batch;
-import com.my.pharmacy.util.ConfigUtil;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -26,7 +25,6 @@ public class InventoryController {
     @FXML private TableColumn<Batch, Integer> colPackSize;
     @FXML private TableColumn<Batch, Integer> colStock;
     @FXML private TableColumn<Batch, Double> colTradePrice;
-    @FXML private TableColumn<Batch, Double> colRetailPrice;
 
     private final BatchDAO batchDAO = new BatchDAOImpl();
     private final ObservableList<Batch> batchList = FXCollections.observableArrayList();
@@ -44,7 +42,6 @@ public class InventoryController {
         colExpiry.setCellValueFactory(new PropertyValueFactory<>("expiryDate"));
         colStock.setCellValueFactory(new PropertyValueFactory<>("qtyOnHand"));
         colTradePrice.setCellValueFactory(new PropertyValueFactory<>("tradePrice"));
-        colRetailPrice.setCellValueFactory(new PropertyValueFactory<>("retailPrice"));
     }
 
     private void loadInventoryData() {
@@ -54,11 +51,8 @@ public class InventoryController {
 
     @FXML
     private void handleAddNewProduct() {
-        String mode = ConfigUtil.getAppMode();
-        String fxmlPath = mode.equals("WHOLESALE")
-                ? "/fxml/AddProductWholesale.fxml"
-                : "/fxml/AddProductRetail.fxml";
-        openDialog(fxmlPath, "Add New Product");
+        // Bypasses the mode check and loads the unified Wholesale FXML directly
+        openDialog("/fxml/AddProduct.fxml", "Add New Product");
     }
 
     @FXML

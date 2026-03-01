@@ -3,7 +3,6 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
 import com.my.pharmacy.util.CalculationEngine;
-import com.my.pharmacy.util.ConfigUtil;
 import com.my.pharmacy.util.InvoiceGenerator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -50,12 +49,10 @@ public class POSController {
     private final ObservableList<SaleItem> cartData = FXCollections.observableArrayList();
     private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
 
-    private String currentMode;
     private final Customer WALK_IN_CUSTOMER = new Customer(1, "Counter Sale (Walk-in)", "", "", "REGULAR", 0.0, "", "", "");
 
     @FXML
     public void initialize() {
-        this.currentMode = ConfigUtil.getAppMode();
         setupTableColumns();
         loadStockData();
         setupSearchFilter();
@@ -70,18 +67,14 @@ public class POSController {
         colExpiry.setCellValueFactory(new PropertyValueFactory<>("expiryDate"));
         colStock.setCellValueFactory(new PropertyValueFactory<>("qtyOnHand"));
 
-        if ("WHOLESALE".equals(currentMode)) {
-            colPrice.setText("Price (TP)");
-            colPrice.setCellValueFactory(new PropertyValueFactory<>("tradePrice"));
-        } else {
-            colPrice.setText("Price (RP)");
-            colPrice.setCellValueFactory(new PropertyValueFactory<>("retailPrice"));
-        }
+        // Strictly bound to Wholesale Trade Price
+        colPrice.setText("Price (TP)");
+        colPrice.setCellValueFactory(new PropertyValueFactory<>("tradePrice"));
 
         colCartName.setCellValueFactory(new PropertyValueFactory<>("productName"));
         colCartQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colCartPrice.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
-        colCartDisc.setCellValueFactory(new PropertyValueFactory<>("discountAmount")); // New Column Mapping
+        colCartDisc.setCellValueFactory(new PropertyValueFactory<>("discountAmount"));
         colCartTotal.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
 
         productTable.setItems(masterData);
@@ -140,22 +133,19 @@ public class POSController {
         Batch selected = productTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
 
-        if ("WHOLESALE".equals(currentMode)) {
-            openWholesaleDialog(selected);
-        } else {
-            openRetailDialog(selected);
-        }
+        // Mode check removed. Directly opens the wholesale box/discount dialog.
+        openAddToCartDialog(selected);
     }
 
-    private void openWholesaleDialog(Batch selected) {
+    private void openAddToCartDialog(Batch selected) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AddToCartWholesale.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AddToCart.fxml"));
             Stage stage = new Stage();
             stage.setScene(new Scene(loader.load()));
-            stage.setTitle("Wholesale Item Details");
+            stage.setTitle("Item Details");
             stage.initModality(Modality.APPLICATION_MODAL);
 
-            AddToCartWholesaleController controller = loader.getController();
+            AddToCartController controller = loader.getController();
             controller.setBatchData(selected);
             stage.showAndWait();
 
@@ -167,26 +157,6 @@ public class POSController {
         } catch (IOException e) { e.printStackTrace(); }
     }
 
-    private void openRetailDialog(Batch selected) {
-        TextInputDialog dialog = new TextInputDialog("1");
-        dialog.setTitle("Retail Entry");
-        dialog.setHeaderText(selected.getProduct().getName());
-        dialog.setContentText("Enter Boxes:");
-        dialog.showAndWait().ifPresent(input -> {
-            try {
-                int qty = Integer.parseInt(input);
-                if (qty > selected.getQtyOnHand()) {
-                    showAlert(Alert.AlertType.ERROR, "Stock Error", "Insufficient stock.");
-                    return;
-                }
-                SaleItem item = new SaleItem(selected.getProductId(), selected.getBatchId(), qty, selected.getRetailPrice(), 0, 0.0);
-                item.setProductName(selected.getProduct().getName());
-                cartData.add(item);
-                updateTotal();
-            } catch (NumberFormatException e) { showAlert(Alert.AlertType.ERROR, "Error", "Invalid quantity."); }
-        });
-    }
-
     private void updateTotal() {
         double total = calculateCartTotal();
         totalLabel.setText(String.format("Total: %.2f", total));
@@ -194,7 +164,6 @@ public class POSController {
         calculateBalanceDue();
     }
 
-    // Routed through Calculation Engine
     private double calculateCartTotal() {
         return CalculationEngine.calculateGrandTotal(cartData.stream().map(SaleItem::getSubTotal).toList());
     }

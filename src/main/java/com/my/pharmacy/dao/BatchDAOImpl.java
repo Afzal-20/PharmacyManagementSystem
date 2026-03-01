@@ -12,8 +12,8 @@ public class BatchDAOImpl implements BatchDAO {
     @Override
     public void addBatch(Batch b) {
         String sql = "INSERT INTO batches (product_id, batch_no, expiry_date, qty_on_hand, " +
-                "cost_price, trade_price, retail_price, discount_percent, company_discount, sales_tax, tax_percent, is_active) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "cost_price, trade_price, discount_percent, company_discount, sales_tax, is_active) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, b.getProductId());
@@ -22,12 +22,10 @@ public class BatchDAOImpl implements BatchDAO {
             pstmt.setInt(4, b.getQtyOnHand());
             pstmt.setDouble(5, b.getCostPrice());
             pstmt.setDouble(6, b.getTradePrice());
-            pstmt.setDouble(7, b.getRetailPrice());
-            pstmt.setDouble(8, b.getDiscountPercent());
-            pstmt.setDouble(9, b.getCompanyDiscount());
-            pstmt.setDouble(10, b.getSalesTax());
-            pstmt.setDouble(11, 0.0);
-            pstmt.setInt(12, 1);
+            pstmt.setDouble(7, b.getDiscountPercent());
+            pstmt.setDouble(8, b.getCompanyDiscount());
+            pstmt.setDouble(9, b.getSalesTax());
+            pstmt.setInt(10, 1);
             pstmt.executeUpdate();
         } catch (SQLException e) { e.printStackTrace(); }
     }
@@ -80,8 +78,9 @@ public class BatchDAOImpl implements BatchDAO {
 
     @Override
     public void updateBatch(Batch b) {
+        // REMOVED retail_price = ?, from the SQL string
         String sql = "UPDATE batches SET product_id = ?, batch_no = ?, expiry_date = ?, " +
-                "qty_on_hand = ?, cost_price = ?, trade_price = ?, retail_price = ?, " +
+                "qty_on_hand = ?, cost_price = ?, trade_price = ?, " +
                 "discount_percent = ?, company_discount = ?, sales_tax = ? WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -91,11 +90,10 @@ public class BatchDAOImpl implements BatchDAO {
             pstmt.setInt(4, b.getQtyOnHand());
             pstmt.setDouble(5, b.getCostPrice());
             pstmt.setDouble(6, b.getTradePrice());
-            pstmt.setDouble(7, b.getRetailPrice());
-            pstmt.setDouble(8, b.getDiscountPercent());
-            pstmt.setDouble(9, b.getCompanyDiscount());
-            pstmt.setDouble(10, b.getSalesTax());
-            pstmt.setInt(11, b.getId());
+            pstmt.setDouble(7, b.getDiscountPercent()); // Index adjusted to 7
+            pstmt.setDouble(8, b.getCompanyDiscount()); // Index adjusted to 8
+            pstmt.setDouble(9, b.getSalesTax());       // Index adjusted to 9
+            pstmt.setInt(10, b.getId());               // Index adjusted to 10
             pstmt.executeUpdate();
         } catch (SQLException e) { e.printStackTrace(); }
     }
@@ -159,11 +157,11 @@ public class BatchDAOImpl implements BatchDAO {
 
     // --- EXACT MATCH DUPLICATE GUARD IMPLEMENTATION ---
     @Override
-    public Batch getExactBatchMatch(int productId, String batchNo, String expiryDate, double costPrice, double tradePrice, double retailPrice) {
+    public Batch getExactBatchMatch(int productId, String batchNo, String expiryDate, double costPrice, double tradePrice) {
         String sql = "SELECT b.*, p.name, p.generic_name, p.manufacturer, p.description, p.pack_size, p.min_stock_level, p.shelf_location " +
                 "FROM batches b JOIN products p ON b.product_id = p.id " +
                 "WHERE b.product_id = ? AND b.batch_no = ? AND b.expiry_date = ? " +
-                "AND b.cost_price = ? AND b.trade_price = ? AND b.retail_price = ? AND b.is_active = 1";
+                "AND b.cost_price = ? AND b.trade_price = ? AND b.is_active = 1";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, productId);
@@ -171,7 +169,6 @@ public class BatchDAOImpl implements BatchDAO {
             pstmt.setString(3, expiryDate);
             pstmt.setDouble(4, costPrice);
             pstmt.setDouble(5, tradePrice);
-            pstmt.setDouble(6, retailPrice);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) return mapResultSetToBatch(rs);
             }
@@ -188,7 +185,7 @@ public class BatchDAOImpl implements BatchDAO {
         Batch b = new Batch(rs.getInt("id"), rs.getInt("product_id"),
                 rs.getString("batch_no"), rs.getString("expiry_date"),
                 rs.getInt("qty_on_hand"), rs.getDouble("cost_price"),
-                rs.getDouble("trade_price"), rs.getDouble("retail_price"),
+                rs.getDouble("trade_price"),
                 rs.getDouble("discount_percent"),
                 rs.getDouble("company_discount"), rs.getDouble("sales_tax"));
         b.setProduct(p);

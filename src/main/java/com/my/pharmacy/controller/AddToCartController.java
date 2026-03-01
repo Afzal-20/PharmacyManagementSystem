@@ -7,7 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class AddToCartWholesaleController {
+public class AddToCartController {
 
     @FXML private Label productNameLabel;
     @FXML private TextField qtyField, bonusField, discountField;
@@ -26,7 +26,6 @@ public class AddToCartWholesaleController {
         try {
             if (qtyField.getText().isEmpty()) return;
 
-            // Box-Centric values directly from UI
             int boxes = Integer.parseInt(qtyField.getText());
             int bonusBoxes = bonusField.getText().isEmpty() ? 0 : Integer.parseInt(bonusField.getText());
             double discPercent = discountField.getText().isEmpty() ? 0.0 : Double.parseDouble(discountField.getText());

@@ -30,8 +30,7 @@ public class DatabaseSetup {
                     "expiry_date TEXT, " +
                     "qty_on_hand INTEGER, " +
                     "cost_price REAL, " +
-                    "trade_price REAL, " +
-                    "retail_price REAL, " +
+                    "trade_price REAL, " + // retail_price REMOVED
                     "company_discount REAL DEFAULT 0.0, " +
                     "sales_tax REAL DEFAULT 0.0, " +
                     "discount_percent REAL, " +
@@ -53,7 +52,7 @@ public class DatabaseSetup {
                     "name TEXT NOT NULL, " +
                     "phone TEXT, " +
                     "address TEXT, " +
-                    "type TEXT DEFAULT 'RETAIL', " +
+                    "type TEXT DEFAULT 'WHOLESALE', " + // Changed from RETAIL
                     "current_balance REAL DEFAULT 0.0, " +
                     "area_code TEXT, " +
                     "area_name TEXT)");

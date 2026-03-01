@@ -12,13 +12,12 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Optional;
 
 public class PurchaseController {
 
     @FXML private ComboBox<Dealer> dealerComboBox;
     @FXML private ComboBox<Product> productComboBox;
-    @FXML private TextField batchNoField, qtyField, costField, marginField, tradeField, retailField, invoiceNoField;
+    @FXML private TextField batchNoField, qtyField, costField, marginField, tradeField, invoiceNoField;
     @FXML private TextField compDiscField, taxField;
     @FXML private DatePicker expiryPicker;
 
@@ -98,15 +97,8 @@ public class PurchaseController {
             int totalBoxes = Integer.parseInt(qtyField.getText());
             double boxCost = Double.parseDouble(costField.getText());
             double boxTrade = Double.parseDouble(tradeField.getText());
-            double boxRetail = Double.parseDouble(retailField.getText());
             double compDisc = Double.parseDouble(compDiscField.getText());
             double salesTax = Double.parseDouble(taxField.getText());
-
-            // --- STRICT RETAIL VALIDATION ---
-            if (boxRetail < boxTrade) {
-                showAlert(Alert.AlertType.ERROR, "Pricing Error", "Retail Price cannot be lower than the auto-calculated Trade Price.");
-                return;
-            }
 
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to proceed with this purchase?");
             if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
@@ -117,7 +109,8 @@ public class PurchaseController {
             Payment purchaseLedgerEntry = new Payment(0, selectedDealer.getId(), "DEALER", totalPayableToDealer, "PURCHASE",
                     "Purchased " + totalBoxes + " boxes of " + selectedProduct.getName(), new java.sql.Timestamp(System.currentTimeMillis()));
 
-            Batch existingBatch = batchDAO.getExactBatchMatch(selectedProduct.getId(), batchNo, expiryStr, boxCost, boxTrade, boxRetail);
+
+            Batch existingBatch = batchDAO.getExactBatchMatch(selectedProduct.getId(), batchNo, expiryStr, boxCost, boxTrade);
 
             if (existingBatch != null) {
                 existingBatch.setQtyOnHand(existingBatch.getQtyOnHand() + totalBoxes);
@@ -133,7 +126,8 @@ public class PurchaseController {
                 return;
             }
 
-            Batch newBatch = new Batch(0, selectedProduct.getId(), batchNo, expiryStr, totalBoxes, boxCost, boxTrade, boxRetail, 0.0, compDisc, salesTax);
+            // Passing 0.0 for Retail Price temporarily until Phase 5
+            Batch newBatch = new Batch(0, selectedProduct.getId(), batchNo, expiryStr, totalBoxes, boxCost, boxTrade, 0.0, compDisc, salesTax);
             batchDAO.addBatch(newBatch);
             paymentDAO.recordPayment(purchaseLedgerEntry);
             batchDAO.recordPurchaseHistory(selectedDealer.getId(), selectedProduct.getId(), selectedProduct.getName(), batchNo, invoiceNo, totalBoxes, boxCost, boxTrade);
@@ -149,7 +143,7 @@ public class PurchaseController {
     @FXML
     private void clearFields() {
         batchNoField.clear(); qtyField.clear(); costField.clear(); marginField.clear();
-        tradeField.clear(); retailField.clear(); invoiceNoField.clear(); expiryPicker.setValue(null);
+        tradeField.clear(); invoiceNoField.clear(); expiryPicker.setValue(null);
         compDiscField.setText("0.0"); taxField.setText("0.0");
     }
 

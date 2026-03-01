@@ -15,6 +15,9 @@ target/
 pharmacy.db
 wholesale_pharmacy.db
 retail_pharmacy.db
+Returns/
+*.db-shm
+*.db-wal
 # --- OS Specific ---
 .DS_Store
 Thumbs.db

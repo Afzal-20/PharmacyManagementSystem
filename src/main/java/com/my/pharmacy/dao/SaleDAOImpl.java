@@ -35,8 +35,10 @@ public class SaleDAOImpl implements SaleDAO {
 
                 ResultSet rs = pstmt.getGeneratedKeys();
                 int saleId = 0;
-                if (rs.next()) saleId = rs.getInt(1);
-
+                if (rs.next()) {
+                    saleId = rs.getInt(1);
+                    sale.setId(saleId); // FIX: Populate the object so POSController can read it
+                }
                 // 2. Update Customer Khata Balance
                 try (PreparedStatement custStmt = conn.prepareStatement(updateCustomerSQL)) {
                     custStmt.setDouble(1, sale.getBalanceDue());
@@ -219,14 +221,11 @@ public class SaleDAOImpl implements SaleDAO {
 
             // 4. Handle Accounting
             String desc = "Refund for Invoice #" + saleId + " (" + item.getProductName() + ")";
-            if ("KHATA".equals(refundMethod) && customerId != 1) {
+            // FIX: Updated to match the exact string passed from the UI ComboBox
+            if ("KHATA CREDIT".equals(refundMethod) && customerId != 1) {
                 // Credit Khata (Reduce balance)
                 String updateKhata = "UPDATE customers SET current_balance = current_balance - ? WHERE id = ?";
-                try (PreparedStatement pstmt = conn.prepareStatement(updateKhata)) {
-                    pstmt.setDouble(1, refundAmount);
-                    pstmt.setInt(2, customerId);
-                    pstmt.executeUpdate();
-                }
+
                 // Log payment entry for Khata Ledger
                 String insertPayment = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'RETURN_CREDIT', ?)";
                 try (PreparedStatement pstmt = conn.prepareStatement(insertPayment)) {

@@ -49,7 +49,7 @@ public class AddProductController {
 
             Batch batch = new Batch(0, productId, batchField.getText(), expiryField.getText(),
                     totalBoxes, Double.parseDouble(costField.getText()),
-                    tradePrice, retailPrice, 0.0, 0.0, 0.0);
+                    tradePrice, 0.0, 0.0, 0.0);
 
             batchDAO.addBatch(batch);
             closeWindow();

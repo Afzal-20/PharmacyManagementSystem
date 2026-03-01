@@ -1,22 +1,25 @@
 package com.my.pharmacy.util;
 
 import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigUtil {
+    private static final Properties properties = new Properties();
 
-    /**
-     * Reads the application mode (RETAIL or WHOLESALE) from config.properties.
-     */
-    public static String getAppMode() {
-        Properties props = new Properties();
-        try (FileInputStream in = new FileInputStream("config.properties")) {
-            props.load(in);
-            return props.getProperty("app.mode", "RETAIL");
-        } catch (IOException e) {
-            System.err.println("⚠️ Could not find config.properties, defaulting to RETAIL.");
-            return "RETAIL";
+    static {
+        try (InputStream input = new FileInputStream("config.properties")) {
+            properties.load(input);
+        } catch (Exception e) {
+            System.err.println("Warning: Unable to find config.properties. Using default values.");
         }
+    }
+
+    public static String get(String key, String defaultValue) {
+        return properties.getProperty(key, defaultValue);
+    }
+
+    public static boolean getBoolean(String key, boolean defaultValue) {
+        return Boolean.parseBoolean(properties.getProperty(key, String.valueOf(defaultValue)));
     }
 }

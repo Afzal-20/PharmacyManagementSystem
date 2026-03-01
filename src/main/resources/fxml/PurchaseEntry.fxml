@@ -37,15 +37,13 @@
         <Label text="Trade Price (Box):" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
         <TextField fx:id="tradeField" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
 
-        <Label text="Retail Price (Box MRP):" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <TextField fx:id="retailField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-        <Label text="Dealer Invoice #:" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
-        <TextField fx:id="invoiceNoField" GridPane.rowIndex="5" GridPane.columnIndex="3" promptText="Optional"/>
+        <Label text="Dealer Invoice #:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <TextField fx:id="invoiceNoField" GridPane.rowIndex="5" GridPane.columnIndex="1" promptText="Optional"/>
+        <Label text="Comp. Discount (%):" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
+        <TextField fx:id="compDiscField" text="0.0" GridPane.rowIndex="5" GridPane.columnIndex="3"/>
 
-        <Label text="Comp. Discount (%):" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-        <TextField fx:id="compDiscField" text="0.0" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-        <Label text="Sales Tax (%):" GridPane.rowIndex="6" GridPane.columnIndex="2"/>
-        <TextField fx:id="taxField" text="0.0" GridPane.rowIndex="6" GridPane.columnIndex="3"/>
+        <Label text="Sales Tax (%):" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+        <TextField fx:id="taxField" text="0.0" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
     </GridPane>
     <Separator/>
     <HBox spacing="15" alignment="CENTER_RIGHT">

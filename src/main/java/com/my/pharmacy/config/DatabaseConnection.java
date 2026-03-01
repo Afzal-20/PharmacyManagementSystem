@@ -1,23 +1,17 @@
 package com.my.pharmacy.config;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import com.my.pharmacy.util.ConfigUtil;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
 
 public class DatabaseConnection {
 
     public static String getDatabaseUrl() {
-        Properties props = new Properties();
-        try (FileInputStream in = new FileInputStream("config.properties")) {
-            props.load(in);
-            return "jdbc:sqlite:" + props.getProperty("db.name", "pharmacy_v2.db");
-        } catch (IOException e) {
-            return "jdbc:sqlite:pharmacy_v2.db"; // Fallback
-        }
+        // Enforces wholesale database by default
+        String dbName = ConfigUtil.get("db.name", "wholesale_pharmacy.db");
+        return "jdbc:sqlite:" + dbName;
     }
 
     public static Connection getConnection() throws SQLException {
