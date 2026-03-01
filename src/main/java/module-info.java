@@ -8,9 +8,8 @@ module com.my.pharmacy {
     requires org.xerial.sqlitejdbc; // SQLite Driver
 
     // 3. Printing/PDF Modules
-    requires layout;          // iText PDF Layout
-    requires kernel;
-    requires itextpdf;          // iText PDF Kernel
+    requires itextpdf;
+    requires java.desktop;          // iText PDF Kernel
 
     // 4. Permissions (Opening packages to JavaFX)
     opens com.my.pharmacy to javafx.fxml;

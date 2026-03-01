@@ -130,4 +130,128 @@ public class SaleDAOImpl implements SaleDAO {
         } catch (SQLException e) { e.printStackTrace(); }
         return history;
     }
+
+    @Override
+    public List<Sale> getSalesByDate(java.time.LocalDate date) {
+        List<Sale> sales = new ArrayList<>();
+        String sql = "SELECT * FROM sales WHERE DATE(sale_date) = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, date.toString());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    sales.add(new Sale(
+                            rs.getInt("id"),
+                            rs.getTimestamp("sale_date"),
+                            rs.getDouble("total_amount"),
+                            rs.getString("payment_mode"),
+                            rs.getInt("customer_id"),
+                            1, // FIXED: Hardcoded User ID to prevent SQLite column errors
+                            rs.getDouble("amount_paid"),
+                            rs.getDouble("balance_due")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sales;
+    }
+
+    @Override
+    public List<SaleItem> getSaleItemsBySaleId(int saleId) {
+        List<SaleItem> items = new ArrayList<>();
+        String sql = "SELECT si.*, p.name as product_name FROM sale_items si " +
+                "JOIN batches b ON si.batch_id = b.id JOIN products p ON b.product_id = p.id WHERE si.sale_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, saleId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    SaleItem item = new SaleItem(rs.getInt("product_id"), rs.getInt("batch_id"), rs.getInt("quantity"),
+                            rs.getDouble("unit_price"), rs.getInt("bonus_qty"), rs.getDouble("discount_percent"));
+                    item.setId(rs.getInt("id"));
+                    item.setSaleId(saleId);
+                    item.setProductName(rs.getString("product_name"));
+                    item.setReturnedQty(rs.getInt("returned_qty")); // Fetch returned qty
+                    items.add(item);
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return items;
+    }
+
+    @Override
+    public void processReturn(int saleId, int customerId, SaleItem item, int returnQty, double refundAmount, String refundMethod, String reason) {
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false); // Start Transaction
+
+            // 1. Insert into sale_returns
+            String insertReturn = "INSERT INTO sale_returns (sale_id, sale_item_id, batch_id, returned_qty, refund_amount, refund_method, reason) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(insertReturn)) {
+                pstmt.setInt(1, saleId);
+                pstmt.setInt(2, item.getId());
+                pstmt.setInt(3, item.getBatchId());
+                pstmt.setInt(4, returnQty);
+                pstmt.setDouble(5, refundAmount);
+                pstmt.setString(6, refundMethod);
+                pstmt.setString(7, reason);
+                pstmt.executeUpdate();
+            }
+
+            // 2. Update sale_items returned_qty
+            String updateSaleItem = "UPDATE sale_items SET returned_qty = returned_qty + ? WHERE id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(updateSaleItem)) {
+                pstmt.setInt(1, returnQty);
+                pstmt.setInt(2, item.getId());
+                pstmt.executeUpdate();
+            }
+
+            // 3. Restock Inventory
+            String updateBatch = "UPDATE batches SET qty_on_hand = qty_on_hand + ? WHERE id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(updateBatch)) {
+                pstmt.setInt(1, returnQty);
+                pstmt.setInt(2, item.getBatchId());
+                pstmt.executeUpdate();
+            }
+
+            // 4. Handle Accounting
+            String desc = "Refund for Invoice #" + saleId + " (" + item.getProductName() + ")";
+            if ("KHATA".equals(refundMethod) && customerId != 1) {
+                // Credit Khata (Reduce balance)
+                String updateKhata = "UPDATE customers SET current_balance = current_balance - ? WHERE id = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(updateKhata)) {
+                    pstmt.setDouble(1, refundAmount);
+                    pstmt.setInt(2, customerId);
+                    pstmt.executeUpdate();
+                }
+                // Log payment entry for Khata Ledger
+                String insertPayment = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'RETURN_CREDIT', ?)";
+                try (PreparedStatement pstmt = conn.prepareStatement(insertPayment)) {
+                    pstmt.setInt(1, customerId);
+                    pstmt.setDouble(2, refundAmount);
+                    pstmt.setString(3, desc);
+                    pstmt.executeUpdate();
+                }
+            } else {
+                // Cash Refund - Log negative payment to balance cash drawer
+                String insertPayment = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'CASH_REFUND', ?)";
+                try (PreparedStatement pstmt = conn.prepareStatement(insertPayment)) {
+                    pstmt.setInt(1, customerId);
+                    pstmt.setDouble(2, -refundAmount); // Negative to reduce cash total
+                    pstmt.setString(3, desc);
+                    pstmt.executeUpdate();
+                }
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            e.printStackTrace();
+        } finally {
+            try { if (conn != null) conn.setAutoCommit(true); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
 }

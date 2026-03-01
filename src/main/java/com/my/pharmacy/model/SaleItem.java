@@ -6,6 +6,7 @@ public class SaleItem {
     private int id, saleId, productId, batchId, quantity, bonusQty;
     private double unitPrice, discountPercent, discountAmount, subTotal;
     private String productName;
+    private int returnedQty = 0; // NEW FIELD
 
     public SaleItem(int productId, int batchId, int quantity, double unitPrice, int bonusQty, double discountPercent) {
         this.productId = productId;
@@ -14,6 +15,7 @@ public class SaleItem {
         this.unitPrice = unitPrice;
         this.bonusQty = bonusQty;
         this.discountPercent = discountPercent;
+
         recalculate();
     }
 
@@ -49,4 +51,7 @@ public class SaleItem {
     public double getDiscountPercent() { return discountPercent; }
     public String getProductName() { return productName; }
     public void setProductName(String productName) { this.productName = productName; }
+
+    public int getReturnedQty() { return returnedQty; }
+    public void setReturnedQty(int returnedQty) { this.returnedQty = returnedQty; }
 }

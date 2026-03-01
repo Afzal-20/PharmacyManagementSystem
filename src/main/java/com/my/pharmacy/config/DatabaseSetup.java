@@ -113,7 +113,19 @@ public class DatabaseSetup {
                     "cost_price REAL, " +
                     "trade_price REAL)");
 
-            // Migration logic
+            // --- NEW: Returns Architecture ---
+            stmt.execute("CREATE TABLE IF NOT EXISTS sale_returns (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "sale_id INTEGER, " +
+                    "sale_item_id INTEGER, " +
+                    "batch_id INTEGER, " +
+                    "returned_qty INTEGER, " +
+                    "refund_amount REAL, " +
+                    "return_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "refund_method TEXT, " +
+                    "reason TEXT)");
+
+            addColumnIfMissing(stmt, "sale_items", "returned_qty", "INTEGER DEFAULT 0");
             addColumnIfMissing(stmt, "customers", "cnic", "TEXT");
             addColumnIfMissing(stmt, "customers", "current_balance", "REAL DEFAULT 0.0");
             addColumnIfMissing(stmt, "customers", "area_code", "TEXT");

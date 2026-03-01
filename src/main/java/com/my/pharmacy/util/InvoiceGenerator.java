@@ -2,12 +2,17 @@ package com.my.pharmacy.util;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.my.pharmacy.model.Customer;
 import com.my.pharmacy.model.Sale;
 import com.my.pharmacy.model.SaleItem;
 
+import java.awt.Desktop;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class InvoiceGenerator {
 
@@ -169,4 +174,73 @@ public class InvoiceGenerator {
         cell.setPadding(4);
         table.addCell(cell);
     }
+
+    public static void generateReturnReceipt(Sale invoice, SaleItem item, int returnedQty, double refundAmount, String refundMethod, String reason) {
+        // 1. Establish Dedicated Directory
+        String directoryPath = "Returns/";
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        String fileName = directoryPath + "Return_Inv_" + invoice.getId() + "_" + System.currentTimeMillis() + ".pdf";
+
+        // 2. Setup 80mm Thermal Width (approx 226 points). Height is fixed for basic text.
+        Document document = new Document(new Rectangle(226, 400), 10, 10, 15, 15);
+
+        try {
+            PdfWriter.getInstance(document, new FileOutputStream(fileName));
+            document.open();
+
+            // 3. Define Fonts
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            Font standardFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+
+            // 4. Build Header
+            Paragraph header = new Paragraph("YOUR PHARMACY NAME\n123 Main Street, City\nPh: 0300-1234567\n\n", headerFont);
+            header.setAlignment(Element.ALIGN_CENTER);
+            document.add(header);
+
+            document.add(new Paragraph("SALES RETURN / REFUND", boldFont));
+            document.add(new Paragraph("Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")), standardFont));
+            document.add(new Paragraph("Original Inv #: " + invoice.getId(), standardFont));
+
+            document.add(new Chunk(new LineSeparator()));
+
+            // 5. Build Item Details
+            document.add(new Paragraph("Item: " + item.getProductName(), standardFont));
+            document.add(new Paragraph("Qty Returned: " + returnedQty, standardFont));
+            document.add(new Paragraph("Unit Price: Rs. " + item.getUnitPrice(), standardFont));
+
+            document.add(new Chunk(new LineSeparator()));
+
+            // 6. Build Refund Totals
+            document.add(new Paragraph("Total Refund: Rs. " + refundAmount, boldFont));
+            document.add(new Paragraph("Method: " + refundMethod, standardFont));
+            if (reason != null && !reason.trim().isEmpty()) {
+                document.add(new Paragraph("Reason: " + reason, standardFont));
+            }
+
+            document.add(new Chunk(new LineSeparator()));
+
+            // 7. Build Dynamic Footer
+            String disclaimer = "KHATA CREDIT".equals(refundMethod) ? "Khata Credit Applied." : "Cash Refund Issued.";
+            Paragraph footer = new Paragraph("Refund Processed Successfully.\n" + disclaimer + "\nThank you!", standardFont);
+            footer.setAlignment(Element.ALIGN_CENTER);
+            document.add(footer);
+
+            document.close();
+
+            // 8. Auto-Open PDF for Testing
+            File pdfFile = new File(fileName);
+            if (pdfFile.exists() && Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(pdfFile);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
