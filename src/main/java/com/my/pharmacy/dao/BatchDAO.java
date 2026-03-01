@@ -14,7 +14,8 @@ public interface BatchDAO {
     void deleteBatch(int id);
     void reduceStock(Connection conn, int batchId, int qty) throws SQLException;
     void adjustStockWithAudit(int batchId, int oldQty, int newQty, String reason, int userId);
-
+    void recordPurchaseHistory(int dealerId, int productId, String productName, String batchNo, String invoiceNo, int boxes, double cost, double trade);
     // --- NEW: Exact Match Duplicate Guard ---
     Batch getExactBatchMatch(int productId, String batchNo, String expiryDate, double costPrice, double tradePrice, double retailPrice);
+    List<com.my.pharmacy.model.PurchaseHistoryRecord> getPurchaseHistoryByProductId(int productId);
 }

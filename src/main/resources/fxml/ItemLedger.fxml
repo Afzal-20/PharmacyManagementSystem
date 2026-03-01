@@ -4,9 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6;"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.my.pharmacy.controller.ItemLedgerController">
+<VBox spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.ItemLedgerController">
 
     <Label text="ITEM LEDGER" style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;">
         <font><Font size="22.0"/></font>
@@ -33,15 +31,17 @@
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab text="2 - Purchase History">
+
+            <Tab text="2 - Purchase History (Audit)">
                 <VBox>
-                    <TableView fx:id="purchaseTable" VBox.vgrow="ALWAYS">
+                    <TableView fx:id="purchaseHistoryTable" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="colBatchNo" text="Batch No" prefWidth="150"/>
-                            <TableColumn fx:id="colExpiry" text="Expiry Date" prefWidth="120"/>
-                            <TableColumn fx:id="colPurchasedQty" text="Current Stock" prefWidth="100"/>
-                            <TableColumn fx:id="colCost" text="Cost Price" prefWidth="100"/>
-                            <TableColumn fx:id="colTrade" text="Trade Price" prefWidth="100"/>
+                            <TableColumn fx:id="colPurchDate" text="Date" prefWidth="160"/>
+                            <TableColumn fx:id="colDealerName" text="Dealer Name" prefWidth="180"/>
+                            <TableColumn fx:id="colInvoiceNoPurch" text="Invoice #" prefWidth="120"/>
+                            <TableColumn fx:id="colPurchasedQty" text="Initial Boxes" prefWidth="100"/>
+                            <TableColumn fx:id="colPurchCost" text="Cost Price" prefWidth="100"/>
+                            <TableColumn fx:id="colPurchTrade" text="Trade Price" prefWidth="100"/>
                         </columns>
                     </TableView>
                 </VBox>

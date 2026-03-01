@@ -101,6 +101,18 @@ public class DatabaseSetup {
                     "user_id INTEGER DEFAULT 1, " +
                     "FOREIGN KEY(batch_id) REFERENCES batches(id))");
 
+            stmt.execute("CREATE TABLE IF NOT EXISTS purchase_history (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "dealer_id INTEGER, " +
+                    "product_id INTEGER, " +
+                    "product_name TEXT, " +
+                    "batch_no TEXT, " +
+                    "dealer_invoice_no TEXT, " +
+                    "initial_boxes_purchased INTEGER, " +
+                    "cost_price REAL, " +
+                    "trade_price REAL)");
+
             // Migration logic
             addColumnIfMissing(stmt, "customers", "cnic", "TEXT");
             addColumnIfMissing(stmt, "customers", "current_balance", "REAL DEFAULT 0.0");

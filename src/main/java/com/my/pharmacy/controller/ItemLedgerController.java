@@ -18,11 +18,11 @@ public class ItemLedgerController {
     @FXML private TableColumn<SaleLedgerRecord, Integer> colInvoiceNo, colSaleQty;
     @FXML private TableColumn<SaleLedgerRecord, Double> colSaleRate, colSaleTotal;
 
-    // Purchases Tab
-    @FXML private TableView<Batch> purchaseTable;
-    @FXML private TableColumn<Batch, String> colBatchNo, colExpiry;
-    @FXML private TableColumn<Batch, Integer> colPurchasedQty;
-    @FXML private TableColumn<Batch, Double> colCost, colTrade;
+    // Purchase History (Audit) Tab
+    @FXML private TableView<PurchaseHistoryRecord> purchaseHistoryTable;
+    @FXML private TableColumn<PurchaseHistoryRecord, String> colPurchDate, colDealerName, colInvoiceNoPurch;
+    @FXML private TableColumn<PurchaseHistoryRecord, Integer> colPurchasedQty;
+    @FXML private TableColumn<PurchaseHistoryRecord, Double> colPurchCost, colPurchTrade;
 
     private final ProductDAO productDAO = new ProductDAOImpl();
     private final SaleDAO saleDAO = new SaleDAOImpl();
@@ -50,12 +50,13 @@ public class ItemLedgerController {
         colSaleRate.setCellValueFactory(new PropertyValueFactory<>("rate"));
         colSaleTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
-        // Purchases Mapping (Batches)
-        colBatchNo.setCellValueFactory(new PropertyValueFactory<>("batchNo"));
-        colExpiry.setCellValueFactory(new PropertyValueFactory<>("expiryDate"));
-        colPurchasedQty.setCellValueFactory(new PropertyValueFactory<>("qtyOnHand"));
-        colCost.setCellValueFactory(new PropertyValueFactory<>("costPrice"));
-        colTrade.setCellValueFactory(new PropertyValueFactory<>("tradePrice"));
+        // Purchase Audit Mapping
+        colPurchDate.setCellValueFactory(new PropertyValueFactory<>("purchaseDate"));
+        colDealerName.setCellValueFactory(new PropertyValueFactory<>("dealerName"));
+        colInvoiceNoPurch.setCellValueFactory(new PropertyValueFactory<>("invoiceNo"));
+        colPurchasedQty.setCellValueFactory(new PropertyValueFactory<>("initialBoxes"));
+        colPurchCost.setCellValueFactory(new PropertyValueFactory<>("costPrice"));
+        colPurchTrade.setCellValueFactory(new PropertyValueFactory<>("tradePrice"));
     }
 
     @FXML
@@ -64,6 +65,6 @@ public class ItemLedgerController {
         if (selected == null) return;
 
         salesTable.setItems(FXCollections.observableArrayList(saleDAO.getSalesHistoryByProductId(selected.getId())));
-        purchaseTable.setItems(FXCollections.observableArrayList(batchDAO.getBatchesByProductId(selected.getId())));
+        purchaseHistoryTable.setItems(FXCollections.observableArrayList(batchDAO.getPurchaseHistoryByProductId(selected.getId())));
     }
 }

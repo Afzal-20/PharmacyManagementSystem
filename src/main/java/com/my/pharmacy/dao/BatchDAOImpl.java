@@ -194,4 +194,50 @@ public class BatchDAOImpl implements BatchDAO {
         b.setProduct(p);
         return b;
     }
+    @Override
+    public void recordPurchaseHistory(int dealerId, int productId, String productName, String batchNo, String invoiceNo, int boxes, double cost, double trade) {
+        String sql = "INSERT INTO purchase_history (dealer_id, product_id, product_name, batch_no, dealer_invoice_no, initial_boxes_purchased, cost_price, trade_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, dealerId);
+            pstmt.setInt(2, productId);
+            pstmt.setString(3, productName);
+            pstmt.setString(4, batchNo);
+            pstmt.setString(5, invoiceNo);
+            pstmt.setInt(6, boxes);
+            pstmt.setDouble(7, cost);
+            pstmt.setDouble(8, trade);
+            pstmt.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    @Override
+    public List<com.my.pharmacy.model.PurchaseHistoryRecord> getPurchaseHistoryByProductId(int productId) {
+        List<com.my.pharmacy.model.PurchaseHistoryRecord> history = new ArrayList<>();
+        // JOIN to get the actual Dealer Name from the dealers table
+        String sql = "SELECT ph.purchase_date, d.name AS dealer_name, ph.dealer_invoice_no, " +
+                "ph.initial_boxes_purchased, ph.cost_price, ph.trade_price " +
+                "FROM purchase_history ph " +
+                "LEFT JOIN dealers d ON ph.dealer_id = d.id " +
+                "WHERE ph.product_id = ? ORDER BY ph.purchase_date DESC";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, productId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    history.add(new com.my.pharmacy.model.PurchaseHistoryRecord(
+                            rs.getTimestamp("purchase_date"),
+                            rs.getString("dealer_name") == null ? "Unknown" : rs.getString("dealer_name"),
+                            rs.getString("dealer_invoice_no"),
+                            rs.getInt("initial_boxes_purchased"),
+                            rs.getDouble("cost_price"),
+                            rs.getDouble("trade_price")
+                    ));
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return history;
+    }
 }

@@ -32,10 +32,11 @@ public class StockAdjustmentController {
         try {
             int newBoxes = Integer.parseInt(newBoxesField.getText());
 
-            // Directly update the stock with the box count. No packSize math.
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to proceed?");
+            if (confirm.showAndWait().orElse(javafx.scene.control.ButtonType.CANCEL) != javafx.scene.control.ButtonType.OK) return;
+
             selectedBatch.setQtyOnHand(newBoxes);
             batchDAO.updateBatch(selectedBatch);
-
             closeWindow();
         } catch (NumberFormatException e) {
             showAlert("Invalid Input", "Please enter a valid numeric value for the box count.");
