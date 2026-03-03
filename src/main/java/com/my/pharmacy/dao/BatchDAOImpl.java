@@ -78,7 +78,7 @@ public class BatchDAOImpl implements BatchDAO {
 
     @Override
     public void updateBatch(Batch b) {
-        // REMOVED retail_price = ?, from the SQL string
+
         String sql = "UPDATE batches SET product_id = ?, batch_no = ?, expiry_date = ?, " +
                 "qty_on_hand = ?, cost_price = ?, trade_price = ?, " +
                 "discount_percent = ?, company_discount = ?, sales_tax = ? WHERE id = ?";

@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="mainLayout" prefHeight="600.0" prefWidth="900.0"
+<BorderPane fx:id="mainLayout" prefHeight="700.0" prefWidth="1100.0"
             stylesheets="@../styles/style.css"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.my.pharmacy.controller.MainController">
@@ -20,11 +20,13 @@
 
             <VBox alignment="CENTER">
                 <Label text="PHARMACY" styleClass="app-title"/>
-                <Label text="SYSTEM" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                <Label text="WHOLESALE" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
                 <padding>
                     <Insets bottom="30"/>
                 </padding>
             </VBox>
+
+            <Button text="🏠  Home Dashboard" maxWidth="Infinity" styleClass="nav-button" onAction="#showDashboard"/>
 
             <Button text="🛒  Point of Sale" maxWidth="Infinity" styleClass="nav-button" onAction="#showPOS"/>
             <Button text="📦  Inventory" maxWidth="Infinity" styleClass="nav-button" onAction="#showInventory"/>
@@ -38,24 +40,12 @@
 
             <VBox VBox.vgrow="ALWAYS" />
 
-            <Button text="🚪  Logout" maxWidth="Infinity" styleClass="nav-button" style="-fx-text-fill: #e74c3c;"/>
+            <Button text="🚪  Logout" maxWidth="Infinity" styleClass="nav-button" style="-fx-text-fill: #e74c3c;" onAction="#handleLogout"/>
 
         </VBox>
     </left>
 
     <center>
-        <VBox alignment="CENTER" style="-fx-background-color: #ecf0f1;">
-            <Label text="Welcome, Admin" textFill="#2c3e50">
-                <font>
-                    <Font name="System Bold" size="28.0"/>
-                </font>
-            </Label>
-            <Label text="Select an option from the sidebar to begin." textFill="#7f8c8d">
-                <font>
-                    <Font size="16.0"/>
-                </font>
-            </Label>
-        </VBox>
     </center>
 
 </BorderPane>

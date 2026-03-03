@@ -12,15 +12,15 @@ public class FuzzySearchUtil {
     public static boolean isFuzzyMatch(String query, String target) {
         if (query == null || target == null) return false;
 
-        String q = query.toLowerCase();
-        String t = target.toLowerCase();
+        String q = query.toLowerCase().trim();
+        String t = target.toLowerCase().trim();
 
         // 1. Direct contains check (Fastest)
         if (t.contains(q)) return true;
 
         // 2. Levenshtein Distance (Smart check)
-        // Allow 1 mistake for every 4 characters typed
-        int allowedErrors = Math.max(1, q.length() / 4);
+        // FIX: Increased forgiveness to 1 mistake per 3 characters
+        int allowedErrors = Math.max(1, q.length() / 3);
         int distance = calculateLevenshteinDistance(q, t);
 
         return distance <= allowedErrors;

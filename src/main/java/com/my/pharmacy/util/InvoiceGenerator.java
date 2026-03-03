@@ -31,12 +31,16 @@ public class InvoiceGenerator {
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destFilePath));
             document.open();
 
-            // --- 1. HEADER ---
+            // --- 1. HEADER (DYNAMIC) ---
+            String shopName = ConfigUtil.get("pharmacy.name", "MY PHARMACY");
+            String shopAddress = ConfigUtil.get("pharmacy.address", "Shop Address Here");
+            String shopPhone = ConfigUtil.get("pharmacy.phone", "0000-0000000");
+
             Paragraph header = new Paragraph();
             header.setAlignment(Element.ALIGN_CENTER);
-            header.add(new Chunk("NOBLE TRADER\n", TITLE_FONT));
-            header.add(new Chunk("SHOP 23\n", NORMAL_FONT));
-            header.add(new Chunk("03139451041\n", NORMAL_FONT));
+            header.add(new Chunk(shopName + "\n", TITLE_FONT));
+            header.add(new Chunk(shopAddress + "\n", NORMAL_FONT));
+            header.add(new Chunk(shopPhone + "\n", NORMAL_FONT));
             document.add(header);
 
             document.add(new Paragraph("\n"));
@@ -57,11 +61,13 @@ public class InvoiceGenerator {
 
             // --- 3. META INFO ---
             String custName = (customer != null && customer.getId() != 1) ? customer.getId() + " / " + customer.getName() : "1 / COUNTER SALE";
-            String custAdd = (customer != null && customer.getAddress() != null && !customer.getAddress().isEmpty()) ? customer.getAddress() : "XYZ";
-            String dateStr = new SimpleDateFormat("dd- MMM - yyyy").format(sale.getSaleDate());
+            String custAdd = (customer != null && customer.getAddress() != null && !customer.getAddress().isEmpty()) ? customer.getAddress() : "";
+            String dateStr = new SimpleDateFormat("dd-MMM-yyyy").format(sale.getSaleDate());
 
             document.add(new Paragraph("Customer: " + custName, NORMAL_FONT));
-            document.add(new Paragraph("Add: " + custAdd, NORMAL_FONT));
+            if (!custAdd.isEmpty()) {
+                document.add(new Paragraph("Add: " + custAdd, NORMAL_FONT));
+            }
             if (customer != null && customer.getCnic() != null && !customer.getCnic().isEmpty()) {
                 document.add(new Paragraph("CNIC: " + customer.getCnic(), NORMAL_FONT));
             }
@@ -99,19 +105,15 @@ public class InvoiceGenerator {
             double sumDisc = 0.0;
 
             for (SaleItem item : sale.getItems()) {
-                // Replicate your SaleItem math to find the absolute Rupee values
                 double rawTotal = item.getUnitPrice() * item.getQuantity();
                 double absoluteDiscount = rawTotal - item.getSubTotal();
 
                 addItemCell(table, item.getProductName(), Element.ALIGN_LEFT);
                 addItemCell(table, String.format("%.2f", item.getUnitPrice()), Element.ALIGN_RIGHT);
                 addItemCell(table, String.valueOf(item.getQuantity()), Element.ALIGN_CENTER);
-
-                // Print the absolute discount in Rupees, not the percentage
                 addItemCell(table, String.format("%.2f", absoluteDiscount), Element.ALIGN_CENTER);
                 addItemCell(table, String.format("%,.2f", item.getSubTotal()), Element.ALIGN_RIGHT);
 
-                // Footer totals
                 sumStp += rawTotal;
                 sumQty += item.getQuantity();
                 sumDisc += absoluteDiscount;
@@ -128,13 +130,20 @@ public class InvoiceGenerator {
             document.add(new Paragraph("\n"));
 
             // --- 5. GRAND TOTAL ---
-            // Visually reduced to blend better with the receipt size
             Paragraph grandTotal = new Paragraph(String.format("%,.2f", sale.getTotalAmount()), GRAND_TOTAL_FONT);
             grandTotal.setAlignment(Element.ALIGN_RIGHT);
             document.add(grandTotal);
 
             document.close();
-            System.out.println("✅ Invoice generated at: " + destFilePath);
+
+            // Auto-Open Logic
+            boolean shouldAutoOpen = ConfigUtil.getBoolean("pdf.auto_open", true);
+            if (shouldAutoOpen) {
+                File pdfFile = new File(destFilePath);
+                if (pdfFile.exists() && Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(pdfFile);
+                }
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -176,7 +185,6 @@ public class InvoiceGenerator {
     }
 
     public static void generateReturnReceipt(Sale invoice, SaleItem item, int returnedQty, double refundAmount, String refundMethod, String reason) {
-        // 1. Establish Dedicated Directory
         String directoryPath = "Returns/";
         File directory = new File(directoryPath);
         if (!directory.exists()) {
@@ -185,20 +193,23 @@ public class InvoiceGenerator {
 
         String fileName = directoryPath + "Return_Inv_" + invoice.getId() + "_" + System.currentTimeMillis() + ".pdf";
 
-        // 2. Setup 80mm Thermal Width (approx 226 points). Height is fixed for basic text.
+        // Fixed Basic Height for Return Slip
         Document document = new Document(new Rectangle(226, 400), 10, 10, 15, 15);
 
         try {
             PdfWriter.getInstance(document, new FileOutputStream(fileName));
             document.open();
 
-            // 3. Define Fonts
             Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
             Font standardFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
             Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
 
-            // 4. Build Header
-            Paragraph header = new Paragraph("YOUR PHARMACY NAME\n123 Main Street, City\nPh: 0300-1234567\n\n", headerFont);
+            // --- DYNAMIC HEADER ---
+            String shopName = ConfigUtil.get("pharmacy.name", "MY PHARMACY");
+            String shopAddress = ConfigUtil.get("pharmacy.address", "Shop Address");
+            String shopPhone = ConfigUtil.get("pharmacy.phone", "0000-0000000");
+
+            Paragraph header = new Paragraph(shopName + "\n" + shopAddress + "\nPh: " + shopPhone + "\n\n", headerFont);
             header.setAlignment(Element.ALIGN_CENTER);
             document.add(header);
 
@@ -208,14 +219,14 @@ public class InvoiceGenerator {
 
             document.add(new Chunk(new LineSeparator()));
 
-            // 5. Build Item Details
+            // Item Details
             document.add(new Paragraph("Item: " + item.getProductName(), standardFont));
             document.add(new Paragraph("Qty Returned: " + returnedQty, standardFont));
             document.add(new Paragraph("Unit Price: Rs. " + item.getUnitPrice(), standardFont));
 
             document.add(new Chunk(new LineSeparator()));
 
-            // 6. Build Refund Totals
+            // Refund Totals
             document.add(new Paragraph("Total Refund: Rs. " + refundAmount, boldFont));
             document.add(new Paragraph("Method: " + refundMethod, standardFont));
             if (reason != null && !reason.trim().isEmpty()) {
@@ -224,7 +235,7 @@ public class InvoiceGenerator {
 
             document.add(new Chunk(new LineSeparator()));
 
-            // 7. Build Dynamic Footer
+            // Footer
             String disclaimer = "KHATA CREDIT".equals(refundMethod) ? "Khata Credit Applied." : "Cash Refund Issued.";
             Paragraph footer = new Paragraph("Refund Processed Successfully.\n" + disclaimer + "\nThank you!", standardFont);
             footer.setAlignment(Element.ALIGN_CENTER);
@@ -232,15 +243,17 @@ public class InvoiceGenerator {
 
             document.close();
 
-            // 8. Auto-Open PDF for Testing
-            File pdfFile = new File(fileName);
-            if (pdfFile.exists() && Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(pdfFile);
+            // Auto-Open Logic (Dynamic)
+            boolean shouldAutoOpen = ConfigUtil.getBoolean("pdf.auto_open", true);
+            if (shouldAutoOpen) {
+                File pdfFile = new File(fileName);
+                if (pdfFile.exists() && Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(pdfFile);
+                }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 }

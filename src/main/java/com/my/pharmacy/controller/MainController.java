@@ -7,71 +7,28 @@ import javafx.scene.layout.BorderPane;
 import java.io.IOException;
 import java.net.URL;
 
-/**
- * Core Navigation Controller for the Pharmacy System.
- * Manages the swapping of views within the main center content area.
- */
 public class MainController {
+
+    public static MainController instance; // Allow other controllers to call navigation methods
 
     @FXML private BorderPane mainLayout;
 
-    // --- Outbound / Sales Methods ---
-
     @FXML
-    private void showPOS() {
-        // Loads the Point of Sale screen for billing
-        loadView("/fxml/POSView.fxml");
+    public void initialize() {
+        instance = this;
+        showDashboard(); // Load the dashboard by default
     }
 
-    @FXML
-    private void showHistory() {
-        // Loads the historical sales record and profit reports
-        loadView("/fxml/SalesHistory.fxml");
-    }
+    @FXML public void showDashboard() { loadView("/fxml/DashboardView.fxml"); }
+    @FXML public void showPOS() { loadView("/fxml/POSView.fxml"); }
+    @FXML public void showHistory() { loadView("/fxml/SalesHistory.fxml"); }
+    @FXML public void showInventory() { loadView("/fxml/InventoryView.fxml"); }
+    @FXML public void showPurchaseEntry() { loadView("/fxml/PurchaseEntry.fxml"); }
+    @FXML public void showCustomers() { loadView("/fxml/CustomerManagement.fxml"); }
+    @FXML public void showDealers() { loadView("/fxml/DealerManagement.fxml"); }
+    @FXML public void showItemLedger() { loadView("/fxml/ItemLedger.fxml"); }
+    @FXML public void showKhata() { loadView("/fxml/KhataManagement.fxml"); }
 
-    // --- Inbound / Inventory Methods ---
-
-    @FXML
-    private void showInventory() {
-        // Loads the detailed batch-wise inventory view
-        loadView("/fxml/InventoryView.fxml");
-    }
-
-    @FXML
-    private void showPurchaseEntry() {
-        // Loads the screen to buy stock from Dealers and update batches
-        loadView("/fxml/PurchaseEntry.fxml");
-    }
-
-    // --- Entity Management Methods (Separated) ---
-
-    @FXML
-    private void showCustomers() {
-        // Manages Retail and Wholesale buyers
-        loadView("/fxml/CustomerManagement.fxml");
-    }
-
-    @FXML
-    private void showDealers() {
-        // Manages Suppliers/Distributors
-        loadView("/fxml/DealerManagement.fxml");
-    }
-    @FXML
-    private void showItemLedger() {
-        loadView("/fxml/ItemLedger.fxml");
-    }
-
-    @FXML
-    private void showKhata() {
-        loadView("/fxml/KhataManagement.fxml");
-    }
-
-    // --- Helper Methods ---
-
-    /**
-     * Swaps the center node of the BorderPane with the requested FXML view.
-     * @param fxmlPath The path to the FXML file relative to the resources folder.
-     */
     private void loadView(String fxmlPath) {
         try {
             URL resource = getClass().getResource(fxmlPath);
@@ -79,13 +36,9 @@ public class MainController {
                 System.err.println("❌ ERROR: FXML file not found at " + fxmlPath);
                 return;
             }
-
             FXMLLoader loader = new FXMLLoader(resource);
             Parent view = loader.load();
-
-            // Replaces the current center content with the new screen
             mainLayout.setCenter(view);
-
         } catch (IOException e) {
             System.err.println("❌ ERROR: Failed to load " + fxmlPath);
             e.printStackTrace();
@@ -94,8 +47,6 @@ public class MainController {
 
     @FXML
     private void handleLogout() {
-        // Placeholder for logout logic (e.g., returning to Login screen)
-        System.out.println("User logged out.");
         System.exit(0);
     }
 }

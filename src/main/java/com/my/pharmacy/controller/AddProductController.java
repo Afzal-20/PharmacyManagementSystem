@@ -13,8 +13,7 @@ public class AddProductController {
 
     @FXML private TextField qtyBoxesField;
     @FXML private TextField tradePriceField;
-    @FXML private TextField qtyUnitsField;
-    @FXML private TextField retailPriceField;
+
 
     private ProductDAO productDAO = new ProductDAOImpl();
     private BatchDAO batchDAO = new BatchDAOImpl();
@@ -35,17 +34,12 @@ public class AddProductController {
 
             int totalBoxes;
             double tradePrice = 0.0;
-            double retailPrice = 0.0;
 
-            // PURE BOX-CENTRIC LOGIC
-            if (qtyUnitsField != null) {
-                // Note: Even if the UI says 'qtyUnits', we are treating it as Boxes now
-                totalBoxes = Integer.parseInt(qtyUnitsField.getText());
-                retailPrice = Double.parseDouble(retailPriceField.getText());
-            } else {
+
+
                 totalBoxes = Integer.parseInt(qtyBoxesField.getText());
                 tradePrice = Double.parseDouble(tradePriceField.getText());
-            }
+
 
             Batch batch = new Batch(0, productId, batchField.getText(), expiryField.getText(),
                     totalBoxes, Double.parseDouble(costField.getText()),

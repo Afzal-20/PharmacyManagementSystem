@@ -30,7 +30,7 @@ public class DatabaseSetup {
                     "expiry_date TEXT, " +
                     "qty_on_hand INTEGER, " +
                     "cost_price REAL, " +
-                    "trade_price REAL, " + // retail_price REMOVED
+                    "trade_price REAL, " +
                     "company_discount REAL DEFAULT 0.0, " +
                     "sales_tax REAL DEFAULT 0.0, " +
                     "discount_percent REAL, " +

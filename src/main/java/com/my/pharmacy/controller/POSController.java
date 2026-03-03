@@ -56,7 +56,7 @@ public class POSController {
         setupTableColumns();
         loadStockData();
         setupSearchFilter();
-        setupCustomerSelector();
+        setupCustomerSelector(null); // FIXED: Pass null for default selection
         setupPaymentListeners();
     }
 
@@ -81,7 +81,7 @@ public class POSController {
         cartTable.setItems(cartData);
     }
 
-    private void setupCustomerSelector() {
+    private void setupCustomerSelector(Integer selectId) {
         customerList.clear();
         customerList.add(WALK_IN_CUSTOMER);
 
@@ -100,7 +100,14 @@ public class POSController {
             @Override public Customer fromString(String s) { return null; }
         });
 
-        customerComboBox.getSelectionModel().selectFirst();
+        if (selectId != null) {
+            customerList.stream()
+                    .filter(c -> c.getId() == selectId)
+                    .findFirst()
+                    .ifPresent(c -> customerComboBox.getSelectionModel().select(c));
+        } else {
+            customerComboBox.getSelectionModel().selectFirst();
+        }
     }
 
     private void setupPaymentListeners() {
@@ -118,9 +125,14 @@ public class POSController {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
             filteredData.setPredicate(batch -> {
                 if (newVal == null || newVal.isEmpty()) return true;
+
                 String query = newVal.toLowerCase().trim();
-                return batch.getProduct().getName().toLowerCase().contains(query) ||
-                        batch.getProduct().getGenericName().toLowerCase().contains(query);
+                String productName = batch.getProduct().getName().toLowerCase();
+                String genericName = batch.getProduct().getGenericName().toLowerCase();
+
+                // FIX: Using the improved FuzzySearchUtil
+                return com.my.pharmacy.util.FuzzySearchUtil.isFuzzyMatch(query, productName) ||
+                        com.my.pharmacy.util.FuzzySearchUtil.isFuzzyMatch(query, genericName);
             });
         });
         SortedList<Batch> sortedData = new SortedList<>(filteredData);
@@ -202,9 +214,9 @@ public class POSController {
     private void handleCheckout() {
         if (cartData.isEmpty()) return;
 
-        Customer c = customerComboBox.getValue();
-        boolean isWalkIn = (c == null || c.getId() == 1);
-        int customerId = (c != null) ? c.getId() : 1;
+        Customer currentCustomer = customerComboBox.getValue();
+        int customerId = (currentCustomer != null) ? currentCustomer.getId() : 1;
+        boolean isWalkIn = (customerId == 1); // FIXED: Defined isWalkIn variable
 
         try {
             double total = calculateCartTotal();
@@ -225,13 +237,21 @@ public class POSController {
             saleDAO.saveSale(sale);
 
             String desktopPath = System.getProperty("user.home") + "/Desktop/Invoice_" + sale.getId() + ".pdf";
-            InvoiceGenerator.generateThermalReceipt(sale, c, desktopPath);
+
+            // FIXED: Passed 'currentCustomer' instead of undefined 'c'
+            InvoiceGenerator.generateThermalReceipt(sale, currentCustomer, desktopPath);
+
             showAlert(Alert.AlertType.INFORMATION, "Success", "Sale Completed! Stock and Ledger updated.");
 
             cartData.clear();
             loadStockData();
             updateTotal();
-            setupCustomerSelector();
+
+            // Re-select the same customer to speed up wholesale billing
+            setupCustomerSelector(customerId);
+
+            searchField.requestFocus();
+            searchField.clear();
 
         } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Input Error", "Please verify the Amount Paid is a valid number.");
@@ -255,7 +275,7 @@ public class POSController {
             stage.setTitle("Register New Client");
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
-            setupCustomerSelector();
+            setupCustomerSelector(null); // FIXED: Pass null for default
         } catch (IOException e) { e.printStackTrace(); }
     }
 }
