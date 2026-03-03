@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.model.Batch;
 import com.my.pharmacy.model.SaleItem;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -24,19 +25,32 @@ public class AddToCartController {
     @FXML
     private void handleSave() {
         try {
-            if (qtyField.getText().isEmpty()) return;
-
-            int boxes = Integer.parseInt(qtyField.getText());
-            int bonusBoxes = bonusField.getText().isEmpty() ? 0 : Integer.parseInt(bonusField.getText());
-            double discPercent = discountField.getText().isEmpty() ? 0.0 : Double.parseDouble(discountField.getText());
-
-            double unitPrice = selectedBatch.getTradePrice(); // Strict Box Rate
-
-            if ((boxes + bonusBoxes) > selectedBatch.getQtyOnHand()) {
-                System.err.println("Insufficient Stock!");
+            // 1. Input Validation
+            if (qtyField.getText().trim().isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Input Error", "Please enter a quantity.");
                 return;
             }
 
+            int boxes = Integer.parseInt(qtyField.getText().trim());
+            int bonusBoxes = bonusField.getText().trim().isEmpty() ? 0 : Integer.parseInt(bonusField.getText().trim());
+            double discPercent = discountField.getText().trim().isEmpty() ? 0.0 : Double.parseDouble(discountField.getText().trim());
+
+            double unitPrice = selectedBatch.getTradePrice(); // Strict Box Rate
+
+            // 2. Business Logic Validation (Stock Check)
+            int totalRequested = boxes + bonusBoxes;
+            if (totalRequested > selectedBatch.getQtyOnHand()) {
+                showAlert(Alert.AlertType.ERROR, "Insufficient Stock",
+                        "You requested " + totalRequested + " boxes, but " + selectedBatch.getQtyOnHand() + " are available in this batch.");
+                return;
+            }
+
+            if (boxes <= 0 && bonusBoxes <= 0) {
+                showAlert(Alert.AlertType.WARNING, "Invalid Quantity", "Quantity cannot be zero.");
+                return;
+            }
+
+            // 3. Create Item
             createdItem = new SaleItem(
                     selectedBatch.getProductId(),
                     selectedBatch.getId(),
@@ -49,13 +63,35 @@ public class AddToCartController {
 
             confirmed = true;
             closeWindow();
+
         } catch (NumberFormatException e) {
-            System.err.println("Invalid input numeric values.");
+            showAlert(Alert.AlertType.ERROR, "Invalid Input", "Please enter valid numeric values for Quantity and Discount.");
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "System Error", "An unexpected error occurred: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     public boolean isConfirmed() { return confirmed; }
+
     public SaleItem getCreatedItem() { return createdItem; }
-    @FXML private void handleCancel() { closeWindow(); }
-    private void closeWindow() { ((Stage) qtyField.getScene().getWindow()).close(); }
+
+    @FXML
+    private void handleCancel() {
+        closeWindow();
+    }
+
+    private void closeWindow() {
+        if (qtyField.getScene() != null && qtyField.getScene().getWindow() != null) {
+            ((Stage) qtyField.getScene().getWindow()).close();
+        }
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
 }
