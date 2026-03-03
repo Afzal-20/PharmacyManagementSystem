@@ -15,24 +15,26 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         primaryStage = stage;
-        loadMainApplication();
+
+        // 1. Initialize Database
+        DatabaseSetup.initialize();
+
+        // 2. Load Login Screen (Entry Point)
+        loadLoginScreen();
     }
 
-    public static void loadMainApplication() {
+    public static void loadLoginScreen() {
         try {
-            // Initialize the database structure for the wholesale environment
-            DatabaseSetup.initialize();
-
-            FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/MainLayout.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/LoginView.fxml"));
             Parent root = fxmlLoader.load();
-            Scene scene = new Scene(root, 1100, 750);
+            Scene scene = new Scene(root, 400, 550); // Smaller size for login
 
-            primaryStage.setTitle("Pharmacy Management System (Wholesale)");
+            primaryStage.setTitle("Login - Pharmacy System");
             primaryStage.setScene(scene);
             primaryStage.centerOnScreen();
             primaryStage.show();
         } catch (IOException e) {
-            System.err.println("❌ Critical Error: Failed to load MainLayout.fxml");
+            System.err.println("❌ Critical Error: Failed to load LoginView.fxml");
             e.printStackTrace();
         }
     }
