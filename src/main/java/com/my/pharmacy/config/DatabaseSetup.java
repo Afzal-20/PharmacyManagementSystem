@@ -1,156 +1,59 @@
 package com.my.pharmacy.config;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.Statement;
-import java.sql.SQLException;
 
 public class DatabaseSetup {
 
     public static void initialize() {
-        String url = DatabaseConnection.getDatabaseUrl();
-
-        try (Connection conn = DriverManager.getConnection(url);
+        try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement()) {
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS products (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "name TEXT NOT NULL, " +
-                    "generic_name TEXT, " +
-                    "manufacturer TEXT, " +
-                    "description TEXT, " +
-                    "pack_size INTEGER DEFAULT 1, " +
-                    "min_stock_level INTEGER DEFAULT 10, " +
-                    "shelf_location TEXT)");
+            // Enable Foreign Keys
+            stmt.execute("PRAGMA foreign_keys = ON;");
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS batches (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "product_id INTEGER, " +
-                    "batch_no TEXT, " +
-                    "expiry_date TEXT, " +
-                    "qty_on_hand INTEGER, " +
-                    "cost_price REAL, " +
-                    "trade_price REAL, " +
-                    "company_discount REAL DEFAULT 0.0, " +
-                    "sales_tax REAL DEFAULT 0.0, " +
-                    "discount_percent REAL, " +
-                    "tax_percent REAL DEFAULT 0.0, " +
-                    "is_active INTEGER DEFAULT 1, " +
-                    "FOREIGN KEY(product_id) REFERENCES products(id))");
+            // Load schema from file
+            InputStream is = DatabaseSetup.class.getResourceAsStream("/database/schema.sql");
+            if (is == null) {
+                System.err.println("❌ CRITICAL: database/schema.sql not found!");
+                return;
+            }
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS dealers (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "name TEXT NOT NULL, " +
-                    "company_name TEXT, " +
-                    "phone TEXT, " +
-                    "address TEXT, " +
-                    "license_no TEXT, " +
-                    "current_balance REAL DEFAULT 0.0)");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sql = new StringBuilder();
+            String line;
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS customers (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "name TEXT NOT NULL, " +
-                    "phone TEXT, " +
-                    "address TEXT, " +
-                    "type TEXT DEFAULT 'WHOLESALE', " + // Changed from RETAIL
-                    "current_balance REAL DEFAULT 0.0, " +
-                    "area_code TEXT, " +
-                    "area_name TEXT)");
+            while ((line = reader.readLine()) != null) {
+                String trimmedLine = line.trim();
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS sales (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                    "total_amount REAL, " +
-                    "amount_paid REAL DEFAULT 0.0, " +
-                    "balance_due REAL DEFAULT 0.0, " +
-                    "payment_mode TEXT, " +
-                    "customer_id INTEGER, " +
-                    "salesman_id INTEGER, " +
-                    "FOREIGN KEY(customer_id) REFERENCES customers(id))");
+                // Skip empty lines and full-line comments
+                if (trimmedLine.isEmpty() || trimmedLine.startsWith("--")) {
+                    continue;
+                }
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS sale_items (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "sale_id INTEGER, " +
-                    "product_id INTEGER, " +
-                    "batch_id INTEGER, " +
-                    "quantity INTEGER, " +
-                    "unit_price REAL, " +
-                    "sub_total REAL, " +
-                    "bonus_qty INTEGER DEFAULT 0, " +
-                    "discount_percent REAL DEFAULT 0.0)");
+                // FIX: Append a newline so inline comments (--) don't comment out the rest of the query
+                sql.append(line).append("\n");
 
-            // --- NEW: Payments Table for Khata Management ---
-            stmt.execute("CREATE TABLE IF NOT EXISTS payments (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "entity_id INTEGER, " +
-                    "entity_type TEXT, " + // 'CUSTOMER' or 'DEALER'
-                    "payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                    "amount REAL, " +
-                    "payment_mode TEXT, " +
-                    "description TEXT)");
+                // Execute statement when ending with semicolon
+                if (trimmedLine.endsWith(";")) {
+                    try {
+                        stmt.execute(sql.toString());
+                    } catch (Exception e) {
+                        System.err.println("❌ Error executing SQL: " + sql.toString());
+                        throw e; // Rethrow to stop initialization
+                    }
+                    sql.setLength(0); // Reset buffer
+                }
+            }
 
-            // --- NEW: Audit Table for Stock Adjustments ---
-            stmt.execute("CREATE TABLE IF NOT EXISTS stock_adjustments_audit (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "batch_id INTEGER, " +
-                    "old_qty INTEGER, " +
-                    "new_qty INTEGER, " +
-                    "reason TEXT, " +
-                    "adjustment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                    "user_id INTEGER DEFAULT 1, " +
-                    "FOREIGN KEY(batch_id) REFERENCES batches(id))");
-
-            stmt.execute("CREATE TABLE IF NOT EXISTS purchase_history (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                    "dealer_id INTEGER, " +
-                    "product_id INTEGER, " +
-                    "product_name TEXT, " +
-                    "batch_no TEXT, " +
-                    "dealer_invoice_no TEXT, " +
-                    "initial_boxes_purchased INTEGER, " +
-                    "cost_price REAL, " +
-                    "trade_price REAL)");
-
-            // --- NEW: Returns Architecture ---
-            stmt.execute("CREATE TABLE IF NOT EXISTS sale_returns (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "sale_id INTEGER, " +
-                    "sale_item_id INTEGER, " +
-                    "batch_id INTEGER, " +
-                    "returned_qty INTEGER, " +
-                    "refund_amount REAL, " +
-                    "return_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                    "refund_method TEXT, " +
-                    "reason TEXT)");
-
-            addColumnIfMissing(stmt, "sale_items", "returned_qty", "INTEGER DEFAULT 0");
-            addColumnIfMissing(stmt, "customers", "cnic", "TEXT");
-            addColumnIfMissing(stmt, "customers", "current_balance", "REAL DEFAULT 0.0");
-            addColumnIfMissing(stmt, "customers", "area_code", "TEXT");
-            addColumnIfMissing(stmt, "customers", "area_name", "TEXT");
-            addColumnIfMissing(stmt, "dealers", "current_balance", "REAL DEFAULT 0.0");
-            addColumnIfMissing(stmt, "batches", "company_discount", "REAL DEFAULT 0.0");
-            addColumnIfMissing(stmt, "batches", "sales_tax", "REAL DEFAULT 0.0");
-            addColumnIfMissing(stmt, "sales", "amount_paid", "REAL DEFAULT 0.0");
-            addColumnIfMissing(stmt, "sales", "balance_due", "REAL DEFAULT 0.0");
-
-            // Ensures ID 1 is ALWAYS the Walk-in customer, so real clients start at ID 2
-            stmt.execute("INSERT OR IGNORE INTO customers (id, name, phone, address, type, current_balance, cnic) " +
-                    "VALUES (1, 'Counter Sale (Walk-in)', '', '', 'REGULAR', 0.0, '')");
-            // -------------------------------
-
-            System.out.println("✅ Database structure optimized for Khata and audit logging.");
+            System.out.println("✅ Database schema initialized successfully.");
 
         } catch (Exception e) {
-            System.err.println("❌ Database Initialization Error:");
+            System.err.println("❌ Database Initialization Failed:");
             e.printStackTrace();
         }
-    }
-
-    private static void addColumnIfMissing(Statement stmt, String table, String column, String definition) {
-        try {
-            stmt.execute("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
-        } catch (SQLException e) { }
     }
 }

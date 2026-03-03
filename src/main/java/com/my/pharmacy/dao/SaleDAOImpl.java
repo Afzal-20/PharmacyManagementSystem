@@ -6,7 +6,9 @@ import com.my.pharmacy.model.SaleItem;
 import com.my.pharmacy.model.SaleLedgerRecord;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar; // Required for TimeZone fix
 import java.util.List;
+import java.util.TimeZone; // Required for TimeZone fix
 
 public class SaleDAOImpl implements SaleDAO {
 
@@ -14,14 +16,15 @@ public class SaleDAOImpl implements SaleDAO {
 
     @Override
     public void saveSale(Sale sale) {
-        String insertSaleSQL = "INSERT INTO sales (total_amount, amount_paid, balance_due, payment_mode, customer_id, salesman_id) VALUES (?, ?, ?, ?, ?, ?)";
+        // FIX 1: Changed 'salesman_id' to 'user_id'
+        String insertSaleSQL = "INSERT INTO sales (total_amount, amount_paid, balance_due, payment_mode, customer_id, user_id) VALUES (?, ?, ?, ?, ?, ?)";
         String insertItemSQL = "INSERT INTO sale_items (sale_id, product_id, batch_id, quantity, unit_price, sub_total, bonus_qty, discount_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         String updateCustomerSQL = "UPDATE customers SET current_balance = current_balance + ? WHERE id = ?";
 
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // Start Transaction
 
             // 1. Insert Sale Header
             try (PreparedStatement pstmt = conn.prepareStatement(insertSaleSQL, Statement.RETURN_GENERATED_KEYS)) {
@@ -30,20 +33,23 @@ public class SaleDAOImpl implements SaleDAO {
                 pstmt.setDouble(3, sale.getBalanceDue());
                 pstmt.setString(4, sale.getPaymentMode());
                 pstmt.setInt(5, sale.getCustomerId());
-                pstmt.setInt(6, sale.getSalesmanId());
+                pstmt.setInt(6, sale.getSalesmanId()); // Maps Java 'salesmanId' to DB 'user_id'
                 pstmt.executeUpdate();
 
                 ResultSet rs = pstmt.getGeneratedKeys();
                 int saleId = 0;
                 if (rs.next()) {
                     saleId = rs.getInt(1);
-                    sale.setId(saleId); // FIX: Populate the object so POSController can read it
+                    sale.setId(saleId); // Update ID in memory
                 }
+
                 // 2. Update Customer Khata Balance
-                try (PreparedStatement custStmt = conn.prepareStatement(updateCustomerSQL)) {
-                    custStmt.setDouble(1, sale.getBalanceDue());
-                    custStmt.setInt(2, sale.getCustomerId());
-                    custStmt.executeUpdate();
+                if (sale.getBalanceDue() > 0) {
+                    try (PreparedStatement custStmt = conn.prepareStatement(updateCustomerSQL)) {
+                        custStmt.setDouble(1, sale.getBalanceDue());
+                        custStmt.setInt(2, sale.getCustomerId());
+                        custStmt.executeUpdate();
+                    }
                 }
 
                 // 3. Insert Items & Update Inventory
@@ -65,7 +71,7 @@ public class SaleDAOImpl implements SaleDAO {
                 }
             }
             conn.commit();
-            System.out.println("✅ Sale, Khata, and stock levels updated successfully.");
+            System.out.println("✅ Sale saved successfully.");
 
         } catch (SQLException e) {
             try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
@@ -77,19 +83,7 @@ public class SaleDAOImpl implements SaleDAO {
 
     @Override
     public List<Sale> getAllSales() {
-        List<Sale> sales = new ArrayList<>();
-        String sql = "SELECT * FROM sales ORDER BY sale_date DESC";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                sales.add(new Sale(rs.getInt("id"), rs.getTimestamp("sale_date"),
-                        rs.getDouble("total_amount"), rs.getString("payment_mode"),
-                        rs.getInt("customer_id"), rs.getInt("salesman_id"),
-                        rs.getDouble("amount_paid"), rs.getDouble("balance_due")));
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return sales;
+        return getSalesByDate(null);
     }
 
     @Override
@@ -99,19 +93,19 @@ public class SaleDAOImpl implements SaleDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return new Sale(rs.getInt("id"), rs.getTimestamp("sale_date"),
-                            rs.getDouble("total_amount"), rs.getString("payment_mode"),
-                            rs.getInt("customer_id"), rs.getInt("salesman_id"),
-                            rs.getDouble("amount_paid"), rs.getDouble("balance_due"));
-                }
+                if (rs.next()) return mapRowToSale(rs);
             }
         } catch (SQLException e) { e.printStackTrace(); }
         return null;
     }
+
+    // FIX 2: Correct TimeZone handling for Item Ledger (Sales Tab)
     @Override
     public List<SaleLedgerRecord> getSalesHistoryByProductId(int productId) {
         List<SaleLedgerRecord> history = new ArrayList<>();
+        // Helper calendar to interpret DB time as UTC
+        Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+
         String sql = "SELECT s.id, s.sale_date, si.quantity, si.unit_price, si.sub_total " +
                 "FROM sale_items si JOIN sales s ON si.sale_id = s.id " +
                 "WHERE si.product_id = ? ORDER BY s.sale_date DESC";
@@ -122,7 +116,7 @@ public class SaleDAOImpl implements SaleDAO {
                 while (rs.next()) {
                     history.add(new SaleLedgerRecord(
                             rs.getInt("id"),
-                            rs.getTimestamp("sale_date"),
+                            rs.getTimestamp("sale_date", utcCal), // <--- Converts UTC DB time to Local Java time
                             rs.getInt("quantity"),
                             rs.getDouble("unit_price"),
                             rs.getDouble("sub_total")
@@ -136,28 +130,43 @@ public class SaleDAOImpl implements SaleDAO {
     @Override
     public List<Sale> getSalesByDate(java.time.LocalDate date) {
         List<Sale> sales = new ArrayList<>();
-        String sql = "SELECT * FROM sales WHERE DATE(sale_date) = ?";
+        StringBuilder sql = new StringBuilder("SELECT * FROM sales");
+
+        // FIX 3: Use 'localtime' in SQL so filtering matches your PC date (e.g. 2:40 AM belongs to Today, not Yesterday)
+        if (date != null) {
+            sql.append(" WHERE date(sale_date, 'localtime') = date(?)");
+        }
+        sql.append(" ORDER BY sale_date DESC");
+
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, date.toString());
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+
+            if (date != null) pstmt.setString(1, date.toString());
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    sales.add(new Sale(
-                            rs.getInt("id"),
-                            rs.getTimestamp("sale_date"),
-                            rs.getDouble("total_amount"),
-                            rs.getString("payment_mode"),
-                            rs.getInt("customer_id"),
-                            1, // FIXED: Hardcoded User ID to prevent SQLite column errors
-                            rs.getDouble("amount_paid"),
-                            rs.getDouble("balance_due")
-                    ));
+                    sales.add(mapRowToSale(rs));
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
         return sales;
+    }
+
+    // FIX 4: Centralized mapping helper with TimeZone and User ID fixes
+    private Sale mapRowToSale(ResultSet rs) throws SQLException {
+        // Create a Calendar set to UTC. This tells the driver "The string in DB is UTC, please convert it to my Local Time".
+        Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+
+        return new Sale(
+                rs.getInt("id"),
+                rs.getTimestamp("sale_date", utcCal), // <--- Converts UTC DB time to Local Java time
+                rs.getDouble("total_amount"),
+                rs.getString("payment_mode"),
+                rs.getInt("customer_id"),
+                rs.getInt("user_id"), // Fixed column mapping
+                rs.getDouble("amount_paid"),
+                rs.getDouble("balance_due")
+        );
     }
 
     @Override
@@ -175,7 +184,7 @@ public class SaleDAOImpl implements SaleDAO {
                     item.setId(rs.getInt("id"));
                     item.setSaleId(saleId);
                     item.setProductName(rs.getString("product_name"));
-                    item.setReturnedQty(rs.getInt("returned_qty")); // Fetch returned qty
+                    item.setReturnedQty(rs.getInt("returned_qty"));
                     items.add(item);
                 }
             }
@@ -188,9 +197,8 @@ public class SaleDAOImpl implements SaleDAO {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // Start Transaction
+            conn.setAutoCommit(false);
 
-            // 1. Insert into sale_returns
             String insertReturn = "INSERT INTO sale_returns (sale_id, sale_item_id, batch_id, returned_qty, refund_amount, refund_method, reason) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(insertReturn)) {
                 pstmt.setInt(1, saleId);
@@ -202,49 +210,42 @@ public class SaleDAOImpl implements SaleDAO {
                 pstmt.setString(7, reason);
                 pstmt.executeUpdate();
             }
-
-            // 2. Update sale_items returned_qty
             String updateSaleItem = "UPDATE sale_items SET returned_qty = returned_qty + ? WHERE id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(updateSaleItem)) {
                 pstmt.setInt(1, returnQty);
                 pstmt.setInt(2, item.getId());
                 pstmt.executeUpdate();
             }
-
-            // 3. Restock Inventory
             String updateBatch = "UPDATE batches SET qty_on_hand = qty_on_hand + ? WHERE id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(updateBatch)) {
                 pstmt.setInt(1, returnQty);
                 pstmt.setInt(2, item.getBatchId());
                 pstmt.executeUpdate();
             }
-
-            // 4. Handle Accounting
-            String desc = "Refund for Invoice #" + saleId + " (" + item.getProductName() + ")";
-            // FIX: Updated to match the exact string passed from the UI ComboBox
+            // Use exact string matching for Khata Logic
             if ("KHATA CREDIT".equals(refundMethod) && customerId != 1) {
-                // Credit Khata (Reduce balance)
                 String updateKhata = "UPDATE customers SET current_balance = current_balance - ? WHERE id = ?";
-
-                // Log payment entry for Khata Ledger
+                try (PreparedStatement pstmt = conn.prepareStatement(updateKhata)) {
+                    pstmt.setDouble(1, refundAmount);
+                    pstmt.setInt(2, customerId);
+                    pstmt.executeUpdate();
+                }
                 String insertPayment = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'RETURN_CREDIT', ?)";
                 try (PreparedStatement pstmt = conn.prepareStatement(insertPayment)) {
                     pstmt.setInt(1, customerId);
                     pstmt.setDouble(2, refundAmount);
-                    pstmt.setString(3, desc);
+                    pstmt.setString(3, "Refund for Invoice #" + saleId);
                     pstmt.executeUpdate();
                 }
             } else {
-                // Cash Refund - Log negative payment to balance cash drawer
                 String insertPayment = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'CASH_REFUND', ?)";
                 try (PreparedStatement pstmt = conn.prepareStatement(insertPayment)) {
                     pstmt.setInt(1, customerId);
-                    pstmt.setDouble(2, -refundAmount); // Negative to reduce cash total
-                    pstmt.setString(3, desc);
+                    pstmt.setDouble(2, -refundAmount);
+                    pstmt.setString(3, "Cash Refund Inv #" + saleId);
                     pstmt.executeUpdate();
                 }
             }
-
             conn.commit();
         } catch (SQLException e) {
             try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
