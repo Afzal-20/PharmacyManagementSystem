@@ -5,42 +5,38 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="mainLayout" prefHeight="700.0" prefWidth="1100.0"
-            stylesheets="@../styles/style.css"
-            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.my.pharmacy.controller.MainController">
+<BorderPane fx:id="mainLayout" prefHeight="700.0" prefWidth="1100.0" stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.MainController">
 
     <left>
-        <VBox styleClass="sidebar" prefWidth="220.0" spacing="5">
+        <VBox prefWidth="220.0" spacing="5" styleClass="sidebar">
             <padding>
-                <Insets top="20" right="0" bottom="20" left="0"/>
+                <Insets bottom="20" left="0" right="0" top="20" />
             </padding>
 
             <VBox alignment="CENTER">
-                <Label text="PHARMACY" styleClass="app-title"/>
-                <Label text="WHOLESALE" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                <Label styleClass="app-title" text="PHARMACY" />
+                <Label style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" text="WHOLESALE" />
                 <padding>
-                    <Insets bottom="30"/>
+                    <Insets bottom="30" />
                 </padding>
             </VBox>
 
-            <Button text="🏠  Home Dashboard" maxWidth="Infinity" styleClass="nav-button" onAction="#showDashboard"/>
+            <Button maxWidth="Infinity" onAction="#showDashboard" styleClass="nav-button" text="🏠  Home Dashboard" />
 
-            <Button text="🛒  Point of Sale" maxWidth="Infinity" styleClass="nav-button" onAction="#showPOS"/>
-            <Button text="📦  Inventory" maxWidth="Infinity" styleClass="nav-button" onAction="#showInventory"/>
-            <Button text="➕  Stock Purchase" maxWidth="Infinity" styleClass="nav-button" onAction="#showPurchaseEntry"/>
+            <Button maxWidth="Infinity" onAction="#showPOS" styleClass="nav-button" text="🛒  Point of Sale" />
+            <Button maxWidth="Infinity" onAction="#showInventory" styleClass="nav-button" text="📦  Inventory" />
+            <Button maxWidth="Infinity" onAction="#showPurchaseEntry" styleClass="nav-button" text="➕  Stock Purchase" />
 
-            <Button text="👥  Customers" maxWidth="Infinity" styleClass="nav-button" onAction="#showCustomers"/>
-            <Button text="🏢  Dealers" maxWidth="Infinity" styleClass="nav-button" onAction="#showDealers"/>
-            <Button text="🔍  Item Ledger" maxWidth="Infinity" styleClass="nav-button" onAction="#showItemLedger"/>
-            <Button text="📘  Khata Ledgers" maxWidth="Infinity" styleClass="nav-button" onAction="#showKhata"/>
-            <Button text="📜  Sales History" maxWidth="Infinity" styleClass="nav-button" onAction="#showHistory"/>
+            <Button maxWidth="Infinity" onAction="#showCustomers" styleClass="nav-button" text="👥  Customers" />
+            <Button maxWidth="Infinity" onAction="#showDealers" styleClass="nav-button" text="🏢  Dealers" />
+            <Button maxWidth="Infinity" onAction="#showItemLedger" styleClass="nav-button" text="🔍  Item Ledger" />
+            <Button maxWidth="Infinity" onAction="#showKhata" styleClass="nav-button" text="📘  Khata Ledgers" />
+            <Button maxWidth="Infinity" onAction="#showHistory" styleClass="nav-button" text="📜  Sales History" />
 
-            <VBox VBox.vgrow="ALWAYS" />
+            <VBox style="-fx-border-radius: 10px;" VBox.vgrow="ALWAYS" />
 
-            <Button text="🚪  Logout" maxWidth="Infinity" styleClass="nav-button" style="-fx-text-fill: #e74c3c;" onAction="#handleLogout"/>
+            <Button maxWidth="Infinity" onAction="#handleLogout" style="-fx-text-fill: #e74c3c;" styleClass="nav-button" text="🚪  Logout" />
 
         </VBox>
     </left>

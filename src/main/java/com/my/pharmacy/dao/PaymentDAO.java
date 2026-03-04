@@ -8,4 +8,6 @@ public interface PaymentDAO {
     void recordPayment(Payment payment);
     List<LedgerRecord> getCustomerLedger(int customerId);
     List<LedgerRecord> getDealerLedger(int dealerId);
+    double getDynamicCustomerBalance(int customerId);
+    double getDynamicDealerBalance(int dealerId);
 }

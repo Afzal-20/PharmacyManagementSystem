@@ -70,8 +70,10 @@ public class KhataController {
         Customer c = customerComboBox.getValue();
         if (c == null) return;
 
-        Customer refreshed = customerDAO.getCustomerById(c.getId());
-        lblCustomerBalance.setText(String.format("Rs. %.2f", refreshed.getCurrentBalance()));
+        // FIX: Get balance dynamically from all transactions
+        double dynamicBalance = paymentDAO.getDynamicCustomerBalance(c.getId());
+        lblCustomerBalance.setText(String.format("Rs. %,.2f", dynamicBalance));
+
         customerLedgerTable.setItems(FXCollections.observableArrayList(paymentDAO.getCustomerLedger(c.getId())));
     }
 
@@ -100,15 +102,11 @@ public class KhataController {
         Dealer d = dealerComboBox.getValue();
         if (d == null) return;
 
-        Dealer refreshed = dealerDAO.getDealerById(d.getId()); // Make sure Dealer model has currentBalance mapping in DAO if you want it exact, otherwise calculate from Ledger or let PaymentDAO update it.
-        // Wait, DealerDAO needs to fetch current_balance. If not mapped in Dealer model yet, we will fetch it manually or map it.
+        // FIX: Get balance dynamically from all transactions
+        double dynamicBalance = paymentDAO.getDynamicDealerBalance(d.getId());
+        lblDealerBalance.setText(String.format("Rs. %,.2f", dynamicBalance));
 
-        // Let's assume Dealer model in DealerDAOImpl has it, or we rely on the DB updating. For absolute safety, let's load the ledger rows.
         dealerLedgerTable.setItems(FXCollections.observableArrayList(paymentDAO.getDealerLedger(d.getId())));
-
-        // Calculate balance dynamically from Ledger if Dealer model isn't updated with currentBalance
-        double dynamicBalance = dealerLedgerTable.getItems().stream().mapToDouble(r -> r.getDebit() - r.getCredit()).sum();
-        lblDealerBalance.setText(String.format("Rs. %.2f", dynamicBalance));
     }
 
     @FXML

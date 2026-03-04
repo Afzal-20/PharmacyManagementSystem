@@ -1,40 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" spacing="20" style="-fx-background-color: #2c3e50;" prefWidth="400" prefHeight="500"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.my.pharmacy.controller.LoginController">
+<VBox alignment="CENTER" prefHeight="500" prefWidth="400" spacing="20" style="-fx-background-color: #2c3e50;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.LoginController">
 
-    <VBox alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);" maxWidth="350">
+    <VBox alignment="CENTER" maxWidth="350" style="-fx-background-color: #e7e7e7; -fx-background-radius: 10; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);">
 
         <Label text="PHARMACY SYSTEM" textFill="#2c3e50">
-            <font><Font name="System Bold" size="20.0"/></font>
+            <font><Font name="System Bold" size="20.0" /></font>
         </Label>
-        <Label text="WHOLESALE EDITION" textFill="#7f8c8d" style="-fx-font-size: 12px; -fx-padding: 0 0 20 0;"/>
+        <Label style="-fx-font-size: 12px; -fx-padding: 0 0 20 0;" text="WHOLESALE EDITION" textFill="#7f8c8d" />
 
-        <VBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="Username" style="-fx-font-weight: bold;"/>
-            <TextField fx:id="usernameField" promptText="Enter username" style="-fx-padding: 10;"/>
+        <VBox alignment="CENTER_LEFT" spacing="10">
+            <Label style="-fx-font-weight: bold;" text="Username" />
+            <TextField fx:id="usernameField" promptText="Enter username" style="-fx-padding: 10; -fx-border-radius: 2px; -fx-background-color: white; -fx-border-color: white;" />
 
-            <Label text="Password" style="-fx-font-weight: bold;"/>
-            <PasswordField fx:id="passwordField" promptText="Enter password" style="-fx-padding: 10;"/>
+            <Label style="-fx-font-weight: bold;" text="Password" />
+            <PasswordField fx:id="passwordField" promptText="Enter password" style="-fx-padding: 10; -fx-background-color: white; -fx-border-color: white; -fx-border-radius: 2px;" />
         </VBox>
 
-        <Label fx:id="errorLabel" text="" textFill="#e74c3c" style="-fx-padding: 10 0 0 0;"/>
+        <Label fx:id="errorLabel" style="-fx-padding: 10 0 0 0;" text="" textFill="#e74c3c" />
 
-        <Button text="SECURE LOGIN" onAction="#handleLogin"
-                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30; -fx-font-size: 14px; -fx-cursor: hand;"
-                maxWidth="Infinity">
+        <Button maxWidth="Infinity" onAction="#handleLogin" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30; -fx-font-size: 14px; -fx-cursor: hand;" text="LOGIN">
             <VBox.margin>
-                <Insets top="20"/>
+                <Insets top="20" />
             </VBox.margin>
         </Button>
     </VBox>
 
-    <Label text="Support: 0313-9451041" textFill="#bdc3c7" style="-fx-font-size: 11px;"/>
+    <Label style="-fx-font-size: 11px;" text="Support: 0313-9451041" textFill="#bdc3c7" />
 
 </VBox>

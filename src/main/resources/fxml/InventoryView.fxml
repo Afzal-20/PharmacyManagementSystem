@@ -1,39 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6;"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.my.pharmacy.controller.InventoryController">
+<VBox spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.InventoryController">
 
     <HBox alignment="CENTER_LEFT" spacing="20">
-        <Label text="DETAILED BATCH INVENTORY" style="-fx-text-fill: #2c3e50;">
-            <font><Font name="System Bold" size="22.0"/></font>
+        <Label style="-fx-text-fill: #2c3e50;" text="INVENTORY">
+            <font><Font name="System Bold" size="22.0" /></font>
         </Label>
         <Pane HBox.hgrow="ALWAYS" />
-        <Button text="✎ Adjust Stock" onAction="#handleAdjustStock"
-                style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
-        <Button text="+ Add New Product" onAction="#handleAddNewProduct"
-                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+        <Button onAction="#handleAdjustStock" style="-fx-background-color: #f39c12; -fx-background-radius: 5px; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;" text="✎ Adjust Stock" />
+        <Button onAction="#handleAddNewProduct" style="-fx-background-color: #27ae60; -fx-background-radius: 5px; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;" text="+ Add New Product" />
     </HBox>
 
-    <TableView fx:id="inventoryTable" VBox.vgrow="ALWAYS" style="-fx-background-radius: 5;">
+    <TableView fx:id="inventoryTable" style="-fx-background-radius: 5;" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="colName" text="Medicine Name" prefWidth="200"/>
-            <TableColumn fx:id="colBatch" text="Batch #" prefWidth="100"/>
-            <TableColumn fx:id="colExpiry" text="Expiry" prefWidth="100"/>
-            <TableColumn fx:id="colPackSize" text="Pack Size" prefWidth="90"/>
-            <TableColumn fx:id="colStock" text="Stock (Units)" prefWidth="100"/>
-            <TableColumn fx:id="colTradePrice" text="Trade Price" prefWidth="110"/>
+            <TableColumn fx:id="colName" prefWidth="200" style="-fx-border-radius: 5px;" text="Medicine Name" />
+            <TableColumn fx:id="colBatch" prefWidth="100" text="Batch #" />
+            <TableColumn fx:id="colExpiry" prefWidth="100" text="Expiry" />
+            <TableColumn fx:id="colPackSize" prefWidth="90" text="Pack Size" />
+            <TableColumn fx:id="colStock" prefWidth="100" text="Stock (Units)" />
+            <TableColumn fx:id="colTradePrice" prefWidth="110" style="-fx-border-radius: 5px;" text="Trade Price" />
 
         </columns>
     </TableView>
 
-    <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Label text="Note: Select a specific batch above to adjust stock."
-               style="-fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
+    <HBox alignment="CENTER_RIGHT" spacing="10">
+        <Label style="-fx-text-fill: #7f8c8d; -fx-font-style: italic;" text="Note: Select a specific batch above to adjust stock." />
     </HBox>
 </VBox>

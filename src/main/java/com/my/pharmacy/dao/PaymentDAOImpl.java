@@ -106,4 +106,35 @@ public class PaymentDAOImpl implements PaymentDAO {
         } catch (SQLException e) { e.printStackTrace(); }
         return ledger;
     }
+
+    @Override
+    public double getDynamicCustomerBalance(int customerId) {
+        // Balance = (Sum of Sales Balance Due) - (Sum of Payments Received)
+        String sql = "SELECT " +
+                "(SELECT TOTAL(balance_due) FROM sales WHERE customer_id = ?) - " +
+                "(SELECT TOTAL(amount) FROM payments WHERE entity_id = ? AND entity_type = 'CUSTOMER')";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, customerId);
+            pstmt.setInt(2, customerId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getDouble(1);
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0.0;
+    }
+
+    @Override
+    public double getDynamicDealerBalance(int dealerId) {
+        // Balance = (Sum of Purchases) - (Sum of Cash Paid Out)
+        String sql = "SELECT TOTAL(CASE WHEN payment_mode = 'PURCHASE' THEN amount ELSE -amount END) " +
+                "FROM payments WHERE entity_id = ? AND entity_type = 'DEALER'";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, dealerId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getDouble(1);
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0.0;
+    }
+
 }
