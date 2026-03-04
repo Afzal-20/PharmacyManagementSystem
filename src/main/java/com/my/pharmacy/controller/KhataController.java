@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import java.sql.Timestamp;
 
@@ -31,10 +32,20 @@ public class KhataController {
     private final DealerDAO dealerDAO = new DealerDAOImpl();
     private final PaymentDAO paymentDAO = new PaymentDAOImpl();
 
+    @FXML private VBox vboxCustPayment; // Add at top
+    @FXML private VBox vboxDealPayment; // Add at top
+
     @FXML
     public void initialize() {
         setupCustomerUI();
         setupDealerUI();
+
+        // RBAC Enforcement
+        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
+        vboxCustPayment.setVisible(isAdmin);
+        vboxCustPayment.setManaged(isAdmin);
+        vboxDealPayment.setVisible(isAdmin);
+        vboxDealPayment.setManaged(isAdmin);
     }
 
     private void setupCustomerUI() {

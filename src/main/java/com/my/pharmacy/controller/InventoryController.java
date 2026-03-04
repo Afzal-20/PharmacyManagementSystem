@@ -25,6 +25,7 @@ public class InventoryController {
     @FXML private TableColumn<Batch, Integer> colPackSize;
     @FXML private TableColumn<Batch, Integer> colStock;
     @FXML private TableColumn<Batch, Double> colTradePrice;
+    @FXML private Button btnAdjustStock;
 
     private final BatchDAO batchDAO = new BatchDAOImpl();
     private final ObservableList<Batch> batchList = FXCollections.observableArrayList();
@@ -33,6 +34,11 @@ public class InventoryController {
     public void initialize() {
         setupColumns();
         loadInventoryData();
+
+        // RBAC Enforcement
+        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
+        btnAdjustStock.setVisible(isAdmin);
+        btnAdjustStock.setManaged(isAdmin); // Removes the empty space
     }
 
     private void setupColumns() {

@@ -143,9 +143,6 @@ CREATE TABLE IF NOT EXISTS users (
     is_active INTEGER DEFAULT 1
 );
 
--- 12. Default Data Injection
-INSERT OR IGNORE INTO users (id, username, password, role, full_name)
-VALUES (1, 'admin', 'admin123', 'ADMIN', 'System Administrator');
 
 INSERT OR IGNORE INTO customers (id, name, phone, address, type, current_balance, cnic)
 VALUES (1, 'Counter Sale (Walk-in)', '', '', 'REGULAR', 0.0, '');

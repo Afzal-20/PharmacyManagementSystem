@@ -16,7 +16,7 @@
             <font><Font name="System Bold" size="22.0" /></font>
         </Label>
         <Pane HBox.hgrow="ALWAYS" />
-        <Button onAction="#handleAdjustStock" style="-fx-background-color: #f39c12; -fx-background-radius: 5px; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;" text="✎ Adjust Stock" />
+        <Button fx:id="btnAdjustStock" onAction="#handleAdjustStock" style="-fx-background-color: #f39c12; -fx-background-radius: 5px; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;" text="✎ Adjust Stock" />
         <Button onAction="#handleAddNewProduct" style="-fx-background-color: #27ae60; -fx-background-radius: 5px; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;" text="+ Add New Product" />
     </HBox>
 

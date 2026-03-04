@@ -45,8 +45,17 @@ public class MainController {
         }
     }
 
+
     @FXML
     private void handleLogout() {
-        System.exit(0);
+        // Clear the session
+        com.my.pharmacy.util.UserSession.logout();
+
+        // Go back to the login screen
+        if (MainController.instance != null && mainLayout.getScene() != null) {
+            javafx.stage.Stage stage = (javafx.stage.Stage) mainLayout.getScene().getWindow();
+            stage.close(); // Close dashboard
+            com.my.pharmacy.App.loadLoginScreen(); // Re-open login
+        }
     }
 }

@@ -31,7 +31,7 @@
                     </TableView>
                 </center>
                 <right>
-                    <VBox spacing="15" style="-fx-padding: 0 0 0 15;" prefWidth="280">
+                    <VBox fx:id="vboxCustPayment" spacing="15" style="-fx-padding: 0 0 0 15;" prefWidth="280">
                         <VBox style="-fx-background-color: #ecf0f1; -fx-padding: 15; -fx-border-color: #bdc3c7;">
                             <Label text="Customer Owes You:" style="-fx-font-size: 14;"/>
                             <Label fx:id="lblCustomerBalance" text="Rs. 0.00" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #c0392b;"/>
@@ -67,7 +67,7 @@
                     </TableView>
                 </center>
                 <right>
-                    <VBox spacing="15" style="-fx-padding: 0 0 0 15;" prefWidth="280">
+                    <VBox fx:id="vboxDealPayment" spacing="15" style="-fx-padding: 0 0 0 15;" prefWidth="280">
                         <VBox style="-fx-background-color: #ecf0f1; -fx-padding: 15; -fx-border-color: #bdc3c7;">
                             <Label text="You Owe Dealer:" style="-fx-font-size: 14;"/>
                             <Label fx:id="lblDealerBalance" text="Rs. 0.00" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #c0392b;"/>

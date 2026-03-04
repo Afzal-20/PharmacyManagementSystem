@@ -1,19 +1,35 @@
 package com.my.pharmacy.controller;
 
+import com.my.pharmacy.config.DatabaseConnection;
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.Batch;
 import com.my.pharmacy.model.Sale;
+import com.my.pharmacy.util.UserSession;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.List;
 
 public class DashboardController {
 
-    @FXML private Label lblTodaySales;
+    // Overview Labels
+    @FXML private Label lblMonthlySales; // Renamed to represent Month
     @FXML private Label lblLowStock;
     @FXML private Label lblExpiry;
     @FXML private Label lblDealers;
+
+    // Daily Closing Labels
+    @FXML private Label lblCloseSales;
+    @FXML private Label lblCloseCashIn;
+    @FXML private Label lblCloseKhata;
+    @FXML private Label lblCloseRefunds;
+
+    // Quick Actions
+    @FXML private Button btnQuickPurchase;
 
     private final SaleDAO saleDAO = new SaleDAOImpl();
     private final BatchDAO batchDAO = new BatchDAOImpl();
@@ -22,17 +38,23 @@ public class DashboardController {
     @FXML
     public void initialize() {
         refreshDashboard();
+        calculateMonthlySales();
+        calculateDailyClosing();
+        enforceRBAC();
+    }
+
+    private void enforceRBAC() {
+        boolean isAdmin = UserSession.getInstance() != null && UserSession.getInstance().getUser().isAdmin();
+        btnQuickPurchase.setVisible(isAdmin);
+        btnQuickPurchase.setManaged(isAdmin);
     }
 
     private void refreshDashboard() {
-        // 1. Calculate Today's Sales
-        List<Sale> todaySales = saleDAO.getSalesByDate(LocalDate.now());
-        double totalRevenue = todaySales.stream().mapToDouble(Sale::getTotalAmount).sum();
-        lblTodaySales.setText(String.format("Rs. %,.0f", totalRevenue));
-
-        // 2. Analyze Inventory
+        // 1. Analyze Inventory against User-Defined Minimum Stock Levels
         List<Batch> allBatches = batchDAO.getAllBatches();
-        long lowStockCount = allBatches.stream().filter(b -> b.getQtyOnHand() < 10).count();
+        long lowStockCount = allBatches.stream()
+                .filter(b -> b.getQtyOnHand() <= b.getProduct().getMinStockLevel())
+                .count();
         lblLowStock.setText(String.valueOf(lowStockCount));
 
         LocalDate sixMonthsFromNow = LocalDate.now().plusMonths(6);
@@ -43,9 +65,70 @@ public class DashboardController {
         }).count();
         lblExpiry.setText(String.valueOf(expiryCount));
 
-        // 3. Count Dealers
+        // 2. Count Dealers
         int dealerCount = dealerDAO.getAllDealers().size();
         lblDealers.setText(String.valueOf(dealerCount));
+    }
+
+    private void calculateMonthlySales() {
+        LocalDate now = LocalDate.now();
+        List<Sale> allSales = saleDAO.getAllSales();
+
+        // Filter sales where year and month match the current local date
+        double monthlyTotal = allSales.stream()
+                .filter(s -> {
+                    LocalDate saleDate = s.getSaleDate().toLocalDateTime().toLocalDate();
+                    return saleDate.getYear() == now.getYear() && saleDate.getMonth() == now.getMonth();
+                })
+                .mapToDouble(Sale::getTotalAmount)
+                .sum();
+
+        lblMonthlySales.setText(String.format("Rs. %,.0f", monthlyTotal));
+    }
+
+    private void calculateDailyClosing() {
+        // Step 1: Base metrics from Sales table for TODAY
+        List<Sale> todaySales = saleDAO.getSalesByDate(LocalDate.now());
+        double todayTotalSales = todaySales.stream().mapToDouble(Sale::getTotalAmount).sum();
+        double todayCashFromSales = todaySales.stream().mapToDouble(Sale::getAmountPaid).sum();
+        double todayKhataBilled = todaySales.stream().mapToDouble(Sale::getBalanceDue).sum();
+
+        // Step 2: Extract Payments/Refunds strictly from the Ledger for TODAY
+        double cashRecoveries = 0.0;
+        double cashRefunds = 0.0;
+
+        String sql = "SELECT payment_mode, SUM(amount) FROM payments " +
+                "WHERE date(payment_date, 'localtime') = date('now', 'localtime') " +
+                "AND entity_type = 'CUSTOMER' " +
+                "GROUP BY payment_mode";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                String mode = rs.getString(1);
+                double amount = rs.getDouble(2);
+
+                if ("CASH".equals(mode)) {
+                    cashRecoveries += amount; // Old debt collected today
+                } else if ("CASH_REFUND".equals(mode)) {
+                    // Refunds are stored as negative values, convert to positive for display
+                    cashRefunds += Math.abs(amount);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Step 3: Compute Net Cash in Drawer
+        double netCashInDrawer = todayCashFromSales + cashRecoveries - cashRefunds;
+
+        // Step 4: Populate UI
+        lblCloseSales.setText(String.format("Rs. %,.0f", todayTotalSales));
+        lblCloseCashIn.setText(String.format("Rs. %,.0f", netCashInDrawer));
+        lblCloseKhata.setText(String.format("Rs. %,.0f", todayKhataBilled));
+        lblCloseRefunds.setText(String.format("Rs. %,.0f", cashRefunds));
     }
 
     // --- Navigation Shortcuts via MainController ---

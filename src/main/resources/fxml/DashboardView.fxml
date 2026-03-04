@@ -1,58 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="20" style="-fx-background-color: #eceef0; -fx-padding: 30;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.DashboardController">
+<VBox spacing="20" style="-fx-background-color: #ecf0f1; -fx-padding: 30;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.my.pharmacy.controller.DashboardController">
 
-    <Label text="OVERVIEW" textFill="#2c3e50">
-        <font><Font name="System Bold" size="24.0" /></font>
+    <Label text="BUSINESS OVERVIEW" textFill="#2c3e50">
+        <font><Font name="System Bold" size="24.0"/></font>
     </Label>
 
     <HBox spacing="20">
         <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-weight: bold;" text="TODAY'S SALES" textFill="#7f8c8d" />
-            <Label fx:id="lblTodaySales" text="Rs. 0.00" textFill="#27ae60">
-                <font><Font name="System Bold" size="28.0" /></font>
+            <Label text="THIS MONTH'S SALES" textFill="#7f8c8d" style="-fx-font-weight: bold;"/>
+            <Label fx:id="lblMonthlySales" text="Rs. 0" textFill="#27ae60">
+                <font><Font name="System Bold" size="28.0"/></font>
             </Label>
-            <Label text="Gross Revenue" textFill="#95a5a6" />
+            <Label text="Gross Revenue (Month)" textFill="#95a5a6"/>
         </VBox>
 
         <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-weight: bold;" text="LOW STOCK ALERTS" textFill="#7f8c8d" />
+            <Label text="LOW STOCK ALERTS" textFill="#7f8c8d" style="-fx-font-weight: bold;"/>
             <Label fx:id="lblLowStock" text="0" textFill="#e74c3c">
-                <font><Font name="System Bold" size="28.0" /></font>
+                <font><Font name="System Bold" size="28.0"/></font>
             </Label>
-            <Label text="Batches need re-ordering" textFill="#95a5a6" />
+            <Label text="Below minimum levels" textFill="#95a5a6"/>
         </VBox>
 
         <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-weight: bold;" text="EXPIRING SOON" textFill="#7f8c8d" />
+            <Label text="EXPIRING SOON" textFill="#7f8c8d" style="-fx-font-weight: bold;"/>
             <Label fx:id="lblExpiry" text="0" textFill="#f39c12">
-                <font><Font name="System Bold" size="28.0" /></font>
+                <font><Font name="System Bold" size="28.0"/></font>
             </Label>
-            <Label text="Within next 6 months" textFill="#95a5a6" />
+            <Label text="Within next 6 months" textFill="#95a5a6"/>
         </VBox>
 
         <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-weight: bold;" text="ACTIVE DEALERS" textFill="#7f8c8d" />
+            <Label text="ACTIVE DEALERS" textFill="#7f8c8d" style="-fx-font-weight: bold;"/>
             <Label fx:id="lblDealers" text="0" textFill="#3498db">
-                <font><Font name="System Bold" size="28.0" /></font>
+                <font><Font name="System Bold" size="28.0"/></font>
             </Label>
-            <Label text="Registered Suppliers" textFill="#95a5a6" />
+            <Label text="Registered Suppliers" textFill="#95a5a6"/>
         </VBox>
     </HBox>
 
-    <Label style="-fx-padding: 20 0 0 0;" text="QUICK ACTIONS" textFill="#2c3e50">
-        <font><Font name="System Bold" size="18.0" /></font>
+    <Label text="DAILY CLOSING (TODAY)" textFill="#2c3e50" style="-fx-padding: 10 0 0 0;">
+        <font><Font name="System Bold" size="18.0"/></font>
+    </Label>
+
+    <HBox spacing="20">
+        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+            <Label text="TOTAL SALES" textFill="#7f8c8d" style="-fx-font-weight: bold;"/>
+            <Label fx:id="lblCloseSales" text="Rs. 0" textFill="#2c3e50">
+                <font><Font name="System Bold" size="22.0"/></font>
+            </Label>
+        </VBox>
+        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+            <Label text="NET CASH IN DRAWER" textFill="#7f8c8d" style="-fx-font-weight: bold;"/>
+            <Label fx:id="lblCloseCashIn" text="Rs. 0" textFill="#27ae60">
+                <font><Font name="System Bold" size="22.0"/></font>
+            </Label>
+        </VBox>
+        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+            <Label text="KHATA BILLED" textFill="#7f8c8d" style="-fx-font-weight: bold;"/>
+            <Label fx:id="lblCloseKhata" text="Rs. 0" textFill="#e67e22">
+                <font><Font name="System Bold" size="22.0"/></font>
+            </Label>
+        </VBox>
+        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+            <Label text="CASH REFUNDS (OUT)" textFill="#7f8c8d" style="-fx-font-weight: bold;"/>
+            <Label fx:id="lblCloseRefunds" text="Rs. 0" textFill="#c0392b">
+                <font><Font name="System Bold" size="22.0"/></font>
+            </Label>
+        </VBox>
+    </HBox>
+
+    <Label text="QUICK ACTIONS" textFill="#2c3e50" style="-fx-padding: 10 0 0 0;">
+        <font><Font name="System Bold" size="18.0"/></font>
     </Label>
 
     <HBox spacing="15">
-        <Button onAction="#handleQuickPOS" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15 30; -fx-font-size: 14; -fx-cursor: hand;" text="Start New Sale" />
-        <Button onAction="#handleQuickPurchase" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15 30; -fx-font-size: 14; -fx-cursor: hand;" text="Add Stock" />
+        <Button text="Start New Sale" onAction="#handleQuickPOS"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15 30; -fx-font-size: 14; -fx-cursor: hand;"/>
+        <Button fx:id="btnQuickPurchase" text="Add Stock" onAction="#handleQuickPurchase"
+                style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15 30; -fx-font-size: 14; -fx-cursor: hand;"/>
     </HBox>
 
 </VBox>

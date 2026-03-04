@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Statement;
 
 public class DatabaseSetup {
@@ -46,6 +47,26 @@ public class DatabaseSetup {
                         throw e; // Rethrow to stop initialization
                     }
                     sql.setLength(0); // Reset buffer
+                }
+            }
+
+            // --- NEW: Secure Admin Account Injection ---
+            try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM users")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    String hashedPassword = org.mindrot.jbcrypt.BCrypt.hashpw("admin123", org.mindrot.jbcrypt.BCrypt.gensalt());
+                    String insertAdmin = "INSERT INTO users (username, password, role, full_name) VALUES ('admin', '" + hashedPassword + "', 'ADMIN', 'System Administrator')";
+                    stmt.execute(insertAdmin);
+                    System.out.println("✅ Default Admin account created with BCrypt hashing.");
+                }
+            }
+
+            // --- Inject Default Salesman Account for Testing ---
+            try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM users WHERE username = 'salesman'")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    String hashedSalesman = org.mindrot.jbcrypt.BCrypt.hashpw("sales123", org.mindrot.jbcrypt.BCrypt.gensalt());
+                    String insertSalesman = "INSERT INTO users (username, password, role, full_name) VALUES ('salesman', '" + hashedSalesman + "', 'SALESMAN', 'Counter Salesman')";
+                    stmt.execute(insertSalesman);
+                    System.out.println("✅ Default Salesman account created.");
                 }
             }
 

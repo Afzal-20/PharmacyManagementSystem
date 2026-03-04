@@ -25,6 +25,7 @@ public class SalesHistoryController {
     @FXML private TableColumn<SaleItem, String> colItemName;
     @FXML private TableColumn<SaleItem, Integer> colItemQty, colItemRet;
     @FXML private TableColumn<SaleItem, Double> colItemPrice, colItemDisc;
+    @FXML private Button btnProcessReturn;
 
     private final SaleDAO saleDAO = new SaleDAOImpl();
 
@@ -35,6 +36,11 @@ public class SalesHistoryController {
         setupSelectionListener();
         setupRowHighlighter();
         loadInvoices();
+
+        // RBAC Enforcement
+        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
+        btnProcessReturn.setVisible(isAdmin);
+        btnProcessReturn.setManaged(isAdmin);
     }
 
     private void setupColumns() {

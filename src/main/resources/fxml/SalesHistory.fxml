@@ -29,7 +29,7 @@
             <HBox alignment="CENTER_LEFT" spacing="15">
                 <Label text="Invoice Items" style="-fx-font-weight: bold;"/>
                 <Region HBox.hgrow="ALWAYS" />
-                <Button text="Process Return for Selected Item" onAction="#handleProcessReturn" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Button fx:id="btnProcessReturn" text="Process Return for Selected Item" onAction="#handleProcessReturn" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;"/>
             </HBox>
             <TableView fx:id="itemTable" VBox.vgrow="ALWAYS">
                 <columns>
