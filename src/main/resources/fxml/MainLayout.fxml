@@ -33,9 +33,10 @@
             <Button maxWidth="Infinity" onAction="#showItemLedger" styleClass="nav-button" text="🔍  Item Ledger" />
             <Button maxWidth="Infinity" onAction="#showKhata" styleClass="nav-button" text="📘  Khata Ledgers" />
             <Button maxWidth="Infinity" onAction="#showHistory" styleClass="nav-button" text="📜  Sales History" />
-
+            <Button fx:id="btnManageUsers" text="👥  Manage Users" maxWidth="Infinity" styleClass="nav-button" onAction="#showUserManagement"/>
             <VBox style="-fx-border-radius: 10px;" VBox.vgrow="ALWAYS" />
 
+            <Button text="🔑  Change Password" maxWidth="Infinity" styleClass="nav-button" onAction="#showChangePassword"/>
             <Button maxWidth="Infinity" onAction="#handleLogout" style="-fx-text-fill: #e74c3c;" styleClass="nav-button" text="🚪  Logout" />
 
         </VBox>
