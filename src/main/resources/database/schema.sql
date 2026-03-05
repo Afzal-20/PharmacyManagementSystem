@@ -146,3 +146,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 INSERT OR IGNORE INTO customers (id, name, phone, address, type, current_balance, cnic)
 VALUES (1, 'Counter Sale (Walk-in)', '', '', 'REGULAR', 0.0, '');
+
+-- --- PERFORMANCE INDEXES ---
+CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+CREATE INDEX IF NOT EXISTS idx_batches_number ON batches(batch_no);
+CREATE INDEX IF NOT EXISTS idx_sales_date ON sales(sale_date);

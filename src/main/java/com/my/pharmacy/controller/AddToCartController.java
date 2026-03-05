@@ -31,6 +31,19 @@ public class AddToCartController {
                 return;
             }
 
+            // --- NEW: EXPIRY HARD STOP ---
+            try {
+                java.time.LocalDate expiry = java.time.LocalDate.parse(selectedBatch.getExpiryDate());
+                if (expiry.isBefore(java.time.LocalDate.now())) {
+                    showAlert(Alert.AlertType.ERROR, "Critical Error: Expired Stock",
+                            "This batch expired on " + expiry + ". Selling expired medicine is prohibited. Please select a different batch.");
+                    return;
+                }
+            } catch (Exception e) {
+                System.err.println("Warning: Could not parse expiry date for batch " + selectedBatch.getBatchNo());
+            }
+            // -----------------------------
+
             int boxes = Integer.parseInt(qtyField.getText().trim());
             int bonusBoxes = bonusField.getText().trim().isEmpty() ? 0 : Integer.parseInt(bonusField.getText().trim());
             double discPercent = discountField.getText().trim().isEmpty() ? 0.0 : Double.parseDouble(discountField.getText().trim());
