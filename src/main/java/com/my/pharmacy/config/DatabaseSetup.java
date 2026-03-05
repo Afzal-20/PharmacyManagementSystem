@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -35,7 +36,7 @@ public class DatabaseSetup {
                     continue;
                 }
 
-                // FIX: Append a newline so inline comments (--) don't comment out the rest of the query
+                // Append a newline so inline comments (--) don't comment out the rest of the query
                 sql.append(line).append("\n");
 
                 // Execute statement when ending with semicolon
@@ -50,23 +51,28 @@ public class DatabaseSetup {
                 }
             }
 
-            // --- NEW: Secure Admin Account Injection ---
+            // --- Secure Admin & Salesman Account Injection (PreparedStatement) ---
             try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM users")) {
                 if (rs.next() && rs.getInt(1) == 0) {
-                    String hashedPassword = org.mindrot.jbcrypt.BCrypt.hashpw("admin123", org.mindrot.jbcrypt.BCrypt.gensalt());
-                    String insertAdmin = "INSERT INTO users (username, password, role, full_name) VALUES ('admin', '" + hashedPassword + "', 'ADMIN', 'System Administrator')";
-                    stmt.execute(insertAdmin);
-                    System.out.println("✅ Default Admin account created with BCrypt hashing.");
-                }
-            }
 
-            // --- Inject Default Salesman Account for Testing ---
-            try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM users WHERE username = 'salesman'")) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    String hashedSalesman = org.mindrot.jbcrypt.BCrypt.hashpw("sales123", org.mindrot.jbcrypt.BCrypt.gensalt());
-                    String insertSalesman = "INSERT INTO users (username, password, role, full_name) VALUES ('salesman', '" + hashedSalesman + "', 'SALESMAN', 'Counter Salesman')";
-                    stmt.execute(insertSalesman);
-                    System.out.println("✅ Default Salesman account created.");
+                    String insertSql = "INSERT INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)";
+
+                    try (PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
+                        // 1. Add Admin
+                        pstmt.setString(1, "admin");
+                        pstmt.setString(2, org.mindrot.jbcrypt.BCrypt.hashpw("admin123", org.mindrot.jbcrypt.BCrypt.gensalt()));
+                        pstmt.setString(3, "ADMIN");
+                        pstmt.setString(4, "System Administrator");
+                        pstmt.executeUpdate();
+
+                        // 2. Add Salesman
+                        pstmt.setString(1, "salesman");
+                        pstmt.setString(2, org.mindrot.jbcrypt.BCrypt.hashpw("sales123", org.mindrot.jbcrypt.BCrypt.gensalt()));
+                        pstmt.setString(3, "SALESMAN");
+                        pstmt.setString(4, "Counter Salesman");
+                        pstmt.executeUpdate();
+                    }
+                    System.out.println("✅ Default Admin and Salesman accounts created securely using PreparedStatement.");
                 }
             }
 

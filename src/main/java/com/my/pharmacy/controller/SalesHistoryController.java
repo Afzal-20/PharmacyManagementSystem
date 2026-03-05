@@ -38,7 +38,9 @@ public class SalesHistoryController {
         loadInvoices();
 
         // RBAC Enforcement
-        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
+        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance() != null &&
+                com.my.pharmacy.util.UserSession.getInstance().getUser() != null &&
+                com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
         btnProcessReturn.setVisible(isAdmin);
         btnProcessReturn.setManaged(isAdmin);
     }

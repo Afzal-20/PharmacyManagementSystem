@@ -254,4 +254,20 @@ public class SaleDAOImpl implements SaleDAO {
             try { if (conn != null) conn.setAutoCommit(true); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
+
+    @Override
+    public double getCurrentMonthTotalSales() {
+        String sql = "SELECT SUM(total_amount) FROM sales WHERE date(sale_date, 'localtime') >= date('now', 'start of month', 'localtime')";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
 }

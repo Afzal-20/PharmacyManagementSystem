@@ -41,7 +41,9 @@ public class KhataController {
         setupDealerUI();
 
         // RBAC Enforcement
-        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
+        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance() != null &&
+                com.my.pharmacy.util.UserSession.getInstance().getUser() != null &&
+                com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
         vboxCustPayment.setVisible(isAdmin);
         vboxCustPayment.setManaged(isAdmin);
         vboxDealPayment.setVisible(isAdmin);

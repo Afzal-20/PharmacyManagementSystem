@@ -71,18 +71,7 @@ public class DashboardController {
     }
 
     private void calculateMonthlySales() {
-        LocalDate now = LocalDate.now();
-        List<Sale> allSales = saleDAO.getAllSales();
-
-        // Filter sales where year and month match the current local date
-        double monthlyTotal = allSales.stream()
-                .filter(s -> {
-                    LocalDate saleDate = s.getSaleDate().toLocalDateTime().toLocalDate();
-                    return saleDate.getYear() == now.getYear() && saleDate.getMonth() == now.getMonth();
-                })
-                .mapToDouble(Sale::getTotalAmount)
-                .sum();
-
+        double monthlyTotal = saleDAO.getCurrentMonthTotalSales();
         lblMonthlySales.setText(String.format("Rs. %,.0f", monthlyTotal));
     }
 

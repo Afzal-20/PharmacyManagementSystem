@@ -18,5 +18,6 @@ public interface SaleDAO {
     List<Sale> getSalesByDate(java.time.LocalDate date);
     void processReturn(int saleId, int customerId, SaleItem item, int returnQty, double refundAmount, String refundMethod, String reason);
     List<SaleItem> getSaleItemsBySaleId(int saleId);
+    double getCurrentMonthTotalSales();
 
 }

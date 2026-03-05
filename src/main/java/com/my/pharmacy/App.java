@@ -16,10 +16,10 @@ public class App extends Application {
     public void start(Stage stage) {
         primaryStage = stage;
 
-        // 1. Initialize Database
+        // 1. Initialize Database Schema
         DatabaseSetup.initialize();
 
-        // 2. Load Login Screen (Entry Point)
+        // 2. Boot directly to Login Screen
         loadLoginScreen();
     }
 
@@ -27,7 +27,7 @@ public class App extends Application {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/LoginView.fxml"));
             Parent root = fxmlLoader.load();
-            Scene scene = new Scene(root, 400, 550); // Smaller size for login
+            Scene scene = new Scene(root, 400, 500);
 
             primaryStage.setTitle("Login - Pharmacy System");
             primaryStage.setScene(scene);
@@ -40,6 +40,6 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
 }

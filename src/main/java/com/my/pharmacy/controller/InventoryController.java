@@ -36,9 +36,11 @@ public class InventoryController {
         loadInventoryData();
 
         // RBAC Enforcement
-        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
+        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance() != null &&
+                com.my.pharmacy.util.UserSession.getInstance().getUser() != null &&
+                com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
         btnAdjustStock.setVisible(isAdmin);
-        btnAdjustStock.setManaged(isAdmin); // Removes the empty space
+        btnAdjustStock.setManaged(isAdmin);
     }
 
     private void setupColumns() {
