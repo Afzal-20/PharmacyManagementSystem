@@ -36,8 +36,9 @@
         <Label text="Batch Number:" GridPane.rowIndex="5"/>
         <TextField fx:id="batchField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-        <Label text="Expiry Date (YYYY-MM-DD):" GridPane.rowIndex="6"/>
-        <TextField fx:id="expiryField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+        <!-- FIX #3: Replaced free-text TextField with DatePicker to prevent malformed expiry dates -->
+        <Label text="Expiry Date:" GridPane.rowIndex="6"/>
+        <DatePicker fx:id="expiryPicker" GridPane.columnIndex="1" GridPane.rowIndex="6" maxWidth="Infinity"/>
 
         <Label text="Quantity (Boxes):" GridPane.rowIndex="7"/>
         <TextField fx:id="qtyBoxesField" GridPane.columnIndex="1" GridPane.rowIndex="7"/>

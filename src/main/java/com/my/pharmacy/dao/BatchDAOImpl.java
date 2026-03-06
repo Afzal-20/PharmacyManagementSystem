@@ -79,9 +79,9 @@ public class BatchDAOImpl implements BatchDAO {
     @Override
     public void updateBatch(Batch b) {
 
-        String sql = "UPDATE batches SET product_id = ?, batch_no = ?, expiry_date = ?, " +
-                "qty_on_hand = ?, cost_price = ?, trade_price = ?, " +
-                "discount_percent = ?, company_discount = ?, sales_tax = ? WHERE id = ?";
+        String sql = "UPDATE batches SET product_id=?, batch_no=?, expiry_date=?, qty_on_hand=?, " +
+                "cost_price=?, trade_price=?, discount_percent=?, company_discount=?, sales_tax=?, is_active=1 " +
+                "WHERE id=?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, b.getProductId());
@@ -158,21 +158,30 @@ public class BatchDAOImpl implements BatchDAO {
     // --- EXACT MATCH DUPLICATE GUARD IMPLEMENTATION ---
     @Override
     public Batch getExactBatchMatch(int productId, String batchNo, String expiryDate, double costPrice, double tradePrice) {
-        String sql = "SELECT b.*, p.name, p.generic_name, p.manufacturer, p.description, p.pack_size, p.min_stock_level, p.shelf_location " +
-                "FROM batches b JOIN products p ON b.product_id = p.id " +
+        // We must JOIN with the products table to get the 'name' column for the mapping method
+        String sql = "SELECT b.*, p.* FROM batches b " +
+                "JOIN products p ON b.product_id = p.id " +
                 "WHERE b.product_id = ? AND b.batch_no = ? AND b.expiry_date = ? " +
-                "AND b.cost_price = ? AND b.trade_price = ? AND b.is_active = 1";
+                "AND ABS(b.cost_price - ?) < 0.001 AND ABS(b.trade_price - ?) < 0.001";
+
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
             pstmt.setInt(1, productId);
             pstmt.setString(2, batchNo);
             pstmt.setString(3, expiryDate);
             pstmt.setDouble(4, costPrice);
             pstmt.setDouble(5, tradePrice);
+
             try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) return mapResultSetToBatch(rs);
+                if (rs.next()) {
+                    // Now mapResultSetToBatch will find the "name" column it's looking for!
+                    return mapResultSetToBatch(rs);
+                }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 

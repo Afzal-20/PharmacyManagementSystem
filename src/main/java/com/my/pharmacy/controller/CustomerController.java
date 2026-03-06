@@ -34,7 +34,6 @@ public class CustomerController {
         colPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
         colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
         colCnic.setCellValueFactory(new PropertyValueFactory<>("cnic"));
-
     }
 
     private void loadData() {
@@ -59,24 +58,31 @@ public class CustomerController {
 
     @FXML
     private void handleSave() {
-        if (nameField.getText().isEmpty()) {
+        if (nameField.getText().trim().isEmpty()) {
             showAlert("Validation Error", "Name is required.");
             return;
         }
 
         Customer newCustomer = new Customer(
                 0,
-                nameField.getText(),
-                phoneField.getText(),
-                addressField.getText(),
-                "REGULAR",     // Hardcoded type
-                0.0,          // currentBalance
-                null,         // areaCode
-                null,         // areaName
-                cnicField.getText() // Added CNIC
+                nameField.getText().trim(),
+                phoneField.getText().trim(),
+                addressField.getText().trim(),
+                "REGULAR",
+                0.0,
+                null,
+                null,
+                cnicField.getText().trim()
         );
 
-        customerDAO.addCustomer(newCustomer);
+        // FIX #4 side effect: addCustomer() now returns int — ignore the return value here
+        // since CustomerController just needs the table to refresh.
+        int newId = customerDAO.addCustomer(newCustomer);
+        if (newId == -1) {
+            showAlert("Database Error", "Failed to save customer. Please try again.");
+            return;
+        }
+
         loadData();
         clearFields();
         showAlert("Success", "Customer added successfully!");

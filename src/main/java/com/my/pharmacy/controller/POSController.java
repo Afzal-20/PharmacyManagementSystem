@@ -4,6 +4,7 @@ import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
 import com.my.pharmacy.util.CalculationEngine;
 import com.my.pharmacy.util.InvoiceGenerator;
+import com.my.pharmacy.util.UserSession;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -56,7 +57,7 @@ public class POSController {
         setupTableColumns();
         loadStockData();
         setupSearchFilter();
-        setupCustomerSelector(null); // FIXED: Pass null for default selection
+        setupCustomerSelector(null);
         setupPaymentListeners();
     }
 
@@ -67,7 +68,6 @@ public class POSController {
         colExpiry.setCellValueFactory(new PropertyValueFactory<>("expiryDate"));
         colStock.setCellValueFactory(new PropertyValueFactory<>("qtyOnHand"));
 
-        // Strictly bound to Wholesale Trade Price
         colPrice.setText("Price (TP)");
         colPrice.setCellValueFactory(new PropertyValueFactory<>("tradePrice"));
 
@@ -130,7 +130,6 @@ public class POSController {
                 String productName = batch.getProduct().getName().toLowerCase();
                 String genericName = batch.getProduct().getGenericName().toLowerCase();
 
-                // FIX: Using the improved FuzzySearchUtil
                 return com.my.pharmacy.util.FuzzySearchUtil.isFuzzyMatch(query, productName) ||
                         com.my.pharmacy.util.FuzzySearchUtil.isFuzzyMatch(query, genericName);
             });
@@ -144,8 +143,6 @@ public class POSController {
     private void handleAddToCart() {
         Batch selected = productTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
-
-        // Mode check removed. Directly opens the wholesale box/discount dialog.
         openAddToCartDialog(selected);
     }
 
@@ -216,7 +213,7 @@ public class POSController {
 
         Customer currentCustomer = customerComboBox.getValue();
         int customerId = (currentCustomer != null) ? currentCustomer.getId() : 1;
-        boolean isWalkIn = (customerId == 1); // FIXED: Defined isWalkIn variable
+        boolean isWalkIn = (customerId == 1);
 
         try {
             double total = calculateCartTotal();
@@ -230,15 +227,17 @@ public class POSController {
             double dbBalanceDue = isWalkIn ? 0.0 : CalculationEngine.calculateBalanceDue(total, paid);
             double dbAmountPaid = isWalkIn ? total : paid;
 
+            // FIX #7: Use logged-in user's ID instead of hardcoded 1.
+            // Every sale is now correctly attributed to whoever is logged in.
+            int loggedInUserId = UserSession.getInstance().getUser().getId();
+
             Sale sale = new Sale(0, new Timestamp(System.currentTimeMillis()), total, "CASH",
-                    customerId, 1, dbAmountPaid, dbBalanceDue);
+                    customerId, loggedInUserId, dbAmountPaid, dbBalanceDue);
 
             sale.setItems(cartData);
             saleDAO.saveSale(sale);
 
             String desktopPath = System.getProperty("user.home") + "/Desktop/Invoice_" + sale.getId() + ".pdf";
-
-            // FIXED: Passed 'currentCustomer' instead of undefined 'c'
             InvoiceGenerator.generateThermalReceipt(sale, currentCustomer, desktopPath);
 
             showAlert(Alert.AlertType.INFORMATION, "Success", "Sale Completed! Stock and Ledger updated.");
@@ -247,9 +246,7 @@ public class POSController {
             loadStockData();
             updateTotal();
 
-            // Re-select the same customer to speed up wholesale billing
             setupCustomerSelector(customerId);
-
             searchField.requestFocus();
             searchField.clear();
 
@@ -275,7 +272,7 @@ public class POSController {
             stage.setTitle("Register New Client");
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
-            setupCustomerSelector(null); // FIXED: Pass null for default
+            setupCustomerSelector(null);
         } catch (IOException e) { e.printStackTrace(); }
     }
 }

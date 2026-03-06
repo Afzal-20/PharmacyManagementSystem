@@ -56,19 +56,33 @@ public class DealerDAOImpl implements DealerDAO {
         } catch (SQLException e) { e.printStackTrace(); }
         return null;
     }
+
+    // FIX #11: Fully implemented — was an empty stub before.
     @Override
-    public void addBalance(int dealerId, double amount) {
-        String sql = "UPDATE dealers SET current_balance = current_balance + ? WHERE id = ?";
+    public void updateDealer(Dealer d) {
+        String sql = "UPDATE dealers SET name = ?, company_name = ?, phone = ?, address = ?, license_no = ? WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setDouble(1, amount);
-            pstmt.setInt(2, dealerId);
+            pstmt.setString(1, d.getName());
+            pstmt.setString(2, d.getCompanyName());
+            pstmt.setString(3, d.getPhone());
+            pstmt.setString(4, d.getAddress());
+            pstmt.setString(5, d.getLicenseNo());
+            pstmt.setInt(6, d.getId());
             pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    @Override public void updateDealer(Dealer d) { /* Implementation similar to Customer */ }
-    @Override public void deleteDealer(int id) { /* Implementation similar to Customer */ }
+    // FIX #11: Fully implemented — was an empty stub before.
+    // Soft-delete not applicable for dealers (no is_active column),
+    // so this is a hard DELETE. Only call this if no payments reference the dealer.
+    @Override
+    public void deleteDealer(int id) {
+        String sql = "DELETE FROM dealers WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
 }

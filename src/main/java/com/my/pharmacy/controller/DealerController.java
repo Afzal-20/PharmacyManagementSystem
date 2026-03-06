@@ -46,9 +46,17 @@ public class DealerController {
                 if (newVal == null || newVal.isEmpty()) return true;
                 String lowerCaseFilter = newVal.toLowerCase();
 
-                return dealer.getCompanyName().toLowerCase().contains(lowerCaseFilter) ||
-                        dealer.getLicenseNo().toLowerCase().contains(lowerCaseFilter) ||
+                // FIX #8: Added null guards on companyName and licenseNo.
+                // Dealers saved without these fields would throw a NullPointerException
+                // and crash the search whenever the user typed anything.
+                boolean matchesCompany = dealer.getCompanyName() != null &&
+                        dealer.getCompanyName().toLowerCase().contains(lowerCaseFilter);
+                boolean matchesLicense = dealer.getLicenseNo() != null &&
+                        dealer.getLicenseNo().toLowerCase().contains(lowerCaseFilter);
+                boolean matchesName = dealer.getName() != null &&
                         dealer.getName().toLowerCase().contains(lowerCaseFilter);
+
+                return matchesCompany || matchesLicense || matchesName;
             });
         });
         dealerTable.setItems(filteredData);
@@ -56,22 +64,22 @@ public class DealerController {
 
     @FXML
     private void handleSave() {
-        if (companyField.getText().isEmpty() || phoneField.getText().isEmpty()) {
+        if (companyField.getText().trim().isEmpty() || phoneField.getText().trim().isEmpty()) {
             showAlert("Error", "Company Name and Phone are required.");
             return;
         }
 
         Dealer newDealer = new Dealer(
                 0,
-                nameField.getText(),
-                companyField.getText(),
-                phoneField.getText(),
-                addressField.getText(),
-                licenseField.getText()
+                nameField.getText().trim(),
+                companyField.getText().trim(),
+                phoneField.getText().trim(),
+                addressField.getText().trim(),
+                licenseField.getText().trim()
         );
 
         dealerDAO.addDealer(newDealer);
-        loadData(); // Refresh table
+        loadData();
         clearFields();
         showAlert("Success", "Dealer registered successfully!");
     }

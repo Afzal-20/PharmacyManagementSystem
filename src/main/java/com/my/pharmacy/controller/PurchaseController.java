@@ -90,15 +90,26 @@ public class PurchaseController {
                 return;
             }
 
-            String batchNo = batchNoField.getText();
-            String expiryStr = expiryDate.toString(); // YYYY-MM-DD
-            String invoiceNo = invoiceNoField.getText() == null ? "N/A" : invoiceNoField.getText();
+            // --- FIX 1: Batch Number Whitespace & Fallback Generation ---
+            String rawBatch = batchNoField.getText();
+            String batchNo = (rawBatch == null || rawBatch.trim().isEmpty())
+                    ? "GEN-" + (System.currentTimeMillis() % 10000000)
+                    : rawBatch.trim();
 
-            int totalBoxes = Integer.parseInt(qtyField.getText());
-            double boxCost = Double.parseDouble(costField.getText());
-            double boxTrade = Double.parseDouble(tradeField.getText());
-            double compDisc = Double.parseDouble(compDiscField.getText());
-            double salesTax = Double.parseDouble(taxField.getText());
+            // --- FIX 2: Invoice Number Whitespace & N/A Fallback ---
+            String rawInvoice = invoiceNoField.getText();
+            String invoiceNo = (rawInvoice == null || rawInvoice.trim().isEmpty())
+                    ? "N/A"
+                    : rawInvoice.trim();
+
+            String expiryStr = expiryDate.toString(); // YYYY-MM-DD
+
+            // FIX 3: Trimming numeric inputs to prevent accidental spacebar crashes
+            int totalBoxes = Integer.parseInt(qtyField.getText().trim());
+            double boxCost = Double.parseDouble(costField.getText().trim());
+            double boxTrade = Double.parseDouble(tradeField.getText().trim());
+            double compDisc = Double.parseDouble(compDiscField.getText().trim());
+            double salesTax = Double.parseDouble(taxField.getText().trim());
 
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to proceed with this purchase?");
             if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
@@ -108,7 +119,6 @@ public class PurchaseController {
 
             Payment purchaseLedgerEntry = new Payment(0, selectedDealer.getId(), "DEALER", totalPayableToDealer, "PURCHASE",
                     "Purchased " + totalBoxes + " boxes of " + selectedProduct.getName(), new java.sql.Timestamp(System.currentTimeMillis()));
-
 
             Batch existingBatch = batchDAO.getExactBatchMatch(selectedProduct.getId(), batchNo, expiryStr, boxCost, boxTrade);
 

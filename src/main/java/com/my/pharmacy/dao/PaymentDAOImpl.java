@@ -31,25 +31,24 @@ public class PaymentDAOImpl implements PaymentDAO {
                 pstmt.executeUpdate();
             }
 
-            if ("CUSTOMER".equals(p.getEntityType())) {
+            // FIX #1: Only update customer balance for genuine cash recoveries (CASH).
+            // CASH_REFUND entries are handled inside SaleDAOImpl.processReturn() and must
+            // NOT trigger a second balance update here.
+            if ("CUSTOMER".equals(p.getEntityType()) && "CASH".equals(p.getPaymentMode())) {
                 String updateCustomer = "UPDATE customers SET current_balance = current_balance - ? WHERE id = ?";
                 try (PreparedStatement pstmt = conn.prepareStatement(updateCustomer)) {
                     pstmt.setDouble(1, p.getAmount());
                     pstmt.setInt(2, p.getEntityId());
                     pstmt.executeUpdate();
                 }
-            } else if ("DEALER".equals(p.getEntityType())) {
-                // If it is a purchase, we OWE them more (+). If we pay them, we owe them less (-).
-                String updateDealer = "PURCHASE".equals(p.getPaymentMode())
-                        ? "UPDATE dealers SET current_balance = current_balance + ? WHERE id = ?"
-                        : "UPDATE dealers SET current_balance = current_balance - ? WHERE id = ?";
-
-                try (PreparedStatement pstmt = conn.prepareStatement(updateDealer)) {
-                    pstmt.setDouble(1, p.getAmount());
-                    pstmt.setInt(2, p.getEntityId());
-                    pstmt.executeUpdate();
-                }
             }
+
+            // FIX #10: Removed the "UPDATE dealers SET current_balance" block entirely.
+            // The dealers.current_balance column was being written to on every purchase/payment
+            // but was never read back anywhere — DealerDAOImpl.getAllDealers() never mapped it,
+            // and the Dealer model has no currentBalance field.
+            // getDynamicDealerBalance() calculates the correct live balance from the payments
+            // ledger, making the stored column completely redundant.
 
             conn.commit();
         } catch (SQLException e) {
@@ -67,7 +66,7 @@ public class PaymentDAOImpl implements PaymentDAO {
                 "FROM sales WHERE customer_id = ? AND balance_due > 0 " +
                 "UNION ALL " +
                 "SELECT payment_date as date_val, description as desc, 0 as debit, amount as credit " +
-                "FROM payments WHERE entity_id = ? AND entity_type = 'CUSTOMER' " +
+                "FROM payments WHERE entity_id = ? AND entity_type = 'CUSTOMER' AND payment_mode = 'CASH' " +
                 "ORDER BY date_val ASC";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -109,10 +108,13 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public double getDynamicCustomerBalance(int customerId) {
-        // Balance = (Sum of Sales Balance Due) - (Sum of Payments Received)
+        // FIX #5: Only subtract CASH payments (genuine recoveries), not CASH_REFUND entries.
+        // CASH_REFUND amounts are negative in the DB and would incorrectly inflate the balance
+        // if included in the SUM.
         String sql = "SELECT " +
                 "(SELECT TOTAL(balance_due) FROM sales WHERE customer_id = ?) - " +
-                "(SELECT TOTAL(amount) FROM payments WHERE entity_id = ? AND entity_type = 'CUSTOMER')";
+                "(SELECT TOTAL(amount) FROM payments " +
+                " WHERE entity_id = ? AND entity_type = 'CUSTOMER' AND payment_mode = 'CASH')";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, customerId);

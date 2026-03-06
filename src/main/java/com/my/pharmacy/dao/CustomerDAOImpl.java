@@ -9,10 +9,12 @@ import java.util.List;
 public class CustomerDAOImpl implements CustomerDAO {
 
     @Override
-    public void addCustomer(Customer customer) {
+    public int addCustomer(Customer customer) {
+        // FIX #4: Use RETURN_GENERATED_KEYS so we get the new row's ID back.
+        // Callers can then fetch the exact customer by ID instead of guessing by name.
         String sql = "INSERT INTO customers (name, phone, address, type, current_balance, area_code, area_name, cnic) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, customer.getName());
             pstmt.setString(2, customer.getPhone());
             pstmt.setString(3, customer.getAddress());
@@ -22,9 +24,14 @@ public class CustomerDAOImpl implements CustomerDAO {
             pstmt.setString(7, customer.getAreaName());
             pstmt.setString(8, customer.getCnic());
             pstmt.executeUpdate();
+
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) return rs.getInt(1);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return -1; // Signals failure to caller
     }
 
     @Override
