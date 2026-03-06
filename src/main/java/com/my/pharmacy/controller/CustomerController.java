@@ -15,11 +15,12 @@ public class CustomerController {
     @FXML private TextField nameField, phoneField, cnicField, searchField;
     @FXML private TextArea addressField;
     @FXML private TableView<Customer> customerTable;
-    @FXML private TableColumn<Customer, String> colName, colType, colPhone, colAddress;
-    @FXML private TableColumn<Customer, String> colCnic;
+    @FXML private TableColumn<Customer, String> colName, colType, colPhone, colAddress, colCnic;
+    @FXML private Button btnSave;
 
     private final CustomerDAO customerDAO = new CustomerDAOImpl();
     private final ObservableList<Customer> masterData = FXCollections.observableArrayList();
+    private Customer editingCustomer = null;
 
     @FXML
     public void initialize() {
@@ -46,14 +47,30 @@ public class CustomerController {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
             filteredData.setPredicate(customer -> {
                 if (newVal == null || newVal.isEmpty()) return true;
-                String lowerCaseFilter = newVal.toLowerCase();
-
-                return customer.getName().toLowerCase().contains(lowerCaseFilter) ||
+                String lower = newVal.toLowerCase();
+                return customer.getName().toLowerCase().contains(lower) ||
                         (customer.getPhone() != null && customer.getPhone().contains(newVal)) ||
                         (customer.getCnic() != null && customer.getCnic().contains(newVal));
             });
         });
         customerTable.setItems(filteredData);
+    }
+
+    @FXML
+    private void handleEditSelection() {
+        Customer selected = customerTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Required", "Please select a customer to edit.");
+            return;
+        }
+        editingCustomer = selected;
+        nameField.setText(selected.getName());
+        phoneField.setText(selected.getPhone());
+        addressField.setText(selected.getAddress());
+        cnicField.setText(selected.getCnic());
+
+        btnSave.setText("Update Customer");
+        btnSave.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;");
     }
 
     @FXML
@@ -63,44 +80,32 @@ public class CustomerController {
             return;
         }
 
-        Customer newCustomer = new Customer(
-                0,
-                nameField.getText().trim(),
-                phoneField.getText().trim(),
-                addressField.getText().trim(),
-                "REGULAR",
-                0.0,
-                null,
-                null,
-                cnicField.getText().trim()
-        );
-
-        // FIX #4 side effect: addCustomer() now returns int — ignore the return value here
-        // since CustomerController just needs the table to refresh.
-        int newId = customerDAO.addCustomer(newCustomer);
-        if (newId == -1) {
-            showAlert("Database Error", "Failed to save customer. Please try again.");
-            return;
+        if (editingCustomer == null) {
+            Customer newCustomer = new Customer(0, nameField.getText().trim(), phoneField.getText().trim(),
+                    addressField.getText().trim(), "REGULAR", 0.0, cnicField.getText().trim());
+            customerDAO.addCustomer(newCustomer);
+            showAlert("Success", "Customer added successfully!");
+        } else {
+            Customer updatedCustomer = new Customer(editingCustomer.getId(), nameField.getText().trim(), phoneField.getText().trim(),
+                    addressField.getText().trim(), editingCustomer.getType(), editingCustomer.getCurrentBalance(), cnicField.getText().trim());
+            customerDAO.updateCustomer(updatedCustomer);
+            showAlert("Success", "Customer updated successfully!");
         }
 
         loadData();
         clearFields();
-        showAlert("Success", "Customer added successfully!");
     }
 
     @FXML
     private void clearFields() {
-        nameField.clear();
-        phoneField.clear();
-        cnicField.clear();
-        addressField.clear();
+        nameField.clear(); phoneField.clear(); cnicField.clear(); addressField.clear();
+        editingCustomer = null;
+        btnSave.setText("Save Customer");
+        btnSave.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;");
     }
 
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
     }
 }

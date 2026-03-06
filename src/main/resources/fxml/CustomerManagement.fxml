@@ -1,27 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
-<HBox spacing="20" style="-fx-padding: 20; -fx-background-color: #f4f7f6;"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.my.pharmacy.controller.CustomerController">
-
+<HBox spacing="20" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.CustomerController">
     <VBox spacing="15" prefWidth="350" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
         <Label text="Manage Customers" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
         <TextField fx:id="nameField" promptText="Customer Name"/>
         <TextField fx:id="phoneField" promptText="Phone Number"/>
         <TextField fx:id="cnicField" promptText="CNIC / DL Number"/>
         <TextArea fx:id="addressField" promptText="Address" prefHeight="80"/>
-
         <HBox spacing="10">
             <Button text="Clear" onAction="#clearFields" style="-fx-background-color: #bdc3c7;" prefWidth="100"/>
-            <Button text="Save Customer" onAction="#handleSave" style="-fx-background-color: #2980b9; -fx-text-fill: white;" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Button fx:id="btnSave" text="Save Customer" onAction="#handleSave" style="-fx-background-color: #2980b9; -fx-text-fill: white;" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
         </HBox>
     </VBox>
-
     <VBox spacing="10" HBox.hgrow="ALWAYS">
-        <TextField fx:id="searchField" promptText="Search by Name, Phone, or Type..."/>
+        <TextField fx:id="searchField" promptText="Search by Name, Phone, or CNIC..."/>
         <TableView fx:id="customerTable" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colName" text="Name" prefWidth="150"/>
@@ -31,5 +25,8 @@
                 <TableColumn fx:id="colCnic" text="CNIC" prefWidth="130"/>
             </columns>
         </TableView>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="Edit Selected" onAction="#handleEditSelection" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
     </VBox>
 </HBox>

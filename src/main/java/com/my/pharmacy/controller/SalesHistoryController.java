@@ -27,6 +27,8 @@ public class SalesHistoryController {
     @FXML private TableColumn<SaleItem, Double> colItemPrice, colItemDisc;
     @FXML private Button btnProcessReturn;
 
+    private final CustomerDAO customerDAO = new CustomerDAOImpl();
+
     private final SaleDAO saleDAO = new SaleDAOImpl();
 
     @FXML
@@ -170,6 +172,31 @@ public class SalesHistoryController {
         });
 
         dialog.showAndWait();
+    }
+
+    @FXML
+    private void handleReprintInvoice() {
+        Sale selectedInvoice = invoiceTable.getSelectionModel().getSelectedItem();
+        if (selectedInvoice == null) {
+            showAlert(Alert.AlertType.WARNING, "Selection Required", "Please select an invoice from the top table to reprint.");
+            return;
+        }
+
+        // Make sure items are populated in the Sale object
+        selectedInvoice.setItems(saleDAO.getSaleItemsBySaleId(selectedInvoice.getId()));
+
+        // Fetch the customer (ID 1 will be fetched correctly as the Walk-In default from the DB)
+        Customer customer = customerDAO.getCustomerById(selectedInvoice.getCustomerId());
+
+        String desktopPath = System.getProperty("user.home") + "/Desktop/REPRINT_Invoice_" + selectedInvoice.getId() + ".pdf";
+
+        try {
+            InvoiceGenerator.generateThermalReceipt(selectedInvoice, customer, desktopPath);
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Invoice reprinted successfully and saved to Desktop.");
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to generate PDF: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {

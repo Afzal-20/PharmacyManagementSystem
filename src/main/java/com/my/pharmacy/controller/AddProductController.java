@@ -11,25 +11,34 @@ import javafx.stage.Stage;
 public class AddProductController {
 
     @FXML private TextField nameField, genericField, manufacturerField, packSizeField;
-    @FXML private TextField batchField, costField;
-    @FXML private DatePicker expiryPicker; // FIX #3: Was a free-text TextField — malformed dates broke expiry checks
-
-    @FXML private TextField qtyBoxesField;
-    @FXML private TextField tradePriceField;
+    @FXML private TextField batchField, costField, marginField, qtyBoxesField, tradePriceField;
+    @FXML private DatePicker expiryPicker;
 
     private final ProductDAO productDAO = new ProductDAOImpl();
     private final BatchDAO batchDAO = new BatchDAOImpl();
 
     @FXML
-    private void handleSave() {
-        // FIX #8: Validate inputs and show Alerts instead of printing to System.err
-        if (nameField.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "Validation Error", "Medicine name is required.");
-            return;
-        }
+    public void initialize() {
+        // Auto-calculate Trade Price based on Cost and Margin
+        marginField.textProperty().addListener((obs, oldVal, newVal) -> calculateTradePrice());
+        costField.textProperty().addListener((obs, oldVal, newVal) -> calculateTradePrice());
+    }
 
-        if (expiryPicker.getValue() == null) {
-            showAlert(Alert.AlertType.ERROR, "Validation Error", "Please select an expiry date.");
+    private void calculateTradePrice() {
+        try {
+            double cost = Double.parseDouble(costField.getText().trim());
+            double margin = Double.parseDouble(marginField.getText().trim());
+            double trade = cost + (cost * (margin / 100.0));
+            tradePriceField.setText(String.valueOf(Math.round(trade))); // Rounds to nearest Rupee
+        } catch (NumberFormatException e) {
+            tradePriceField.clear(); // Clear if input is invalid/empty
+        }
+    }
+
+    @FXML
+    private void handleSave() {
+        if (nameField.getText().trim().isEmpty() || expiryPicker.getValue() == null) {
+            showAlert(Alert.AlertType.ERROR, "Validation Error", "Medicine name and expiry date are required.");
             return;
         }
 
@@ -38,7 +47,7 @@ public class AddProductController {
             int totalBoxes = Integer.parseInt(qtyBoxesField.getText().trim());
             double cost = Double.parseDouble(costField.getText().trim());
             double tradePrice = Double.parseDouble(tradePriceField.getText().trim());
-            String expiryStr = expiryPicker.getValue().toString(); // Always valid YYYY-MM-DD
+            String expiryStr = expiryPicker.getValue().toString();
 
             Product product = new Product(0, nameField.getText().trim(), genericField.getText().trim(),
                     manufacturerField.getText().trim(), "", packSize, 10, "");
@@ -46,7 +55,7 @@ public class AddProductController {
             int productId = productDAO.addProduct(product);
 
             if (productId == -1) {
-                showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to save product. Please try again.");
+                showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to save product.");
                 return;
             }
 
@@ -57,22 +66,15 @@ public class AddProductController {
             closeWindow();
 
         } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.ERROR, "Invalid Input", "Please enter valid numbers for Pack Size, Quantity, Cost, and Trade Price.");
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Unexpected Error", "An unexpected error occurred: " + e.getMessage());
-            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Invalid Input", "Please enter valid numbers for Pack Size, Quantity, and Prices.");
         }
     }
 
     @FXML private void handleCancel() { closeWindow(); }
-
     private void closeWindow() { ((Stage) nameField.getScene().getWindow()).close(); }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
     }
 }

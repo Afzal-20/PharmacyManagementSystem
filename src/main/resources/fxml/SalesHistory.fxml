@@ -10,6 +10,8 @@
         <Label text="Filter by Date:" style="-fx-font-weight: bold;"/>
         <DatePicker fx:id="datePicker" />
         <Button text="Load Invoices" onAction="#loadInvoices" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+        <Pane HBox.hgrow="ALWAYS" />
+        <Button text="🖨️ Reprint Selected Invoice" onAction="#handleReprintInvoice" style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15;"/>
     </HBox>
 
     <SplitPane orientation="VERTICAL" VBox.vgrow="ALWAYS" dividerPositions="0.45">

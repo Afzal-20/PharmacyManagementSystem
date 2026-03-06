@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.ItemLedgerController">
+<VBox spacing="15" styleClass="main-bg" style="-fx-padding: 20;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.ItemLedgerController">
 
-    <Label text="ITEM LEDGER" style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;">
+    <Label text="ITEM LEDGER" styleClass="primary-text" style="-fx-font-weight: bold;">
         <font><Font size="22.0"/></font>
     </Label>
 
-    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 15; -fx-border-color: #bdc3c7;">
-        <Label text="Select Medicine:" style="-fx-font-weight: bold;"/>
-        <ComboBox fx:id="productComboBox" prefWidth="300" promptText="Search Medicine..."/>
+    <HBox spacing="15" alignment="CENTER_LEFT" styleClass="card-bg" style="-fx-padding: 15; -fx-border-color: #bdc3c7; -fx-border-radius: 5px;">
+        <Label text="Find Medicine:" style="-fx-font-weight: bold;"/>
+        <TextField fx:id="searchField" promptText="Type name to filter..." prefWidth="200"/>
+        <ComboBox fx:id="productComboBox" prefWidth="250" promptText="Select from filtered list..."/>
         <Button text="Load Ledger" onAction="#loadLedgerData" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
     </HBox>
 
@@ -31,7 +31,6 @@
                     </TableView>
                 </VBox>
             </Tab>
-
             <Tab text="2 - Purchase History (Audit)">
                 <VBox>
                     <TableView fx:id="purchaseHistoryTable" VBox.vgrow="ALWAYS">

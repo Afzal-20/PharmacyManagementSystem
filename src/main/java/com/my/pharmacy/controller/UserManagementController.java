@@ -15,9 +15,11 @@ public class UserManagementController {
     @FXML private TextField fullNameField, usernameField;
     @FXML private PasswordField passwordField;
     @FXML private ComboBox<String> roleComboBox;
-
     @FXML private TableView<User> userTable;
     @FXML private TableColumn<User, String> colName, colUsername, colRole, colStatus;
+
+    @FXML private Button btnCreateUser;
+    @FXML private Button btnDeactivate;
 
     private final UserDAO userDAO = new UserDAOImpl();
     private final ObservableList<User> userList = FXCollections.observableArrayList();
@@ -27,14 +29,26 @@ public class UserManagementController {
         roleComboBox.setItems(FXCollections.observableArrayList("SALESMAN", "ADMIN"));
         setupTable();
         loadUsers();
+
+        // Security Guard
+        boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance() != null &&
+                com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
+
+        btnCreateUser.setDisable(!isAdmin);
+        btnDeactivate.setDisable(!isAdmin);
+        if (!isAdmin) {
+            fullNameField.setDisable(true);
+            usernameField.setDisable(true);
+            passwordField.setDisable(true);
+            roleComboBox.setDisable(true);
+        }
     }
 
     private void setupTable() {
         colName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
         colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
         colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
-        colStatus.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().isActive() ? "Active" : "Disabled"));
+        colStatus.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().isActive() ? "Active" : "Disabled"));
     }
 
     private void loadUsers() {
@@ -44,14 +58,11 @@ public class UserManagementController {
 
     @FXML
     private void handleSaveUser() {
-        if (fullNameField.getText().isEmpty() || usernameField.getText().isEmpty() ||
-                passwordField.getText().isEmpty() || roleComboBox.getValue() == null) {
+        if (fullNameField.getText().isEmpty() || usernameField.getText().isEmpty() || passwordField.getText().isEmpty() || roleComboBox.getValue() == null) {
             showAlert(Alert.AlertType.ERROR, "Missing Info", "Please fill all fields.");
             return;
         }
-
         User newUser = new User(0, usernameField.getText(), "", roleComboBox.getValue(), fullNameField.getText(), true);
-
         if (userDAO.addUser(newUser, passwordField.getText())) {
             showAlert(Alert.AlertType.INFORMATION, "Success", "Account created successfully.");
             clearFields();
@@ -66,12 +77,10 @@ public class UserManagementController {
         User selected = userTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
         if (selected.getId() == 1) {
-            showAlert(Alert.AlertType.WARNING, "Not Allowed", "You cannot deactivate the primary Super Admin account.");
+            showAlert(Alert.AlertType.WARNING, "Not Allowed", "Cannot deactivate the primary Admin account.");
             return;
         }
-
-        boolean newStatus = !selected.isActive();
-        userDAO.toggleUserStatus(selected.getId(), newStatus);
+        userDAO.toggleUserStatus(selected.getId(), !selected.isActive());
         loadUsers();
     }
 

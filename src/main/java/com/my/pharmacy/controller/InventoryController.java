@@ -26,6 +26,7 @@ public class InventoryController {
     @FXML private TableColumn<Batch, Integer> colStock;
     @FXML private TableColumn<Batch, Double> colTradePrice;
     @FXML private Button btnAdjustStock;
+    @FXML private Button btnEditProduct;
 
     private final BatchDAO batchDAO = new BatchDAOImpl();
     private final ObservableList<Batch> batchList = FXCollections.observableArrayList();
@@ -41,6 +42,8 @@ public class InventoryController {
                 com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
         btnAdjustStock.setVisible(isAdmin);
         btnAdjustStock.setManaged(isAdmin);
+        btnEditProduct.setVisible(isAdmin);
+        btnEditProduct.setManaged(isAdmin);
     }
 
     private void setupColumns() {
@@ -97,6 +100,31 @@ public class InventoryController {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
             loadInventoryData();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleEditProduct() {
+        Batch selected = inventoryTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Required", "Please select a batch from the table to edit its master product info.");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EditProductDialog.fxml"));
+            Stage stage = new Stage();
+            stage.setScene(new Scene(loader.load()));
+            stage.setTitle("Edit Product: " + selected.getProduct().getName());
+            stage.initModality(Modality.APPLICATION_MODAL);
+
+            EditProductController controller = loader.getController();
+            controller.setProductData(selected.getProduct());
+
+            stage.showAndWait();
+            loadInventoryData(); // Refresh table to show updated names/pack sizes
         } catch (IOException e) {
             e.printStackTrace();
         }

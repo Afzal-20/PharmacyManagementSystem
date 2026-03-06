@@ -10,10 +10,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 public class AddCustomerController {
-
     @FXML private TextField nameField, phoneField;
     @FXML private TextArea addressField;
-
     private final CustomerDAO customerDAO = new CustomerDAOImpl();
     private Customer savedCustomer;
 
@@ -24,11 +22,10 @@ public class AddCustomerController {
             return;
         }
 
+        // Updated Constructor call
         Customer customer = new Customer(0, nameField.getText().trim(), phoneField.getText().trim(),
-                addressField.getText().trim(), "REGULAR", 0.0, null, null, "");
+                addressField.getText().trim(), "REGULAR", 0.0, "");
 
-        // FIX #4: addCustomer() now returns the generated ID.
-        // Fetch the saved customer by that ID — safe even when duplicate names exist.
         int newId = customerDAO.addCustomer(customer);
         if (newId != -1) {
             this.savedCustomer = customerDAO.getCustomerById(newId);
@@ -36,21 +33,14 @@ public class AddCustomerController {
             showAlert("Database Error", "Failed to save customer. Please try again.");
             return;
         }
-
         closeWindow();
     }
 
     public Customer getSavedCustomer() { return savedCustomer; }
-
     @FXML private void handleCancel() { closeWindow(); }
-
     private void closeWindow() { ((Stage) nameField.getScene().getWindow()).close(); }
-
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
     }
 }

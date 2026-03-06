@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS batches (
     company_discount REAL DEFAULT 0.0,
     sales_tax REAL DEFAULT 0.0,
     discount_percent REAL,
-    tax_percent REAL DEFAULT 0.0,
     is_active INTEGER DEFAULT 1,
     FOREIGN KEY(product_id) REFERENCES products(id)
 );
@@ -34,9 +33,7 @@ CREATE TABLE IF NOT EXISTS dealers (
     company_name TEXT,
     phone TEXT,
     address TEXT,
-    license_no TEXT,
-    ntn TEXT,
-    current_balance REAL DEFAULT 0.0
+    license_no TEXT
 );
 
 -- 4. Customers Table
@@ -47,10 +44,7 @@ CREATE TABLE IF NOT EXISTS customers (
     address TEXT,
     type TEXT DEFAULT 'WHOLESALE',
     current_balance REAL DEFAULT 0.0,
-    area_code TEXT,
-    area_name TEXT,
-    cnic TEXT,
-    license_no TEXT
+    cnic TEXT
 );
 
 -- 5. Sales Table
@@ -62,7 +56,7 @@ CREATE TABLE IF NOT EXISTS sales (
     balance_due REAL DEFAULT 0.0,
     payment_mode TEXT,
     customer_id INTEGER,
-    user_id INTEGER, -- Renamed from salesman_id to match new Security Model
+    user_id INTEGER,
     FOREIGN KEY(customer_id) REFERENCES customers(id)
 );
 
@@ -77,8 +71,7 @@ CREATE TABLE IF NOT EXISTS sale_items (
     sub_total REAL,
     bonus_qty INTEGER DEFAULT 0,
     discount_percent REAL DEFAULT 0.0,
-    discount_amount REAL DEFAULT 0.0,
-    returned_qty INTEGER DEFAULT 0, -- Critical for Returns
+    returned_qty INTEGER DEFAULT 0,
     FOREIGN KEY(sale_id) REFERENCES sales(id),
     FOREIGN KEY(batch_id) REFERENCES batches(id)
 );
@@ -101,14 +94,14 @@ CREATE TABLE IF NOT EXISTS purchase_history (
 CREATE TABLE IF NOT EXISTS payments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     entity_id INTEGER,
-    entity_type TEXT, -- 'CUSTOMER' or 'DEALER'
+    entity_type TEXT,
     amount REAL,
     payment_mode TEXT,
     description TEXT,
     payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 9. Stock Adjustments Audit (Restored)
+-- 9. Stock Adjustments Audit
 CREATE TABLE IF NOT EXISTS stock_adjustments_audit (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     batch_id INTEGER,
@@ -116,11 +109,11 @@ CREATE TABLE IF NOT EXISTS stock_adjustments_audit (
     new_qty INTEGER,
     reason TEXT,
     adjustment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_id INTEGER DEFAULT 1,
+    user_id INTEGER NOT NULL,
     FOREIGN KEY(batch_id) REFERENCES batches(id)
 );
 
--- 10. Sale Returns (Restored)
+-- 10. Sale Returns
 CREATE TABLE IF NOT EXISTS sale_returns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sale_id INTEGER,
@@ -133,7 +126,7 @@ CREATE TABLE IF NOT EXISTS sale_returns (
     reason TEXT
 );
 
--- 11. Users Table (New for Security)
+-- 11. Users Table (Security)
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
@@ -143,11 +136,9 @@ CREATE TABLE IF NOT EXISTS users (
     is_active INTEGER DEFAULT 1
 );
 
-
 INSERT OR IGNORE INTO customers (id, name, phone, address, type, current_balance, cnic)
 VALUES (1, 'Counter Sale (Walk-in)', '', '', 'REGULAR', 0.0, '');
 
--- --- PERFORMANCE INDEXES ---
 CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
 CREATE INDEX IF NOT EXISTS idx_batches_number ON batches(batch_no);
 CREATE INDEX IF NOT EXISTS idx_sales_date ON sales(sale_date);

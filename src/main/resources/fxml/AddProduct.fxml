@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15" prefWidth="500" style="-fx-padding: 20; -fx-background-color: #f4f7f6;"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.my.pharmacy.controller.AddProductController">
+<VBox spacing="15" prefWidth="500" styleClass="main-bg" style="-fx-padding: 20;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.AddProductController">
 
-    <Label text="ADD NEW STOCK (WHOLESALE)" style="-fx-text-fill: #2c3e50;">
+    <Label text="ADD NEW STOCK (WHOLESALE)" styleClass="primary-text">
         <font><Font name="System Bold" size="18.0"/></font>
     </Label>
 
@@ -36,7 +32,6 @@
         <Label text="Batch Number:" GridPane.rowIndex="5"/>
         <TextField fx:id="batchField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-        <!-- FIX #3: Replaced free-text TextField with DatePicker to prevent malformed expiry dates -->
         <Label text="Expiry Date:" GridPane.rowIndex="6"/>
         <DatePicker fx:id="expiryPicker" GridPane.columnIndex="1" GridPane.rowIndex="6" maxWidth="Infinity"/>
 
@@ -46,13 +41,15 @@
         <Label text="Purchase Price (Box):" GridPane.rowIndex="8"/>
         <TextField fx:id="costField" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
 
-        <Label text="Trade Price (Wholesale):" GridPane.rowIndex="9"/>
-        <TextField fx:id="tradePriceField" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+        <Label text="Margin %:" GridPane.rowIndex="9"/>
+        <TextField fx:id="marginField" promptText="Auto-calculates Trade Price" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+
+        <Label text="Trade Price (Wholesale):" GridPane.rowIndex="10"/>
+        <TextField fx:id="tradePriceField" GridPane.columnIndex="1" GridPane.rowIndex="10"/>
     </GridPane>
 
     <HBox spacing="10" alignment="CENTER_RIGHT">
         <Button text="Cancel" onAction="#handleCancel" style="-fx-background-color: #bdc3c7;"/>
-        <Button text="Save Wholesale Stock" onAction="#handleSave"
-                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <Button text="Save Wholesale Stock" onAction="#handleSave" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
     </HBox>
 </VBox>

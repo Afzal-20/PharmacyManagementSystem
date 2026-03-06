@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.KhataController" style="-fx-background-color: #f4f7f6; -fx-padding: 20;" spacing="15">
-    <Label text="KHATA / LEDGER MANAGEMENT" style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;">
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.KhataController" styleClass="main-bg" style="-fx-padding: 20;" spacing="15">
+    <Label text="KHATA / LEDGER MANAGEMENT" styleClass="primary-text" style="-fx-font-weight: bold;">
         <font><Font size="22.0"/></font>
     </Label>
 
-    <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: white; -fx-border-color: #bdc3c7;">
+    <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE" styleClass="card-bg" style="-fx-border-color: #bdc3c7;">
 
         <Tab text="Customers (Receivables)">
             <BorderPane style="-fx-padding: 15;">
                 <top>
-                    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 0 0 15 0;">
-                        <Label text="Select Customer:" style="-fx-font-weight: bold;"/>
-                        <ComboBox fx:id="customerComboBox" prefWidth="300" promptText="Search Customer..."/>
+                    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 0 15 0;">
+                        <Label text="Find Customer:" style="-fx-font-weight: bold;"/>
+                        <TextField fx:id="searchCustomerField" promptText="Type name..." prefWidth="150"/>
+                        <ComboBox fx:id="customerComboBox" prefWidth="250" promptText="Select Customer..."/>
                         <Button text="Load Ledger" onAction="#loadCustomerLedger" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
                     </HBox>
                 </top>
@@ -50,9 +50,10 @@
         <Tab text="Dealers (Payables)">
             <BorderPane style="-fx-padding: 15;">
                 <top>
-                    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 0 0 15 0;">
-                        <Label text="Select Dealer:" style="-fx-font-weight: bold;"/>
-                        <ComboBox fx:id="dealerComboBox" prefWidth="300" promptText="Search Dealer..."/>
+                    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 0 15 0;">
+                        <Label text="Find Dealer:" style="-fx-font-weight: bold;"/>
+                        <TextField fx:id="searchDealerField" promptText="Type company..." prefWidth="150"/>
+                        <ComboBox fx:id="dealerComboBox" prefWidth="250" promptText="Select Dealer..."/>
                         <Button text="Load Ledger" onAction="#loadDealerLedger" style="-fx-background-color: #9b59b6; -fx-text-fill: white;"/>
                     </HBox>
                 </top>
@@ -82,6 +83,5 @@
                 </right>
             </BorderPane>
         </Tab>
-
     </TabPane>
 </VBox>

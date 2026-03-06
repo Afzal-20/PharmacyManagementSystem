@@ -50,9 +50,7 @@ public class POSController {
     private final ObservableList<SaleItem> cartData = FXCollections.observableArrayList();
     private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
 
-    private final Customer WALK_IN_CUSTOMER = new Customer(1, "Counter Sale (Walk-in)", "", "", "REGULAR", 0.0, "", "", "");
-
-    @FXML
+    private final Customer WALK_IN_CUSTOMER = new Customer(1, "Counter Sale (Walk-in)", "", "", "REGULAR", 0.0, "");    @FXML
     public void initialize() {
         setupTableColumns();
         loadStockData();

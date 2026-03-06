@@ -16,9 +16,11 @@ public class DealerController {
     @FXML private TextArea addressField;
     @FXML private TableView<Dealer> dealerTable;
     @FXML private TableColumn<Dealer, String> colCompany, colName, colPhone, colLicense;
+    @FXML private Button btnSave;
 
     private final DealerDAO dealerDAO = new DealerDAOImpl();
     private final ObservableList<Dealer> masterData = FXCollections.observableArrayList();
+    private Dealer editingDealer = null;
 
     @FXML
     public void initialize() {
@@ -44,60 +46,84 @@ public class DealerController {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
             filteredData.setPredicate(dealer -> {
                 if (newVal == null || newVal.isEmpty()) return true;
-                String lowerCaseFilter = newVal.toLowerCase();
-
-                // FIX #8: Added null guards on companyName and licenseNo.
-                // Dealers saved without these fields would throw a NullPointerException
-                // and crash the search whenever the user typed anything.
-                boolean matchesCompany = dealer.getCompanyName() != null &&
-                        dealer.getCompanyName().toLowerCase().contains(lowerCaseFilter);
-                boolean matchesLicense = dealer.getLicenseNo() != null &&
-                        dealer.getLicenseNo().toLowerCase().contains(lowerCaseFilter);
-                boolean matchesName = dealer.getName() != null &&
-                        dealer.getName().toLowerCase().contains(lowerCaseFilter);
-
-                return matchesCompany || matchesLicense || matchesName;
+                String lower = newVal.toLowerCase();
+                return (dealer.getCompanyName() != null && dealer.getCompanyName().toLowerCase().contains(lower)) ||
+                        (dealer.getLicenseNo() != null && dealer.getLicenseNo().toLowerCase().contains(lower)) ||
+                        (dealer.getName() != null && dealer.getName().toLowerCase().contains(lower));
             });
         });
         dealerTable.setItems(filteredData);
     }
 
     @FXML
-    private void handleSave() {
-        if (companyField.getText().trim().isEmpty() || phoneField.getText().trim().isEmpty()) {
-            showAlert("Error", "Company Name and Phone are required.");
+    private void handleEditSelection() {
+        Dealer selected = dealerTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert(Alert.AlertType.WARNING, "Selection Required", "Please select a dealer to edit.");
+            return;
+        }
+        editingDealer = selected;
+        nameField.setText(selected.getName());
+        companyField.setText(selected.getCompanyName());
+        phoneField.setText(selected.getPhone());
+        addressField.setText(selected.getAddress());
+        licenseField.setText(selected.getLicenseNo());
+
+        btnSave.setText("Update Dealer");
+        btnSave.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;");
+    }
+
+    @FXML
+    private void handleDeleteSelection() {
+        Dealer selected = dealerTable.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        com.my.pharmacy.dao.PaymentDAO paymentDAO = new com.my.pharmacy.dao.PaymentDAOImpl();
+        if (!paymentDAO.getDealerLedger(selected.getId()).isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Deletion Blocked", "Cannot delete dealer. They have existing payment/ledger history.");
             return;
         }
 
-        Dealer newDealer = new Dealer(
-                0,
-                nameField.getText().trim(),
-                companyField.getText().trim(),
-                phoneField.getText().trim(),
-                addressField.getText().trim(),
-                licenseField.getText().trim()
-        );
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete dealer " + selected.getCompanyName() + "?");
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            dealerDAO.deleteDealer(selected.getId());
+            loadData();
+            clearFields();
+        }
+    }
 
-        dealerDAO.addDealer(newDealer);
+    @FXML
+    private void handleSave() {
+        if (companyField.getText().trim().isEmpty() || phoneField.getText().trim().isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Company Name and Phone are required.");
+            return;
+        }
+
+        if (editingDealer == null) {
+            Dealer newDealer = new Dealer(0, nameField.getText().trim(), companyField.getText().trim(),
+                    phoneField.getText().trim(), addressField.getText().trim(), licenseField.getText().trim());
+            dealerDAO.addDealer(newDealer);
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Dealer registered successfully!");
+        } else {
+            Dealer updatedDealer = new Dealer(editingDealer.getId(), nameField.getText().trim(), companyField.getText().trim(),
+                    phoneField.getText().trim(), addressField.getText().trim(), licenseField.getText().trim());
+            dealerDAO.updateDealer(updatedDealer);
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Dealer updated successfully!");
+        }
         loadData();
         clearFields();
-        showAlert("Success", "Dealer registered successfully!");
     }
 
     @FXML
     private void clearFields() {
-        nameField.clear();
-        companyField.clear();
-        phoneField.clear();
-        licenseField.clear();
-        addressField.clear();
+        nameField.clear(); companyField.clear(); phoneField.clear(); licenseField.clear(); addressField.clear();
+        editingDealer = null;
+        btnSave.setText("Save Dealer");
+        btnSave.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
     }
 
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
     }
 }
