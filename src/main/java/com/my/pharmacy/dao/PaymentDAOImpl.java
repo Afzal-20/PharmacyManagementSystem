@@ -114,7 +114,7 @@ public class PaymentDAOImpl implements PaymentDAO {
         String sql = "SELECT " +
                 "(SELECT TOTAL(balance_due) FROM sales WHERE customer_id = ?) - " +
                 "(SELECT TOTAL(amount) FROM payments " +
-                " WHERE entity_id = ? AND entity_type = 'CUSTOMER' AND payment_mode = 'CASH')";
+                " WHERE entity_id = ? AND entity_type = 'CUSTOMER' AND payment_mode IN ('CASH', 'RETURN_CREDIT'))";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, customerId);

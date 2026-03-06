@@ -47,7 +47,7 @@
     </GridPane>
     <Separator/>
     <HBox spacing="15" alignment="CENTER_RIGHT">
-        <Button text="Reset Fields" onAction="#initialize" style="-fx-background-color: #bdc3c7; -fx-padding: 10 20;"/>
+        <Button text="Reset Fields" onAction="#clearFields" style="-fx-background-color: #bdc3c7; -fx-padding: 10 20;"/>
         <Button text="SAVE PURCHASE &amp; UPDATE STOCK" onAction="#handleSavePurchase" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25;"/>
     </HBox>
 </VBox>
