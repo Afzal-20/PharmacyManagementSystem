@@ -59,6 +59,7 @@ public class CustomerDAOImpl implements CustomerDAO {
 
     @Override
     public void updateCustomer(Customer customer) {
+        if (customer.getId() == 1) return;
         String sql = "UPDATE customers SET name=?, phone=?, address=?, cnic=? WHERE id=?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

@@ -11,7 +11,6 @@ public interface BatchDAO {
     Batch getBatchById(int id);
     List<Batch> getBatchesByProductId(int productId);
     void updateBatch(Batch batch);
-    void deleteBatch(int id);
     void reduceStock(Connection conn, int batchId, int qty) throws SQLException;
     void adjustStockWithAudit(int batchId, int oldQty, int newQty, String reason, int userId);
     void recordPurchaseHistory(int dealerId, int productId, String productName, String batchNo, String invoiceNo, int boxes, double cost, double trade);

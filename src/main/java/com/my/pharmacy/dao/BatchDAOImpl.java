@@ -98,15 +98,7 @@ public class BatchDAOImpl implements BatchDAO {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    @Override
-    public void deleteBatch(int id) {
-        String sql = "UPDATE batches SET is_active = 0 WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
-    }
+
 
     @Override
     public void reduceStock(Connection conn, int batchId, int qty) throws SQLException {
