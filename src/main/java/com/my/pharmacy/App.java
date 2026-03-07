@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class App extends Application {
 
-    private static Stage primaryStage;
+    public static Stage primaryStage;
 
     @Override
     public void start(Stage stage) {
@@ -30,6 +30,11 @@ public class App extends Application {
             Scene scene = new Scene(root, 400, 500);
 
             primaryStage.setTitle("Login - Pharmacy System");
+            try {
+                primaryStage.getIcons().add(new javafx.scene.image.Image(App.class.getResourceAsStream("/images/logo.png")));
+            } catch (Exception e) {
+                System.err.println("Warning: Logo image not found at /images/logo.png");
+            }
             primaryStage.setScene(scene);
             primaryStage.centerOnScreen();
             primaryStage.show();

@@ -1,5 +1,6 @@
 package com.my.pharmacy.controller;
 
+import com.my.pharmacy.App;
 import com.my.pharmacy.dao.UserDAO;
 import com.my.pharmacy.dao.UserDAOImpl;
 import com.my.pharmacy.model.User;
@@ -13,6 +14,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import java.io.IOException;
+
+import static com.my.pharmacy.App.primaryStage;
 
 public class LoginController {
 
@@ -59,6 +62,13 @@ public class LoginController {
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setTitle("Pharmacy Management System - Logged in as: " + UserSession.getInstance().getUser().getUsername());
+
+            try {
+                primaryStage.getIcons().add(new javafx.scene.image.Image(App.class.getResourceAsStream("/images/logo.png")));
+            } catch (Exception e) {
+                System.err.println("Warning: Logo image not found at /images/logo.png");
+            }
+
             stage.setScene(new Scene(root, 1100, 750));
             stage.centerOnScreen();
             stage.show();
