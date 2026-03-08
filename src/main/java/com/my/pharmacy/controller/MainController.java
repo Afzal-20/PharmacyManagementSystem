@@ -17,6 +17,7 @@ public class MainController {
     @FXML private BorderPane mainLayout;
     @FXML private Button btnManageUsers; // Added for RBAC enforcement
 
+
     @FXML
     public void initialize() {
         instance = this;
@@ -39,6 +40,8 @@ public class MainController {
     @FXML public void showDealers() { loadView("/fxml/DealerManagement.fxml"); }
     @FXML public void showItemLedger() { loadView("/fxml/ItemLedger.fxml"); }
     @FXML public void showKhata() { loadView("/fxml/KhataManagement.fxml"); }
+    @FXML public void showExpiry() { loadView("/fxml/ExpiryView.fxml"); }
+    @FXML public void showBackup() { loadView("/fxml/BackupView.fxml"); }
 
     // NEW: Navigation for User Management
     @FXML public void showUserManagement() { loadView("/fxml/UserManagement.fxml"); }

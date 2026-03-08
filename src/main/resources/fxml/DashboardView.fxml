@@ -86,6 +86,10 @@
                 style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15 30; -fx-font-size: 14; -fx-cursor: hand;"/>
         <Button fx:id="btnQuickPurchase" text="Add Stock" onAction="#handleQuickPurchase"
                 style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15 30; -fx-font-size: 14; -fx-cursor: hand;"/>
+        <Button text="⏰  Expiry Alerts" onAction="#handleQuickExpiry"
+                style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15 30; -fx-font-size: 14; -fx-cursor: hand;"/>
+        <Button fx:id="btnQuickBackup" text="💾  Backup &amp; Restore" onAction="#handleQuickBackup"
+                style="-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15 30; -fx-font-size: 14; -fx-cursor: hand;"/>
     </HBox>
 
 </VBox>

@@ -38,7 +38,7 @@
         <SplitPane dividerPositions="0.6">
             <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #f4f7f6;">
                 <Label prefHeight="27.0" prefWidth="115.0" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="AVAILABLE STOCK" />
-                <TableView fx:id="productTable" prefHeight="471.0" prefWidth="695.0" VBox.vgrow="ALWAYS">
+                <TableView fx:id="productTable" prefHeight="471.0" prefWidth="695.0" style="-fx-background-radius: 5px; -fx-border-radius: 5px;" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="colName" prefWidth="180" text="Medicine Name" />
                         <TableColumn fx:id="colGeneric" prefWidth="120" text="Generic" />
@@ -54,7 +54,7 @@
 
             <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #f4f7f6;">
                 <Label prefHeight="28.0" prefWidth="114.0" style="-fx-font-weight: bold; -fx-text-fill: #c0392b;" text="CURRENT INVOICE" />
-                <TableView fx:id="cartTable" VBox.vgrow="ALWAYS">
+                <TableView fx:id="cartTable" style="-fx-border-radius: 5px; -fx-background-radius: 5px;" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="colCartName" prefWidth="150" text="Item" />
                         <TableColumn fx:id="colCartQty" prefWidth="50" text="Qty" />
@@ -74,13 +74,13 @@
                             <Label style="-fx-font-size: 16; -fx-font-weight: bold;" text="Amount Paid:" />
                             <TextField fx:id="amountPaidField" prefWidth="120" style="-fx-font-size: 16;" text="0.0" />
                         </HBox>
-                        <Label fx:id="balanceDueLabel" text="Balance Due (Khata): 0.00" textFill="#e67e22">
+                        <Label fx:id="balanceDueLabel" text="Balance Due : 0.00" textFill="#e67e22">
                             <font><Font name="System Bold" size="14.0" /></font>
                         </Label>
                     </VBox>
                 </HBox>
 
-                <Button maxWidth="Infinity" onAction="#handleCheckout" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 15; -fx-font-weight: bold; -fx-background-radius: 5px;" text="COMPLETE SALE &amp; POST TO LEDGER" />
+                <Button maxWidth="Infinity" onAction="#handleCheckout" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 15; -fx-font-weight: bold; -fx-background-radius: 5px;" text="COMPLETE SALE" />
             </VBox>
         </SplitPane>
     </center>

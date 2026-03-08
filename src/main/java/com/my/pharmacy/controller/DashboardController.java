@@ -6,8 +6,12 @@ import com.my.pharmacy.model.Batch;
 import com.my.pharmacy.model.Sale;
 import com.my.pharmacy.util.UserSession;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,6 +34,7 @@ public class DashboardController {
 
     // Quick Actions
     @FXML private Button btnQuickPurchase;
+    @FXML private Button btnQuickBackup;
 
     private final SaleDAO saleDAO = new SaleDAOImpl();
     private final BatchDAO batchDAO = new BatchDAOImpl();
@@ -47,6 +52,8 @@ public class DashboardController {
         boolean isAdmin = UserSession.getInstance() != null && UserSession.getInstance().getUser().isAdmin();
         btnQuickPurchase.setVisible(isAdmin);
         btnQuickPurchase.setManaged(isAdmin);
+        btnQuickBackup.setVisible(isAdmin);
+        btnQuickBackup.setManaged(isAdmin);
     }
 
     private void refreshDashboard() {
@@ -129,5 +136,15 @@ public class DashboardController {
     @FXML
     private void handleQuickPurchase() {
         if (MainController.instance != null) MainController.instance.showPurchaseEntry();
+    }
+
+    @FXML
+    private void handleQuickExpiry() {
+        if (MainController.instance != null) MainController.instance.showExpiry();
+    }
+
+    @FXML
+    private void handleQuickBackup() {
+        if (MainController.instance != null) MainController.instance.showBackup();
     }
 }

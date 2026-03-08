@@ -19,7 +19,10 @@ public class App extends Application {
         // 1. Initialize Database Schema
         DatabaseSetup.initialize();
 
-        // 2. Boot directly to Login Screen
+        // 2. Register shutdown hook — backup runs automatically when the app closes
+        com.my.pharmacy.util.BackupService.registerShutdownHook();
+
+        // 3. Boot directly to Login Screen
         loadLoginScreen();
     }
 
