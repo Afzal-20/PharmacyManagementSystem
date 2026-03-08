@@ -5,28 +5,27 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" prefHeight="500" prefWidth="400" spacing="20" style="-fx-background-color: #2c3e50;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.LoginController">
+<VBox alignment="CENTER" prefHeight="549.0" prefWidth="400" spacing="20" style="-fx-background-color: #2c3e50;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.LoginController">
 
     <VBox alignment="CENTER" maxWidth="350" style="-fx-background-color: #e7e7e7; -fx-background-radius: 10; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);">
 
-        <ImageView fitWidth="150" preserveRatio="true">
+        <ImageView fitWidth="130" preserveRatio="true">
             <image>
                 <Image url="@../images/logo.png" />
             </image>
             <VBox.margin>
-                <Insets bottom="10"/>
+                <Insets bottom="10" />
             </VBox.margin>
         </ImageView>
 
         <Label text="PHARMACY SYSTEM" textFill="#2c3e50">
             <font><Font name="System Bold" size="20.0" /></font>
         </Label>
-        <Label style="-fx-font-size: 12px; -fx-padding: 0 0 20 0;" text="WHOLESALE EDITION" textFill="#7f8c8d" />
 
         <VBox alignment="CENTER_LEFT" spacing="10">
             <Label style="-fx-font-weight: bold;" text="Username" />
@@ -44,7 +43,5 @@
             </VBox.margin>
         </Button>
     </VBox>
-
-    <Label style="-fx-font-size: 11px;" text="Support: 0313-9451041" textFill="#bdc3c7" />
 
 </VBox>
