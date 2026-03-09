@@ -14,7 +14,7 @@
 
     <VBox alignment="CENTER" maxWidth="350" style="-fx-background-color: #e7e7e7; -fx-background-radius: 10; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);">
 
-        <ImageView fitWidth="130" preserveRatio="true">
+        <ImageView fitHeight="99.0" fitWidth="124.0" preserveRatio="true">
             <image>
                 <Image url="@../images/logo.png" />
             </image>
@@ -29,15 +29,18 @@
 
         <VBox alignment="CENTER_LEFT" spacing="10">
             <Label style="-fx-font-weight: bold;" text="Username" />
-            <TextField fx:id="usernameField" promptText="Enter username" style="-fx-padding: 10; -fx-border-radius: 2px; -fx-background-color: white; -fx-border-color: white;" />
+            <TextField fx:id="usernameField" promptText="Enter username" style="-fx-padding: 10; -fx-background-radius: 8; -fx-border-radius: 8; -fx-background-color: white; -fx-border-color: white;" />
 
             <Label style="-fx-font-weight: bold;" text="Password" />
-            <PasswordField fx:id="passwordField" promptText="Enter password" style="-fx-padding: 10; -fx-background-color: white; -fx-border-color: white; -fx-border-radius: 2px;" />
+            <PasswordField fx:id="passwordField" promptText="Enter password" style="-fx-padding: 10; -fx-background-color: white; -fx-border-color: white; -fx-background-radius: 8; -fx-border-radius: 8;" />
         </VBox>
 
-        <Label fx:id="errorLabel" style="-fx-padding: 10 0 0 0;" text="" textFill="#e74c3c" />
+        <Label fx:id="errorLabel" style="-fx-padding: 10 0 0 0;" text="" textFill="#e74c3c">
+         <font>
+            <Font size="13.0" />
+         </font></Label>
 
-        <Button maxWidth="Infinity" onAction="#handleLogin" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30; -fx-font-size: 14px; -fx-cursor: hand;" text="LOGIN">
+        <Button maxWidth="Infinity" onAction="#handleLogin" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="LOGIN">
             <VBox.margin>
                 <Insets top="20" />
             </VBox.margin>

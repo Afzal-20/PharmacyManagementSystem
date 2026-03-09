@@ -1,33 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 
-<HBox spacing="20" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.UserManagementController">
-    <VBox spacing="15" prefWidth="350" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
-        <Label text="Register New Staff" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
-        <TextField fx:id="fullNameField" promptText="Full Name"/>
-        <TextField fx:id="usernameField" promptText="Login Username"/>
-        <PasswordField fx:id="passwordField" promptText="Password"/>
-        <Label text="Account Role:" style="-fx-font-weight: bold;"/>
-        <ComboBox fx:id="roleComboBox" promptText="Select Role" maxWidth="Infinity"/>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox spacing="20" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.UserManagementController">
+    <VBox prefWidth="350" spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+        <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="Register New User" />
+        <TextField fx:id="fullNameField" promptText="Full Name" style="-fx-background-radius: 8;" />
+        <TextField fx:id="usernameField" promptText="Login Username" style="-fx-background-radius: 8;" />
+        <PasswordField fx:id="passwordField" promptText="Password" style="-fx-background-radius: 8;" />
+        <Label style="-fx-font-weight: bold;" text="Account Role:" />
+        <ComboBox fx:id="roleComboBox" maxWidth="Infinity" promptText="Select Role" style="-fx-background-radius: 8;" />
         <HBox spacing="10" style="-fx-padding: 10 0 0 0;">
-            <Button text="Clear" onAction="#clearFields" style="-fx-background-color: #bdc3c7;" prefWidth="100"/>
-            <Button fx:id="btnCreateUser" text="Create User" onAction="#handleSaveUser" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Button onAction="#clearFields" prefWidth="100" style="-fx-background-color: #bdc3c7; -fx-background-radius: 8;" text="Clear" />
+            <Button fx:id="btnCreateUser" maxWidth="Infinity" onAction="#handleSaveUser" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Create User" HBox.hgrow="ALWAYS" />
         </HBox>
     </VBox>
 
     <VBox spacing="10" HBox.hgrow="ALWAYS">
-        <Label text="SYSTEM USERS" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-        <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
+        <Label style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="SYSTEM USERS" />
+        <TableView fx:id="userTable" style="-fx-background-radius: 10; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colName" text="Full Name" prefWidth="180"/>
-                <TableColumn fx:id="colUsername" text="Username" prefWidth="150"/>
-                <TableColumn fx:id="colRole" text="Role" prefWidth="120"/>
-                <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                <TableColumn fx:id="colName" prefWidth="180" style="-fx-background-radius: 10 0 0 0; -fx-border-radius: 10 0 0 0;" text="Full Name" />
+                <TableColumn fx:id="colUsername" prefWidth="150" text="Username" />
+                <TableColumn fx:id="colRole" prefWidth="120" text="Role" />
+                <TableColumn fx:id="colStatus" prefWidth="100" style="-fx-background-radius: 0 10 0 0; -fx-border-radius: 0 10 0 0;" text="Status" />
             </columns>
         </TableView>
-        <HBox spacing="10" alignment="CENTER_RIGHT">
-            <Button fx:id="btnDeactivate" text="Toggle Active Status" onAction="#handleToggleStatus" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+        <HBox alignment="CENTER_RIGHT" spacing="10">
+            <Button fx:id="btnDeactivate" onAction="#handleToggleStatus" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 8;" text="Toggle Active Status" />
         </HBox>
     </VBox>
 </HBox>

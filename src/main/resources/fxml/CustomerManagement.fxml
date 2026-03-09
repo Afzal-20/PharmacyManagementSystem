@@ -1,32 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 
-<HBox spacing="20" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.CustomerController">
-    <VBox spacing="15" prefWidth="350" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
-        <Label text="Manage Customers" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
-        <TextField fx:id="nameField" promptText="Customer Name"/>
-        <TextField fx:id="phoneField" promptText="Phone Number"/>
-        <TextField fx:id="cnicField" promptText="CNIC / DL Number"/>
-        <TextArea fx:id="addressField" promptText="Address" prefHeight="80"/>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox spacing="20" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.CustomerController">
+    <VBox prefWidth="350" spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
+        <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="Manage Customers" />
+        <TextField fx:id="nameField" promptText="Customer Name" style="-fx-background-radius: 8;" />
+        <TextField fx:id="phoneField" promptText="Phone Number" style="-fx-background-radius: 8;" />
+        <TextField fx:id="cnicField" promptText="CNIC / DL Number" style="-fx-background-radius: 8;" />
+        <TextArea fx:id="addressField" prefHeight="80" promptText="Address" style="-fx-background-radius: 8;" />
         <HBox spacing="10">
-            <Button text="Clear" onAction="#clearFields" style="-fx-background-color: #bdc3c7;" prefWidth="100"/>
-            <Button fx:id="btnSave" text="Save Customer" onAction="#handleSave" style="-fx-background-color: #2980b9; -fx-text-fill: white;" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Button onAction="#clearFields" prefWidth="100" style="-fx-background-color: #bdc3c7; -fx-background-radius: 8;" text="Clear" />
+            <Button fx:id="btnSave" maxWidth="Infinity" onAction="#handleSave" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-background-radius: 8;" text="Save Customer" HBox.hgrow="ALWAYS" />
         </HBox>
     </VBox>
     <VBox spacing="10" HBox.hgrow="ALWAYS">
-        <TextField fx:id="searchField" promptText="Search by Name, Phone, or CNIC..."/>
-        <TableView fx:id="customerTable" VBox.vgrow="ALWAYS">
+        <TextField fx:id="searchField" promptText="Search by Name, Phone, or CNIC..." style="-fx-background-radius: 8;" />
+        <TableView fx:id="customerTable" style="-fx-background-radius: 8;" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colName" text="Name" prefWidth="150"/>
-                <TableColumn fx:id="colType" text="Type" prefWidth="100"/>
-                <TableColumn fx:id="colPhone" text="Phone" prefWidth="120"/>
-                <TableColumn fx:id="colAddress" text="Address" prefWidth="200"/>
-                <TableColumn fx:id="colCnic" text="CNIC" prefWidth="130"/>
+                <TableColumn fx:id="colName" prefWidth="150" style="-fx-background-radius: 8 0 0 0;" text="Name" />
+                <TableColumn fx:id="colType" prefWidth="100" text="Type" />
+                <TableColumn fx:id="colPhone" prefWidth="120" text="Phone" />
+                <TableColumn fx:id="colAddress" prefWidth="191.19998168945312" text="Address" />
+                <TableColumn fx:id="colCnic" prefWidth="142.39997558593745" style="-fx-background-radius: 0 8 0 0;" text="CNIC" />
             </columns>
         </TableView>
-        <HBox spacing="10" alignment="CENTER_RIGHT">
-            <Button text="Edit Selected" onAction="#handleEditSelection" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <HBox alignment="CENTER_RIGHT" spacing="10">
+            <Button onAction="#handleEditSelection" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Edit Selected" />
         </HBox>
     </VBox>
 </HBox>

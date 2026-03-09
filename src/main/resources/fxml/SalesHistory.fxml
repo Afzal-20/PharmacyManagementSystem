@@ -1,47 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.SalesHistoryController">
-    <Label text="SALES HISTORY &amp; RETURNS HUB" style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;"><font><Font size="22.0"/></font></Label>
+<VBox prefHeight="1027.0" prefWidth="652.0" spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.SalesHistoryController">
+    <Label style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;" text="HISTORY &amp; RETURNS"><font><Font size="22.0" /></font></Label>
 
-    <HBox spacing="15" alignment="CENTER_LEFT">
-        <Label text="Filter by Date:" style="-fx-font-weight: bold;"/>
-        <DatePicker fx:id="datePicker" />
-        <Button text="Load Invoices" onAction="#loadInvoices" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <Label prefHeight="19.0" prefWidth="94.0" style="-fx-font-weight: bold;" text="Filter by Date:" />
+        <DatePicker fx:id="datePicker" style="-fx-background-radius: 8; -fx-border-radius: 8;" />
+        <Button onAction="#loadInvoices" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 8;" text="Load Invoices" />
         <Pane HBox.hgrow="ALWAYS" />
-        <Button text="🖨️ Reprint Selected Invoice" onAction="#handleReprintInvoice" style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15;"/>
+        <Button onAction="#handleReprintInvoice" style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 8;" text="🖨️ Reprint Selected Invoice" />
     </HBox>
+     <VBox spacing="5" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: WHITE; -fx-background-color: WHITE;">
+         <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="Invoices" />
+         <TableView fx:id="invoiceTable" style="-fx-background-radius: 10; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
+             <columns>
+                 <TableColumn fx:id="colInvId" prefWidth="80" style="-fx-background-radius: 10 0 0 0;" text="Invoice #" />
+                 <TableColumn fx:id="colInvDate" prefWidth="150" text="Time" />
+                 <TableColumn fx:id="colInvTotal" prefWidth="120" text="Grand Total" />
+                 <TableColumn fx:id="colInvMode" prefWidth="259.1999877929687" style="-fx-background-radius: 0 10 0 0;" text="Type" />
+             </columns>
+         </TableView>
+     </VBox>
 
-    <SplitPane orientation="VERTICAL" VBox.vgrow="ALWAYS" dividerPositions="0.45">
-        <VBox spacing="5">
-            <Label text="Invoices" style="-fx-font-weight: bold; -fx-padding: 5;"/>
-            <TableView fx:id="invoiceTable" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="colInvId" text="Invoice #" prefWidth="80"/>
-                    <TableColumn fx:id="colInvDate" text="Time" prefWidth="150"/>
-                    <TableColumn fx:id="colInvTotal" text="Grand Total" prefWidth="120"/>
-                    <TableColumn fx:id="colInvMode" text="Type" prefWidth="100"/>
-                </columns>
-            </TableView>
-        </VBox>
-
-        <VBox spacing="10" style="-fx-padding: 10 0 0 0;">
-            <HBox alignment="CENTER_LEFT" spacing="15">
-                <Label text="Invoice Items" style="-fx-font-weight: bold;"/>
-                <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="btnProcessReturn" text="Process Return for Selected Item" onAction="#handleProcessReturn" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;"/>
-            </HBox>
-            <TableView fx:id="itemTable" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="colItemName" text="Medicine" prefWidth="200"/>
-                    <TableColumn fx:id="colItemQty" text="Qty Sold" prefWidth="80"/>
-                    <TableColumn fx:id="colItemPrice" text="Unit Rate" prefWidth="100"/>
-                    <TableColumn fx:id="colItemDisc" text="Disc %" prefWidth="80"/>
-                    <TableColumn fx:id="colItemRet" text="Returned Qty" prefWidth="100"/>
-                </columns>
-            </TableView>
-        </VBox>
-    </SplitPane>
+     <VBox prefHeight="434.0" prefWidth="612.0" spacing="10" style="-fx-padding: 10 0 0 0; -fx-border-color: white; -fx-background-color: white; -fx-background-radius: 10; -fx-border-radius: 10;">
+         <HBox alignment="CENTER_LEFT" spacing="15">
+             <Label style="-fx-font-weight: bold;" text="Invoice Items">
+            <HBox.margin>
+               <Insets left="5.0" />
+            </HBox.margin>
+         </Label>
+             <Region HBox.hgrow="ALWAYS" />
+             <Button fx:id="btnProcessReturn" onAction="#handleProcessReturn" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Process Return ">
+            <HBox.margin>
+               <Insets right="5.0" />
+            </HBox.margin>
+         </Button>
+         </HBox>
+         <TableView fx:id="itemTable" style="-fx-background-radius: 10; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
+             <columns>
+                 <TableColumn fx:id="colItemName" prefWidth="200" style="-fx-background-radius: 10 0 0 0;" text="Medicine" />
+                 <TableColumn fx:id="colItemQty" prefWidth="80" text="Qty Sold" />
+                 <TableColumn fx:id="colItemPrice" prefWidth="100" text="Unit Rate" />
+                 <TableColumn fx:id="colItemDisc" prefWidth="80" text="Disc %" />
+                 <TableColumn fx:id="colItemRet" prefWidth="145.60001220703123" style="-fx-background-radius: 0 10 0 0;" text="Returned Qty" />
+             </columns>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+         </TableView>
+     </VBox>
 </VBox>

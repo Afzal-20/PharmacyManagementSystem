@@ -1,83 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.KhataController" styleClass="main-bg" style="-fx-padding: 20;" spacing="15">
-    <Label text="KHATA / LEDGER MANAGEMENT" styleClass="primary-text" style="-fx-font-weight: bold;">
-        <font><Font size="22.0"/></font>
+<VBox spacing="15" style="-fx-padding: 20;" styleClass="main-bg" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.KhataController">
+    <Label style="-fx-font-weight: bold;" styleClass="primary-text" text="LEDGER MANAGEMENT">
+        <font><Font size="22.0" /></font>
     </Label>
 
-    <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE" styleClass="card-bg" style="-fx-border-color: #bdc3c7;">
+    <TabPane style="-fx-border-color: #bdc3c7; -fx-border-radius: 0 0 10 10;" styleClass="card-bg" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
 
-        <Tab text="Customers (Receivables)">
-            <BorderPane style="-fx-padding: 15;">
+        <Tab style="-fx-background-radius: 10 10 0 0;" text="Customers (Receivables)">
+            <BorderPane style="-fx-padding: 15; -fx-background-radius: 0 0 10 10;">
                 <top>
-                    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 0 15 0;">
-                        <Label text="Find Customer:" style="-fx-font-weight: bold;"/>
-                        <TextField fx:id="searchCustomerField" promptText="Type name..." prefWidth="150"/>
-                        <ComboBox fx:id="customerComboBox" prefWidth="250" promptText="Select Customer..."/>
-                        <Button text="Load Ledger" onAction="#loadCustomerLedger" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 15 0;">
+                        <Label style="-fx-font-weight: bold;" text="Find Customer:" />
+                        <TextField fx:id="searchCustomerField" prefWidth="150" promptText="Type name..." style="-fx-background-radius: 8;" />
+                        <ComboBox fx:id="customerComboBox" prefWidth="250" promptText="Select Customer..." style="-fx-background-radius: 8;" />
+                        <Button onAction="#loadCustomerLedger" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 8;" text="Load Ledger" />
                     </HBox>
                 </top>
                 <center>
-                    <TableView fx:id="customerLedgerTable">
+                    <TableView fx:id="customerLedgerTable" style="-fx-background-radius: 10; -fx-border-radius: 10;">
                         <columns>
-                            <TableColumn fx:id="colCustDate" text="Date" prefWidth="150"/>
-                            <TableColumn fx:id="colCustDesc" text="Description" prefWidth="250"/>
-                            <TableColumn fx:id="colCustDebit" text="Charged (Bill)" prefWidth="120"/>
-                            <TableColumn fx:id="colCustCredit" text="Paid (Receipt)" prefWidth="120"/>
+                            <TableColumn fx:id="colCustDate" prefWidth="150" style="-fx-background-radius: 10 0 0 0;" text="Date" />
+                            <TableColumn fx:id="colCustDesc" prefWidth="250" text="Description" />
+                            <TableColumn fx:id="colCustDebit" prefWidth="120" text="Charged (Bill)" />
+                            <TableColumn fx:id="colCustCredit" prefWidth="120" style="-fx-background-radius: 0 10 0 0;" text="Paid (Receipt)" />
                         </columns>
                     </TableView>
                 </center>
                 <right>
-                    <VBox fx:id="vboxCustPayment" spacing="15" style="-fx-padding: 0 0 0 15;" prefWidth="280">
-                        <VBox style="-fx-background-color: #ecf0f1; -fx-padding: 15; -fx-border-color: #bdc3c7;">
-                            <Label text="Customer Owes You:" style="-fx-font-size: 14;"/>
-                            <Label fx:id="lblCustomerBalance" text="Rs. 0.00" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #c0392b;"/>
+                    <VBox fx:id="vboxCustPayment" prefWidth="280" spacing="15" style="-fx-padding: 0 0 0 15;">
+                        <VBox style="-fx-background-color: #ecf0f1; -fx-padding: 15; -fx-border-color: #bdc3c7; -fx-background-radius: 10; -fx-border-radius: 10;">
+                            <Label style="-fx-font-size: 14;" text="Customer Owes You:" />
+                            <Label fx:id="lblCustomerBalance" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #c0392b; -fx-background-radius: 10;" text="Rs. 0.00" />
                         </VBox>
-                        <VBox spacing="10" style="-fx-background-color: #f9f9f9; -fx-padding: 15; -fx-border-color: #bdc3c7;">
-                            <Label text="Record Recovery" style="-fx-font-weight: bold;"/>
-                            <TextField fx:id="custPaymentAmountField" promptText="Amount Received"/>
-                            <TextField fx:id="custPaymentDescField" promptText="Note (e.g. Cash)"/>
-                            <Button text="Save Payment" onAction="#handleSaveCustomerPayment" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <VBox spacing="10" style="-fx-background-color: #f9f9f9; -fx-padding: 15; -fx-border-color: #bdc3c7; -fx-background-radius: 10; -fx-border-radius: 10;">
+                            <Label style="-fx-font-weight: bold;" text="Record Recovery" />
+                            <TextField fx:id="custPaymentAmountField" promptText="Amount Received" style="-fx-background-radius: 8;" />
+                            <TextField fx:id="custPaymentDescField" promptText="Note (e.g. Cash)" style="-fx-background-radius: 8;" />
+                            <Button maxWidth="Infinity" onAction="#handleSaveCustomerPayment" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Save Payment" />
                         </VBox>
                     </VBox>
                 </right>
             </BorderPane>
         </Tab>
 
-        <Tab text="Dealers (Payables)">
+        <Tab style="-fx-background-radius: 10 10 0 0;" text="Dealers (Payables)">
             <BorderPane style="-fx-padding: 15;">
                 <top>
-                    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 0 15 0;">
-                        <Label text="Find Dealer:" style="-fx-font-weight: bold;"/>
-                        <TextField fx:id="searchDealerField" promptText="Type company..." prefWidth="150"/>
-                        <ComboBox fx:id="dealerComboBox" prefWidth="250" promptText="Select Dealer..."/>
-                        <Button text="Load Ledger" onAction="#loadDealerLedger" style="-fx-background-color: #9b59b6; -fx-text-fill: white;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 15 0;">
+                        <Label style="-fx-font-weight: bold;" text="Find Dealer:" />
+                        <TextField fx:id="searchDealerField" prefWidth="150" promptText="Type company..." style="-fx-background-radius: 8;" />
+                        <ComboBox fx:id="dealerComboBox" prefWidth="250" promptText="Select Dealer..." style="-fx-background-radius: 8;" />
+                        <Button onAction="#loadDealerLedger" style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 8;" text="Load Ledger" />
                     </HBox>
                 </top>
                 <center>
-                    <TableView fx:id="dealerLedgerTable">
+                    <TableView fx:id="dealerLedgerTable" style="-fx-background-radius: 10; -fx-border-radius: 10;">
                         <columns>
-                            <TableColumn fx:id="colDealDate" text="Date" prefWidth="150"/>
-                            <TableColumn fx:id="colDealDesc" text="Description" prefWidth="250"/>
-                            <TableColumn fx:id="colDealDebit" text="Charged (Bill)" prefWidth="120"/>
-                            <TableColumn fx:id="colDealCredit" text="Paid (Cash out)" prefWidth="120"/>
+                            <TableColumn fx:id="colDealDate" prefWidth="150" style="-fx-background-radius: 10 0 0 0;" text="Date" />
+                            <TableColumn fx:id="colDealDesc" prefWidth="250" text="Description" />
+                            <TableColumn fx:id="colDealDebit" prefWidth="120" text="Charged (Bill)" />
+                            <TableColumn fx:id="colDealCredit" prefWidth="120" style="-fx-background-radius: 0 10 0 0;" text="Paid (Cash out)" />
                         </columns>
                     </TableView>
                 </center>
                 <right>
-                    <VBox fx:id="vboxDealPayment" spacing="15" style="-fx-padding: 0 0 0 15;" prefWidth="280">
-                        <VBox style="-fx-background-color: #ecf0f1; -fx-padding: 15; -fx-border-color: #bdc3c7;">
-                            <Label text="You Owe Dealer:" style="-fx-font-size: 14;"/>
-                            <Label fx:id="lblDealerBalance" text="Rs. 0.00" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #c0392b;"/>
+                    <VBox fx:id="vboxDealPayment" prefWidth="280" spacing="15" style="-fx-padding: 0 0 0 15;">
+                        <VBox style="-fx-background-color: #ecf0f1; -fx-padding: 15; -fx-border-color: #bdc3c7; -fx-border-radius: 10; -fx-background-radius: 10;">
+                            <Label style="-fx-font-size: 14;" text="You Owe Dealer:" />
+                            <Label fx:id="lblDealerBalance" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #c0392b;" text="Rs. 0.00" />
                         </VBox>
-                        <VBox spacing="10" style="-fx-background-color: #f9f9f9; -fx-padding: 15; -fx-border-color: #bdc3c7;">
-                            <Label text="Record Payment Out" style="-fx-font-weight: bold;"/>
-                            <TextField fx:id="dealPaymentAmountField" promptText="Amount Paid to Dealer"/>
-                            <TextField fx:id="dealPaymentDescField" promptText="Note (e.g. Bank Transfer)"/>
-                            <Button text="Save Payment" onAction="#handleSaveDealerPayment" maxWidth="Infinity" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <VBox spacing="10" style="-fx-background-color: #f9f9f9; -fx-padding: 15; -fx-border-color: #bdc3c7; -fx-background-radius: 10; -fx-border-radius: 10;">
+                            <Label style="-fx-font-weight: bold;" text="Record Payment Out" />
+                            <TextField fx:id="dealPaymentAmountField" promptText="Amount Paid to Dealer" style="-fx-background-radius: 8;" />
+                            <TextField fx:id="dealPaymentDescField" promptText="Note (e.g. Bank Transfer)" style="-fx-background-radius: 8;" />
+                            <Button maxWidth="Infinity" onAction="#handleSaveDealerPayment" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Save Payment" />
                         </VBox>
                     </VBox>
                 </right>

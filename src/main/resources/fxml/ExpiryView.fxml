@@ -1,77 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="16" style="-fx-background-color: #ecf0f1; -fx-padding: 30;"
-      xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.my.pharmacy.controller.ExpiryController">
+<VBox spacing="16" style="-fx-background-color: #ecf0f1; -fx-padding: 30;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.ExpiryController">
 
     <!-- Header -->
-    <Label text="Expiry Management" style="-fx-text-fill: #2c3e50;">
-        <font><Font name="System Bold" size="24.0"/></font>
+    <Label style="-fx-text-fill: #2c3e50;" text="Expiry Management">
+        <font><Font name="System Bold" size="24.0" /></font>
     </Label>
-    <Label text="Showing all batches expiring within the next 90 days, plus already-expired stock."
-           style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+    <Label style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" text="Showing all batches expiring within the next 90 days, plus already-expired stock." />
 
-    <Separator/>
+    <Separator />
 
     <!-- Summary cards -->
     <HBox spacing="16">
         <VBox style="-fx-background-color: #f5b7b1; -fx-background-radius: 8; -fx-padding: 16;" HBox.hgrow="ALWAYS">
-            <Label text="EXPIRED" style="-fx-font-weight: bold; -fx-text-fill: #922b21;"/>
-            <Label fx:id="lblExpired" text="0" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #922b21;"/>
-            <Label text="Already expired" style="-fx-text-fill: #922b21; -fx-font-size: 11px;"/>
+            <Label style="-fx-font-weight: bold; -fx-text-fill: #922b21;" text="EXPIRED" />
+            <Label fx:id="lblExpired" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #922b21;" text="0" />
+            <Label style="-fx-text-fill: #922b21; -fx-font-size: 11px;" text="Already expired" />
         </VBox>
         <VBox style="-fx-background-color: #fadbd8; -fx-background-radius: 8; -fx-padding: 16;" HBox.hgrow="ALWAYS">
-            <Label text="CRITICAL (≤ 30 days)" style="-fx-font-weight: bold; -fx-text-fill: #c0392b;"/>
-            <Label fx:id="lblCritical" text="0" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #c0392b;"/>
-            <Label text="Expiring this month" style="-fx-text-fill: #c0392b; -fx-font-size: 11px;"/>
+            <Label style="-fx-font-weight: bold; -fx-text-fill: #c0392b;" text="CRITICAL (≤ 30 days)" />
+            <Label fx:id="lblCritical" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #c0392b;" text="0" />
+            <Label style="-fx-text-fill: #c0392b; -fx-font-size: 11px;" text="Expiring this month" />
         </VBox>
         <VBox style="-fx-background-color: #fdebd0; -fx-background-radius: 8; -fx-padding: 16;" HBox.hgrow="ALWAYS">
-            <Label text="WARNING (31–60 days)" style="-fx-font-weight: bold; -fx-text-fill: #d35400;"/>
-            <Label fx:id="lblWarning" text="0" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #d35400;"/>
-            <Label text="Expiring within 2 months" style="-fx-text-fill: #d35400; -fx-font-size: 11px;"/>
+            <Label style="-fx-font-weight: bold; -fx-text-fill: #d35400;" text="WARNING (31–60 days)" />
+            <Label fx:id="lblWarning" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #d35400;" text="0" />
+            <Label style="-fx-text-fill: #d35400; -fx-font-size: 11px;" text="Expiring within 2 months" />
         </VBox>
         <VBox style="-fx-background-color: #fef9e7; -fx-background-radius: 8; -fx-padding: 16;" HBox.hgrow="ALWAYS">
-            <Label text="TOTAL ALERTS" style="-fx-font-weight: bold; -fx-text-fill: #7d6608;"/>
-            <Label fx:id="lblTotal" text="0" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #7d6608;"/>
-            <Label text="Batches needing attention" style="-fx-text-fill: #7d6608; -fx-font-size: 11px;"/>
+            <Label style="-fx-font-weight: bold; -fx-text-fill: #7d6608;" text="TOTAL ALERTS" />
+            <Label fx:id="lblTotal" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #7d6608;" text="0" />
+            <Label style="-fx-text-fill: #7d6608; -fx-font-size: 11px;" text="Batches needing attention" />
         </VBox>
     </HBox>
 
     <!-- Table + actions -->
-    <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 0);"
-          spacing="12" VBox.vgrow="ALWAYS">
+    <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 0);" VBox.vgrow="ALWAYS">
 
-        <HBox spacing="12" alignment="CENTER_LEFT">
-            <Button text="🔄  Refresh" onAction="#loadExpiryData"
-                    style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 5; -fx-cursor: hand;"/>
-            <Button fx:id="btnWriteOff" text="🗑  Write Off Selected Batch"
-                    onAction="#handleWriteOff"
-                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 5; -fx-cursor: hand;"/>
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <Button onAction="#loadExpiryData" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 8; -fx-cursor: hand;" text="🔄  Refresh" />
+            <Button fx:id="btnWriteOff" onAction="#handleWriteOff" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 8; -fx-cursor: hand;" text="🗑  Write Off Selected Batch" />
         </HBox>
 
-        <TableView fx:id="expiryTable" VBox.vgrow="ALWAYS">
+        <TableView fx:id="expiryTable" style="-fx-background-radius: 10; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colProduct"    text="Product Name"  prefWidth="220"/>
-                <TableColumn fx:id="colBatchNo"    text="Batch No"      prefWidth="110"/>
-                <TableColumn fx:id="colExpiry"     text="Expiry Date"   prefWidth="110"/>
-                <TableColumn fx:id="colStock"      text="Qty On Hand"   prefWidth="100"/>
-                <TableColumn fx:id="colTradePrice" text="Trade Price"   prefWidth="110"/>
-                <TableColumn fx:id="colDaysLeft"   text="Days Left"     prefWidth="140"/>
-                <TableColumn fx:id="colStatus"     text="Status"        prefWidth="130"/>
+                <TableColumn fx:id="colProduct" prefWidth="220" style="-fx-background-radius: 10 0 0 0;" text="Product Name" />
+                <TableColumn fx:id="colBatchNo" prefWidth="110" text="Batch No" />
+                <TableColumn fx:id="colExpiry" prefWidth="110" text="Expiry Date" />
+                <TableColumn fx:id="colStock" prefWidth="100" text="Qty On Hand" />
+                <TableColumn fx:id="colTradePrice" prefWidth="110" text="Trade Price" />
+                <TableColumn fx:id="colDaysLeft" prefWidth="140" text="Days Left" />
+                <TableColumn fx:id="colStatus" prefWidth="130" style="-fx-background-radius: 0 10 0 0;" text="Status" />
             </columns>
             <placeholder>
-                <Label text="✅  No batches expiring within the next 90 days." style="-fx-text-fill: #27ae60;"/>
+                <Label style="-fx-text-fill: #27ae60;" text="✅  No batches expiring within the next 90 days." />
             </placeholder>
         </TableView>
 
-        <Label text="🔴 Red = expired or ≤ 30 days     🟠 Orange = 31–60 days     🟡 Yellow = 61–90 days"
-               style="-fx-text-fill: #888; -fx-font-size: 11px;"/>
+        <Label style="-fx-text-fill: #888; -fx-font-size: 11px;" text="🔴 Red = expired or ≤ 30 days     🟠 Orange = 31–60 days     🟡 Yellow = 61–90 days" />
     </VBox>
 
 </VBox>

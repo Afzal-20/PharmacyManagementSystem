@@ -1,23 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15" prefWidth="400" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.EditProductController">
-    <Label text="EDIT MEDICINE MASTER DATA" style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;">
-        <font><Font size="16.0"/></font>
+<VBox prefWidth="400" spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6; -fx-background-radius: 10;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.EditProductController">
+    <Label style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;" text="EDIT MEDICINE ">
+        <font><Font size="16.0" /></font>
     </Label>
-    <Separator/>
+    <Separator />
     <GridPane hgap="10" vgap="10">
-        <columnConstraints><ColumnConstraints prefWidth="120"/><ColumnConstraints hgrow="ALWAYS"/></columnConstraints>
-        <Label text="Medicine Name:" GridPane.rowIndex="0"/><TextField fx:id="nameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-        <Label text="Generic Name:" GridPane.rowIndex="1"/><TextField fx:id="genericField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-        <Label text="Manufacturer:" GridPane.rowIndex="2"/><TextField fx:id="manufacturerField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-        <Label text="Pack Size:" GridPane.rowIndex="3"/><TextField fx:id="packSizeField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-        <Label text="Min Stock Alert:" GridPane.rowIndex="4"/><TextField fx:id="minStockField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <columnConstraints><ColumnConstraints prefWidth="120" /><ColumnConstraints hgrow="ALWAYS" /></columnConstraints>
+        <Label text="Medicine Name:" GridPane.rowIndex="0" /><TextField fx:id="nameField" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <Label text="Generic Name:" GridPane.rowIndex="1" /><TextField fx:id="genericField" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <Label text="Manufacturer:" GridPane.rowIndex="2" /><TextField fx:id="manufacturerField" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <Label text="Pack Size:" GridPane.rowIndex="3" /><TextField fx:id="packSizeField" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <Label text="Min Stock Alert:" GridPane.rowIndex="4" /><TextField fx:id="minStockField" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+      <rowConstraints>
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+      </rowConstraints>
     </GridPane>
-    <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
-        <Button text="Cancel" onAction="#handleCancel" style="-fx-background-color: #bdc3c7;"/>
-        <Button text="Update Product" onAction="#handleSave" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;"/>
+    <HBox alignment="CENTER_RIGHT" spacing="10" style="-fx-padding: 10 0 0 0;">
+        <Button onAction="#handleCancel" style="-fx-background-color: #bdc3c7; -fx-background-radius: 8;" text="Cancel" />
+        <Button onAction="#handleSave" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Update Product" />
     </HBox>
 </VBox>

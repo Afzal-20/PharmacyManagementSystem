@@ -1,53 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="16" style="-fx-background-color: #ecf0f1; -fx-padding: 30;"
-      xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.my.pharmacy.controller.BackupController">
+<VBox spacing="16" style="-fx-background-color: #ecf0f1; -fx-padding: 30;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.BackupController">
 
     <!-- Header -->
-    <Label text="Backup &amp; Restore" style="-fx-text-fill: #2c3e50;">
-        <font><Font name="System Bold" size="24.0"/></font>
+    <Label style="-fx-text-fill: #2c3e50;" text="Backup &amp; Restore">
+        <font><Font name="System Bold" size="24.0" /></font>
     </Label>
-    <Label text="A backup is created automatically every time the application closes. All backups are stored in ./backups/"
-           style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+    <Label style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" text="A backup is created automatically every time the application closes. All backups are stored in ./backups/" />
 
-    <Separator/>
+    <Separator />
 
     <!-- Backup Now -->
-    <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 0);" spacing="10">
-        <Label text="MANUAL BACKUP" style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d;"/>
-        <Label text="Click to create a backup of the current database right now." style="-fx-text-fill: #555; -fx-font-size: 12px;"/>
-        <Button text="💾  Backup Now"
-                onAction="#handleBackupNow"
-                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 24; -fx-background-radius: 5; -fx-cursor: hand; -fx-font-size: 13px;"/>
+    <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 0);">
+        <Label style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d;" text="MANUAL BACKUP" />
+        <Label style="-fx-text-fill: #555; -fx-font-size: 12px;" text="Click to create a backup of the current database right now." />
+        <Button onAction="#handleBackupNow" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 24; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-size: 13px;" text="💾  Backup Now" />
     </VBox>
 
     <!-- Backup List -->
-    <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 0);" spacing="10" VBox.vgrow="ALWAYS">
-        <Label text="EXISTING BACKUPS" style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d;"/>
-        <Label fx:id="lblStatus" text="Loading..." style="-fx-text-fill: #3498db; -fx-font-size: 12px;"/>
-        <ListView fx:id="backupListView" VBox.vgrow="ALWAYS" prefHeight="220"
-                  style="-fx-font-family: monospace; -fx-font-size: 12px;"/>
+    <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 0);" VBox.vgrow="ALWAYS">
+        <Label style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d;" text="EXISTING BACKUPS" />
+        <Label fx:id="lblStatus" style="-fx-text-fill: #3498db; -fx-font-size: 12px;" text="Loading..." />
+        <ListView fx:id="backupListView" prefHeight="220" style="-fx-font-family: monospace; -fx-font-size: 12px; -fx-background-radius: 8;" VBox.vgrow="ALWAYS" />
 
         <HBox spacing="12">
-            <Button fx:id="btnRestoreSelected"
-                    text="⬆  Restore Selected"
-                    onAction="#handleRestoreSelected"
-                    style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5; -fx-cursor: hand;"/>
-            <Button fx:id="btnRestoreFromFile"
-                    text="📂  Restore from File..."
-                    onAction="#handleRestoreFromFile"
-                    style="-fx-background-color: #2E75B6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5; -fx-cursor: hand;"/>
+            <Button fx:id="btnRestoreSelected" onAction="#handleRestoreSelected" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand;" text="⬆  Restore Selected" />
+            <Button fx:id="btnRestoreFromFile" onAction="#handleRestoreFromFile" style="-fx-background-color: #2E75B6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand;" text="📂  Restore from File..." />
         </HBox>
 
-        <Label text="⚠  Restore replaces ALL current data. A pre-restore safety backup is saved automatically before any restore."
-               style="-fx-text-fill: #c0392b; -fx-font-size: 11px;" wrapText="true"/>
+        <Label style="-fx-text-fill: #c0392b; -fx-font-size: 11px;" text="⚠  Restore replaces ALL current data. A pre-restore safety backup is saved automatically before any restore." wrapText="true">
+         <font>
+            <Font size="13.0" />
+         </font></Label>
     </VBox>
 
 </VBox>

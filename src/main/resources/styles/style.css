@@ -38,3 +38,8 @@
     -fx-border-width: 0 0 0 4; /* Left Border */
     -fx-border-color: white;
 }
+
+.split-pane-divider {
+    -fx-background-radius:50px;
+    -fx-background-color: #2c3e50;
+}

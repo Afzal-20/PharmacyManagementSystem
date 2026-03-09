@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="20" style="-fx-padding: 30; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.PurchaseController">
-    <Label text="PROFESSIONAL PURCHASE ENTRY" style="-fx-text-fill: #2c3e50;"><font><Font name="System Bold" size="22.0"/></font></Label>
+<VBox spacing="20" style="-fx-padding: 30; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.PurchaseController">
+    <Label style="-fx-text-fill: #2c3e50;" text="PURCHASE ENTRY"><font><Font name="System Bold" size="22.0" /></font></Label>
     <GridPane hgap="15" vgap="15">
         <columnConstraints>
             <ColumnConstraints minWidth="150" prefWidth="150" />
@@ -13,41 +23,50 @@
             <ColumnConstraints hgrow="ALWAYS" minWidth="200" />
         </columnConstraints>
 
-        <Label text="Select Dealer:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="dealerComboBox" maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+        <Label text="Select Dealer:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <ComboBox fx:id="dealerComboBox" maxWidth="Infinity" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="0" />
 
-        <Label text="Medicine:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <HBox spacing="10" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.columnSpan="3">
-            <ComboBox fx:id="productComboBox" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-            <Button text="+" onAction="#openMinimalAddProduct" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <Label text="Medicine:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <HBox spacing="10" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1">
+            <ComboBox fx:id="productComboBox" maxWidth="Infinity" style="-fx-background-radius: 8;" HBox.hgrow="ALWAYS" />
+            <Button onAction="#openMinimalAddProduct" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 100;" text="+" />
         </HBox>
 
-        <Label text="Batch No:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="batchNoField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-        <Label text="Expiry Date:" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
-        <DatePicker fx:id="expiryPicker" maxWidth="Infinity" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+        <Label text="Batch No:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <TextField fx:id="batchNoField" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <Label text="Expiry Date:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+        <DatePicker fx:id="expiryPicker" maxWidth="Infinity" style="-fx-background-radius: 8;" GridPane.columnIndex="3" GridPane.rowIndex="2" />
 
-        <Label text="Quantity (Boxes):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField fx:id="qtyField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-        <Label text="Cost Price (Box):" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
-        <TextField fx:id="costField" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+        <Label text="Quantity (Boxes):" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <TextField fx:id="qtyField" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <Label text="Cost Price (Box):" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+        <TextField fx:id="costField" style="-fx-background-radius: 8;" GridPane.columnIndex="3" GridPane.rowIndex="3" />
 
-        <Label text="Margin %:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-        <TextField fx:id="marginField" GridPane.rowIndex="4" GridPane.columnIndex="1" promptText="Auto-calculates TP"/>
-        <Label text="Trade Price (Box):" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
-        <TextField fx:id="tradeField" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
+        <Label text="Margin %:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <TextField fx:id="marginField" promptText="Auto-calculates TP" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        <Label text="Trade Price (Box):" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+        <TextField fx:id="tradeField" style="-fx-background-radius: 8;" GridPane.columnIndex="3" GridPane.rowIndex="4" />
 
-        <Label text="Dealer Invoice #:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <TextField fx:id="invoiceNoField" GridPane.rowIndex="5" GridPane.columnIndex="1" promptText="Optional"/>
-        <Label text="Comp. Discount (%):" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
-        <TextField fx:id="compDiscField" text="0.0" GridPane.rowIndex="5" GridPane.columnIndex="3"/>
+        <Label text="Dealer Invoice #:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <TextField fx:id="invoiceNoField" promptText="Optional" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <Label text="Comp. Discount (%):" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+        <TextField fx:id="compDiscField" style="-fx-background-radius: 8;" text="0.0" GridPane.columnIndex="3" GridPane.rowIndex="5" />
 
-        <Label text="Sales Tax (%):" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-        <TextField fx:id="taxField" text="0.0" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+        <Label text="Sales Tax (%):" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+        <TextField fx:id="taxField" style="-fx-background-radius: 8;" text="0.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+      <rowConstraints>
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+      </rowConstraints>
     </GridPane>
-    <Separator/>
-    <HBox spacing="15" alignment="CENTER_RIGHT">
-        <Button text="Reset Fields" onAction="#clearFields" style="-fx-background-color: #bdc3c7; -fx-padding: 10 20;"/>
-        <Button text="SAVE PURCHASE &amp; UPDATE STOCK" onAction="#handleSavePurchase" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25;"/>
+    <Separator />
+    <HBox alignment="CENTER_RIGHT" spacing="15">
+        <Button onAction="#clearFields" style="-fx-background-color: #bdc3c7; -fx-padding: 10 20; -fx-background-radius: 8;" text="Reset Fields" />
+        <Button onAction="#handleSavePurchase" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 8;" text="SAVE PURCHASE &amp; UPDATE STOCK" />
     </HBox>
 </VBox>

@@ -1,38 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15" prefWidth="350" style="-fx-padding: 20; -fx-background-color: white;"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.my.pharmacy.controller.AddToCartController">
+<VBox prefWidth="350" spacing="15" style="-fx-padding: 20; -fx-background-color: white;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.AddToCartController">
 
-    <Label fx:id="productNameLabel" text="Medicine Name" style="-fx-text-fill: #2c3e50;">
-        <font><Font name="System Bold" size="16.0"/></font>
+    <Label fx:id="productNameLabel" style="-fx-text-fill: #2c3e50;" text="Medicine Name">
+        <font><Font name="System Bold" size="16.0" /></font>
     </Label>
 
     <GridPane hgap="10" vgap="10">
         <columnConstraints>
-            <ColumnConstraints prefWidth="120"/>
-            <ColumnConstraints hgrow="ALWAYS"/>
+            <ColumnConstraints maxWidth="115.20001220703125" minWidth="99.20001220703125" prefWidth="99.20001220703125" />
+            <ColumnConstraints hgrow="ALWAYS" maxWidth="200.19998779296876" minWidth="184.19998779296876" prefWidth="200.19998779296876" />
         </columnConstraints>
 
-        <Label text="Quantity (Boxes):" GridPane.rowIndex="0"/>
-        <TextField fx:id="qtyField" text="1" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="Quantity :" GridPane.rowIndex="0" />
+        <TextField fx:id="qtyField" style="-fx-background-radius: 8px;" text="1" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-        <Label text="Bonus Units:" GridPane.rowIndex="1"/>
-        <TextField fx:id="bonusField" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label text="Bonus Units :" GridPane.rowIndex="1" />
+        <TextField fx:id="bonusField" style="-fx-background-radius: 8px;" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-        <Label text="Discount %:" GridPane.rowIndex="2"/>
-        <TextField fx:id="discountField" text="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label text="Discount % :" GridPane.rowIndex="2" />
+        <TextField fx:id="discountField" style="-fx-background-radius: 8px;" text="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <rowConstraints>
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+      </rowConstraints>
     </GridPane>
 
-    <Separator/>
+    <Separator />
 
-    <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Button text="Cancel" onAction="#handleCancel" style="-fx-background-color: #bdc3c7;"/>
-        <Button text="Add to Cart" onAction="#handleSave"
-                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
+    <HBox alignment="CENTER_RIGHT" spacing="10">
+        <Button onAction="#handleCancel" style="-fx-background-color: #bdc3c7; -fx-background-radius: 8px;" text="Cancel" />
+        <Button onAction="#handleSave" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8px;" text="Add to Cart" />
     </HBox>
 </VBox>

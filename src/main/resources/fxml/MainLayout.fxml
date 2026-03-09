@@ -48,8 +48,20 @@
             <VBox style="-fx-border-radius: 10px;" VBox.vgrow="ALWAYS" />
 
             <HBox spacing="6">
-                <Button maxWidth="Infinity" onAction="#showChangePassword" style="-fx-background-color: #cc8616; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 0; -fx-cursor: hand; -fx-font-size: 11px;" text="🔑 Password" HBox.hgrow="ALWAYS" />
-                <Button maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: #c94436; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 0; -fx-cursor: hand; -fx-font-size: 11px;" text="🚪 Logout" HBox.hgrow="ALWAYS" />
+                <Button maxWidth="Infinity" onAction="#showChangePassword" prefHeight="35.0" prefWidth="57.0" style="-fx-background-color: #cc8616; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 0; -fx-cursor: hand; -fx-font-size: 11px;" text="🔑 Password" HBox.hgrow="ALWAYS">
+               <HBox.margin>
+                  <Insets left="3.0" />
+               </HBox.margin></Button>
+                <Button maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: #c94436; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 0; -fx-cursor: hand; -fx-font-size: 11px;" text="🚪 Logout" HBox.hgrow="ALWAYS">
+               <HBox.margin>
+                  <Insets right="2.0" />
+               </HBox.margin></Button>
+            <opaqueInsets>
+               <Insets />
+            </opaqueInsets>
+            <VBox.margin>
+               <Insets left="2.0" right="2.0" />
+            </VBox.margin>
             </HBox>
         </VBox>
     </left>
