@@ -10,6 +10,9 @@ target/
 
 # --- SQLite Database (IMPORTANT) ---
 # We do NOT want to version control the live database file!
+installer-output/
+javafx-sdk/
+*.iss
 config.properties
 *.db
 *.sqlite
