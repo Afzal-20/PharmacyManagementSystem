@@ -30,6 +30,13 @@ public class SaleItem {
         recalculate();
     }
 
+    public void setBonusQty(int bonusQty) {
+        this.bonusQty = bonusQty;
+        // bonusQty does not affect the financial subtotal (bonus is free),
+        // but recalculate is called to keep state consistent.
+        recalculate();
+    }
+
     public void setDiscountPercent(double discountPercent) {
         this.discountPercent = discountPercent;
         recalculate();

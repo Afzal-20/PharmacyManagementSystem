@@ -10,14 +10,13 @@ import java.util.stream.Collectors;
 /**
  * Handles database backups and restore.
  *
- * Backup folder : ./backups/
+ * Backup folder : C:\ProgramData\PharmDesk\backups\
  * Naming        : pharmacy_backup_YYYY-MM-DD_HH-mm-ss.db
  * Retention     : ALL backups kept (no deletion).
  * Trigger       : App shutdown hook (on close) + manual button on Dashboard.
  */
 public class BackupService {
 
-    private static final String BACKUP_DIR    = "backups";
     private static final String BACKUP_PREFIX = "pharmacy_backup_";
     private static final String BACKUP_SUFFIX = ".db";
     private static final DateTimeFormatter TIMESTAMP_FMT =
@@ -46,8 +45,7 @@ public class BackupService {
      * @return the created backup File, or null on failure.
      */
     public static File createBackup() {
-        String dbPath = ConfigUtil.get("db.name", "wholesale_pharmacy.db");
-        File source = new File(dbPath);
+        File source = new File(AppPaths.DB_FILE);
 
         if (!source.exists()) {
             System.err.println("❌ Backup skipped: database not found at " + source.getAbsolutePath());
@@ -55,7 +53,7 @@ public class BackupService {
         }
 
         try {
-            File backupDir = new File(BACKUP_DIR);
+            File backupDir = new File(AppPaths.BACKUPS_DIR);
             if (!backupDir.exists()) backupDir.mkdirs();
 
             String timestamp = LocalDateTime.now().format(TIMESTAMP_FMT);
@@ -86,18 +84,17 @@ public class BackupService {
     public static boolean restoreFromFile(File backupFile) {
         if (backupFile == null || !backupFile.exists()) return false;
 
-        String dbPath = ConfigUtil.get("db.name", "wholesale_pharmacy.db");
-        File live = new File(dbPath);
+        File live = new File(AppPaths.DB_FILE);
 
         try {
             // Safety copy before overwriting
             if (live.exists()) {
-                new File(BACKUP_DIR).mkdirs();
+                new File(AppPaths.BACKUPS_DIR).mkdirs();
                 String safetyName = BACKUP_PREFIX + "pre-restore_" +
                         LocalDateTime.now().format(TIMESTAMP_FMT) + BACKUP_SUFFIX;
                 Files.copy(live.toPath(),
-                           new File(BACKUP_DIR, safetyName).toPath(),
-                           StandardCopyOption.REPLACE_EXISTING);
+                        new File(AppPaths.BACKUPS_DIR, safetyName).toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
                 System.out.println("✅ Pre-restore safety copy saved: " + safetyName);
             }
 
@@ -118,7 +115,7 @@ public class BackupService {
      * Returns all .db files in the backups folder, sorted newest-first.
      */
     public static List<File> listBackups() {
-        File dir = new File(BACKUP_DIR);
+        File dir = new File(AppPaths.BACKUPS_DIR);
         if (!dir.exists()) return Collections.emptyList();
 
         File[] files = dir.listFiles((d, name) ->

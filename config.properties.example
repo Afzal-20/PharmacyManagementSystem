@@ -1,22 +1,31 @@
 # ============================================================
-# Pharmacy Management System - Configuration File
+# PharmDesk - Configuration File
 # ============================================================
-# INSTRUCTIONS:
-#   1. Copy this file and rename it to: config.properties
-#   2. Fill in your pharmacy's details below
-#   3. Place config.properties in the same folder as the .jar
+#
+# After installation, the live copy of this file is located at:
+#   C:\ProgramData\PharmDesk\config.properties
+#
+# To change any setting:
+#   1. Open that file in Notepad
+#   2. Edit the value
+#   3. Save and restart PharmDesk
+#
+# You do NOT need to touch the .jar file for any of this.
 # ============================================================
-
-# --- Database ---
-# Name of the SQLite database file (created automatically on first run)
-db.name=wholesale_pharmacy.db
 
 # --- Pharmacy Info (printed on every invoice and receipt) ---
 pharmacy.name=YOUR PHARMACY NAME
 pharmacy.address=Shop No. X, Street Name, City
 pharmacy.phone=0300-0000000
 
-# --- PDF Settings ---
-# Set to true to automatically open the PDF after every sale
-# Set to false to only save it to the Desktop (faster checkout)
-pdf.auto_open=true
+# --- Database ---
+# Filename only — the database is always stored in C:\ProgramData\PharmDesk\
+db.name=wholesale_pharmacy.db
+
+# --- Thermal Printer ---
+# Set this to the EXACT printer name shown in:
+#   Windows -> Control Panel -> Devices and Printers
+# Example: printer.name=POS-80
+# Example: printer.name=Black Copper Turbo
+# Leave blank to skip physical printing (PDFs will still be saved).
+printer.name=

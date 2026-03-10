@@ -4,6 +4,7 @@ import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
 import com.my.pharmacy.util.CalculationEngine;
 import com.my.pharmacy.util.InvoiceGenerator;
+import com.my.pharmacy.util.ThermalPrinter;
 import com.my.pharmacy.util.UserSession;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -157,8 +158,39 @@ public class POSController {
             stage.showAndWait();
 
             if (controller.isConfirmed()) {
-                SaleItem item = controller.getCreatedItem();
-                cartData.add(item);
+                SaleItem newItem = controller.getCreatedItem();
+
+                // FIX #2: Prevent duplicate batch lines — merge into existing cart entry instead.
+                // If the same batch already exists in the cart, add quantities together
+                // rather than creating a second line. This avoids a double stock-deduction
+                // bug where both lines pass the stock check against the original qty.
+                java.util.Optional<SaleItem> existing = cartData.stream()
+                        .filter(i -> i.getBatchId() == newItem.getBatchId())
+                        .findFirst();
+
+                if (existing.isPresent()) {
+                    SaleItem existingItem = existing.get();
+                    int mergedQty   = existingItem.getQuantity()  + newItem.getQuantity();
+                    int mergedBonus = existingItem.getBonusQty()  + newItem.getBonusQty();
+                    int totalNeeded = mergedQty + mergedBonus;
+
+                    if (totalNeeded > selected.getQtyOnHand()) {
+                        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                        alert.setTitle("Insufficient Stock");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Cannot merge: total requested (" + totalNeeded +
+                                " boxes) exceeds available stock (" + selected.getQtyOnHand() + ").");
+                        alert.showAndWait();
+                        return;
+                    }
+
+                    existingItem.setBonusQty(mergedBonus);
+                    existingItem.setQuantity(mergedQty); // triggers recalculate() internally
+                    cartTable.refresh(); // Force the TableView to re-render the updated row
+                } else {
+                    cartData.add(newItem);
+                }
+
                 updateTotal();
             }
         } catch (IOException e) { e.printStackTrace(); }
@@ -235,8 +267,23 @@ public class POSController {
             sale.setItems(cartData);
             saleDAO.saveSale(sale);
 
-            String desktopPath = System.getProperty("user.home") + "/Desktop/Invoice_" + sale.getId() + ".pdf";
-            InvoiceGenerator.generateThermalReceipt(sale, currentCustomer, desktopPath);
+            // ── 1. Always save a silent PDF soft copy ──
+            sale.setItems(new java.util.ArrayList<>(cartData));
+            String invoicePath = com.my.pharmacy.util.AppPaths.invoicePath(sale.getId());
+            InvoiceGenerator.generateThermalReceipt(sale, currentCustomer, invoicePath);
+
+            // ── 2. Ask if they want to print the physical receipt ──
+            Alert printConfirm = new Alert(Alert.AlertType.CONFIRMATION);
+            printConfirm.setTitle("Print Invoice");
+            printConfirm.setHeaderText(null);
+            printConfirm.setContentText("Sale saved. Print receipt for Invoice #" + sale.getId() + "?");
+            printConfirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+
+            printConfirm.showAndWait().ifPresent(btn -> {
+                if (btn == ButtonType.YES) {
+                    ThermalPrinter.printInvoice(sale, currentCustomer, "Invoice #" + sale.getId());
+                }
+            });
 
             showAlert(Alert.AlertType.INFORMATION, "Success", "Sale Completed! Stock and Ledger updated.");
 

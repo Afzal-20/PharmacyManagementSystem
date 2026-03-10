@@ -10,6 +10,7 @@ target/
 
 # --- SQLite Database (IMPORTANT) ---
 # We do NOT want to version control the live database file!
+config.properties
 *.db
 *.sqlite
 pharmacy.db

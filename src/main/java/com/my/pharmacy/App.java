@@ -16,13 +16,20 @@ public class App extends Application {
     public void start(Stage stage) {
         primaryStage = stage;
 
-        // 1. Initialize Database Schema
+        // 1. Ensure all data directories exist (C:\ProgramData\PharmDesk\)
+        com.my.pharmacy.util.AppPaths.initialize();
+
+        // 2. Load config from C:\ProgramData\PharmDesk\config.properties
+        //    (copies default from jar automatically on first run)
+        com.my.pharmacy.util.ConfigUtil.initialize();
+
+        // 3. Initialize Database Schema
         DatabaseSetup.initialize();
 
-        // 2. Register shutdown hook — backup runs automatically when the app closes
+        // 4. Register shutdown hook — backup runs automatically when the app closes
         com.my.pharmacy.util.BackupService.registerShutdownHook();
 
-        // 3. Boot directly to Login Screen
+        // 5. Boot directly to Login Screen
         loadLoginScreen();
     }
 
@@ -32,7 +39,7 @@ public class App extends Application {
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root, 400, 500);
 
-            primaryStage.setTitle("Login - Pharmacy System");
+            primaryStage.setTitle("PharmDesk (LOGIN)");
             try {
                 primaryStage.getIcons().add(new javafx.scene.image.Image(App.class.getResourceAsStream("/images/logo.png")));
             } catch (Exception e) {

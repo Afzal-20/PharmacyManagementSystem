@@ -27,6 +27,9 @@ public class InvoiceGenerator {
 
     public static void generateThermalReceipt(Sale sale, Customer customer, String destFilePath) {
         try {
+            // Ensure the Invoices directory exists before writing
+            new java.io.File(AppPaths.INVOICES_DIR).mkdirs();
+
             Document document = new Document(THERMAL_ROLL, 8, 8, 10, 10);
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destFilePath));
             document.open();
@@ -136,14 +139,8 @@ public class InvoiceGenerator {
 
             document.close();
 
-            // Auto-Open Logic
-            boolean shouldAutoOpen = ConfigUtil.getBoolean("pdf.auto_open", true);
-            if (shouldAutoOpen) {
-                File pdfFile = new File(destFilePath);
-                if (pdfFile.exists() && Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(pdfFile);
-                }
-            }
+            // PDF saved silently to C:\ProgramData\PharmDesk\Invoices\
+            System.out.println("✅ Invoice PDF saved: " + destFilePath);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -185,13 +182,8 @@ public class InvoiceGenerator {
     }
 
     public static void generateReturnReceipt(Sale invoice, SaleItem item, int returnedQty, double refundAmount, String refundMethod, String reason) {
-        String directoryPath = "Returns/";
-        File directory = new File(directoryPath);
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-
-        String fileName = directoryPath + "Return_Inv_" + invoice.getId() + "_" + System.currentTimeMillis() + ".pdf";
+        String fileName = AppPaths.returnReceiptPath(invoice.getId());
+        new java.io.File(AppPaths.RETURNS_DIR).mkdirs();
 
         // Fixed Basic Height for Return Slip
         Document document = new Document(new Rectangle(226, 400), 10, 10, 15, 15);
@@ -243,14 +235,8 @@ public class InvoiceGenerator {
 
             document.close();
 
-            // Auto-Open Logic (Dynamic)
-            boolean shouldAutoOpen = ConfigUtil.getBoolean("pdf.auto_open", true);
-            if (shouldAutoOpen) {
-                File pdfFile = new File(fileName);
-                if (pdfFile.exists() && Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(pdfFile);
-                }
-            }
+            // PDF saved silently to C:\ProgramData\PharmDesk\Returns\
+            System.out.println("✅ Return receipt PDF saved: " + fileName);
 
         } catch (Exception e) {
             e.printStackTrace();

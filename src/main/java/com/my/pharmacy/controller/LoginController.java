@@ -5,6 +5,7 @@ import com.my.pharmacy.dao.UserDAO;
 import com.my.pharmacy.dao.UserDAOImpl;
 import com.my.pharmacy.model.User;
 import com.my.pharmacy.util.UserSession;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -25,14 +26,21 @@ public class LoginController {
 
     private final UserDAO userDAO = new UserDAOImpl();
 
+    // Brute-force protection state
+    private int failedAttempts = 0;
+    private static final int MAX_ATTEMPTS  = 5;
+    private static final int LOCKOUT_MS    = 5000; // 5 seconds per lockout
+    private boolean isLockedOut = false;
+
     @FXML
     public void initialize() {
-        // Allow pressing "Enter" to login
         passwordField.setOnAction(e -> handleLogin());
     }
 
     @FXML
     private void handleLogin() {
+        if (isLockedOut) return; // Ignore clicks during lockout
+
         String user = usernameField.getText();
         String pass = passwordField.getText();
 
@@ -44,15 +52,53 @@ public class LoginController {
         User authenticatedUser = userDAO.authenticate(user, pass);
 
         if (authenticatedUser != null) {
-            // 1. Set Session
+            failedAttempts = 0; // Reset on success
             UserSession.login(authenticatedUser);
-            System.out.println("✅ Login Successful: " + authenticatedUser.getUsername() + " (" + authenticatedUser.getRole() + ")");
-
-            // 2. Load Main Dashboard
+            System.out.println("✅ Login Successful: (" + authenticatedUser.getRole() + ")");
             loadMainDashboard();
         } else {
-            errorLabel.setText("Invalid credentials. Please try again.");
+            failedAttempts++;
+            int remaining = MAX_ATTEMPTS - failedAttempts;
+
+            if (failedAttempts >= MAX_ATTEMPTS) {
+                triggerLockout();
+            } else {
+                errorLabel.setText("Invalid credentials. " + remaining + " attempt(s) remaining.");
+            }
         }
+    }
+
+    private void triggerLockout() {
+        isLockedOut = true;
+        usernameField.setDisable(true);
+        passwordField.setDisable(true);
+        errorLabel.setStyle("-fx-text-fill: red;");
+
+        // Countdown on a background thread, UI updates on FX thread
+        Thread lockoutThread = new Thread(() -> {
+            try {
+                for (int i = LOCKOUT_MS / 1000; i > 0; i--) {
+                    final int secondsLeft = i;
+                    Platform.runLater(() ->
+                            errorLabel.setText("Too many failed attempts. Try again in " + secondsLeft + "s..."));
+                    Thread.sleep(1000);
+                }
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            } finally {
+                Platform.runLater(() -> {
+                    failedAttempts = 0;
+                    isLockedOut = false;
+                    usernameField.setDisable(false);
+                    passwordField.setDisable(false);
+                    passwordField.clear();
+                    errorLabel.setStyle("");
+                    errorLabel.setText("Account unlocked. Please try again.");
+                });
+            }
+        });
+        lockoutThread.setDaemon(true);
+        lockoutThread.start();
     }
 
     private void loadMainDashboard() {
@@ -61,7 +107,7 @@ public class LoginController {
             Parent root = loader.load();
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setTitle("Pharmacy Management System - Logged in as: " + UserSession.getInstance().getUser().getUsername());
+            stage.setTitle("PharmDesk (" + UserSession.getInstance().getUser().getRole() + ")");
 
             try {
                 primaryStage.getIcons().add(new javafx.scene.image.Image(App.class.getResourceAsStream("/images/logo.png")));

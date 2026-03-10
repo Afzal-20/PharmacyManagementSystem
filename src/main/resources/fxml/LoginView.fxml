@@ -23,7 +23,7 @@
             </VBox.margin>
         </ImageView>
 
-        <Label text="PHARMACY SYSTEM" textFill="#2c3e50">
+        <Label text="PHARMDESK" textFill="#2c3e50">
             <font><Font name="System Bold" size="20.0" /></font>
         </Label>
 

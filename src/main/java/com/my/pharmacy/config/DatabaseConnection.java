@@ -9,9 +9,18 @@ import java.sql.Statement;
 public class DatabaseConnection {
 
     public static String getDatabaseUrl() {
-        // Enforces wholesale database by default
+        // Always use the AppPaths location (C:\ProgramData\PharmDesk\)
+        // so the database is never blocked by Windows UAC.
+        // The db.name config entry is kept for the filename only.
         String dbName = ConfigUtil.get("db.name", "wholesale_pharmacy.db");
-        return "jdbc:sqlite:" + dbName;
+
+        // If dbName is already an absolute path (legacy), use it as-is.
+        // Otherwise resolve it under the PharmDesk data directory.
+        java.io.File dbFile = new java.io.File(dbName);
+        if (dbFile.isAbsolute()) {
+            return "jdbc:sqlite:" + dbName;
+        }
+        return "jdbc:sqlite:" + com.my.pharmacy.util.AppPaths.DB_FILE;
     }
 
     public static Connection getConnection() throws SQLException {

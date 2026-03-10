@@ -4,6 +4,7 @@ import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
 import com.my.pharmacy.util.CalculationEngine;
 import com.my.pharmacy.util.InvoiceGenerator;
+import com.my.pharmacy.util.ThermalPrinter;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -158,7 +159,13 @@ public class SalesHistoryController {
 
                     saleDAO.processReturn(invoice.getId(), invoice.getCustomerId(), item, qtyToReturn, refundAmount, methodCombo.getValue(), reasonField.getText());
 
+                    // Save silent PDF soft copy of the return receipt
                     InvoiceGenerator.generateReturnReceipt(invoice, item, qtyToReturn, refundAmount, methodCombo.getValue(), reasonField.getText());
+
+                    // Print thermal receipt automatically (user already confirmed via "Process Return")
+                    com.my.pharmacy.util.ThermalPrinter.printReturnReceipt(
+                            invoice, item, qtyToReturn, refundAmount,
+                            methodCombo.getValue(), reasonField.getText());
 
                     showAlert(Alert.AlertType.INFORMATION, "Success", String.format("Return processed successfully. Refund: Rs. %.2f", refundAmount));
                     // Refresh Detail Table
@@ -188,13 +195,26 @@ public class SalesHistoryController {
         // Fetch the customer (ID 1 will be fetched correctly as the Walk-In default from the DB)
         Customer customer = customerDAO.getCustomerById(selectedInvoice.getCustomerId());
 
-        String desktopPath = System.getProperty("user.home") + "/Desktop/REPRINT_Invoice_" + selectedInvoice.getId() + ".pdf";
-
         try {
-            InvoiceGenerator.generateThermalReceipt(selectedInvoice, customer, desktopPath);
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Invoice reprinted successfully and saved to Desktop.");
+            // ── 1. Save/overwrite the PDF soft copy ──
+            String reprintPath = com.my.pharmacy.util.AppPaths.reprintPath(selectedInvoice.getId());
+            InvoiceGenerator.generateThermalReceipt(selectedInvoice, customer, reprintPath);
+
+            // ── 2. Ask if they want to print the physical receipt ──
+            Alert printConfirm = new Alert(Alert.AlertType.CONFIRMATION);
+            printConfirm.setTitle("Reprint Invoice");
+            printConfirm.setHeaderText(null);
+            printConfirm.setContentText("Print receipt for Invoice #" + selectedInvoice.getId() + "?");
+            printConfirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+
+            printConfirm.showAndWait().ifPresent(btn -> {
+                if (btn == ButtonType.YES) {
+                    com.my.pharmacy.util.ThermalPrinter.printInvoice(
+                            selectedInvoice, customer, "Reprint Invoice #" + selectedInvoice.getId());
+                }
+            });
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to generate PDF: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to process reprint: " + e.getMessage());
             e.printStackTrace();
         }
     }
