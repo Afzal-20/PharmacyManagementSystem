@@ -3,25 +3,24 @@ target/
 *.class
 *.jar
 *.log
+dependency-reduced-pom.xml
 
 # --- IntelliJ IDEA ---
 .idea/
 *.iml
 
-# --- SQLite Database (IMPORTANT) ---
-# We do NOT want to version control the live database file!
-installer-output/
-javafx-sdk/
-*.iss
-config.properties
+# --- SQLite Database ---
 *.db
 *.sqlite
-pharmacy.db
-wholesale_pharmacy.db
-retail_pharmacy.db
-Returns/
 *.db-shm
 *.db-wal
+
+# --- PharmDesk Build Artifacts ---
+installer-output/
+javafx-sdk*/
+
+# --- Config (contains sensitive info) ---
+config.properties
+
 # --- OS Specific ---
 .DS_Store
-Thumbs.db

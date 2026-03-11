@@ -2,6 +2,7 @@ package com.my.pharmacy.controller;
 
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
+import com.my.pharmacy.util.NotificationService;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -21,9 +22,9 @@ public class PurchaseController {
     @FXML private TextField compDiscField, taxField;
     @FXML private DatePicker expiryPicker;
 
-    private final DealerDAO dealerDAO = new DealerDAOImpl();
+    private final DealerDAO  dealerDAO  = new DealerDAOImpl();
     private final ProductDAO productDAO = new ProductDAOImpl();
-    private final BatchDAO batchDAO = new BatchDAOImpl();
+    private final BatchDAO   batchDAO   = new BatchDAOImpl();
     private final PaymentDAO paymentDAO = new PaymentDAOImpl();
 
     @FXML
@@ -51,15 +52,15 @@ public class PurchaseController {
 
     private void setupMarginListener() {
         marginField.textProperty().addListener((obs, oldVal, newVal) -> calculateTradePrice());
-        costField.textProperty().addListener((obs, oldVal, newVal) -> calculateTradePrice());
+        costField.textProperty().addListener((obs, oldVal, newVal)   -> calculateTradePrice());
     }
 
     private void calculateTradePrice() {
         try {
-            double cost = Double.parseDouble(costField.getText());
+            double cost   = Double.parseDouble(costField.getText());
             double margin = Double.parseDouble(marginField.getText());
-            double trade = cost + (cost * (margin / 100.0));
-            tradeField.setText(String.valueOf(Math.round(trade))); // Rounds to nearest Rupee
+            double trade  = cost + (cost * (margin / 100.0));
+            tradeField.setText(String.valueOf(Math.round(trade)));
         } catch (NumberFormatException e) {
             tradeField.clear();
         }
@@ -74,7 +75,7 @@ public class PurchaseController {
             stage.setTitle("Add New Product");
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
-            loadDropdownData(); // Refresh list after closing
+            loadDropdownData();
         } catch (IOException e) { e.printStackTrace(); }
     }
 
@@ -82,43 +83,37 @@ public class PurchaseController {
     private void handleSavePurchase() {
         try {
             Product selectedProduct = productComboBox.getSelectionModel().getSelectedItem();
-            Dealer selectedDealer = dealerComboBox.getSelectionModel().getSelectedItem();
-            LocalDate expiryDate = expiryPicker.getValue();
+            Dealer  selectedDealer  = dealerComboBox.getSelectionModel().getSelectedItem();
+            LocalDate expiryDate    = expiryPicker.getValue();
 
             if (selectedProduct == null || selectedDealer == null || expiryDate == null) {
-                showAlert(Alert.AlertType.ERROR, "Validation Error", "Please fill all required dropdowns and select an Expiry Date.");
+                NotificationService.warn("Please fill all required fields and select an Expiry Date.");
                 return;
             }
 
-            // --- FIX 1: Batch Number Whitespace & Fallback Generation ---
-            String rawBatch = batchNoField.getText();
-            String batchNo = (rawBatch == null || rawBatch.trim().isEmpty())
-                    ? "GEN-" + (System.currentTimeMillis() % 10000000)
-                    : rawBatch.trim();
+            String rawBatch  = batchNoField.getText();
+            String batchNo   = (rawBatch == null || rawBatch.trim().isEmpty())
+                    ? "GEN-" + (System.currentTimeMillis() % 10000000) : rawBatch.trim();
 
-            // --- FIX 2: Invoice Number Whitespace & N/A Fallback ---
             String rawInvoice = invoiceNoField.getText();
-            String invoiceNo = (rawInvoice == null || rawInvoice.trim().isEmpty())
-                    ? "N/A"
-                    : rawInvoice.trim();
+            String invoiceNo  = (rawInvoice == null || rawInvoice.trim().isEmpty()) ? "N/A" : rawInvoice.trim();
 
-            String expiryStr = expiryDate.toString(); // YYYY-MM-DD
-
-            // FIX 3: Trimming numeric inputs to prevent accidental spacebar crashes
-            int totalBoxes = Integer.parseInt(qtyField.getText().trim());
-            double boxCost = Double.parseDouble(costField.getText().trim());
-            double boxTrade = Double.parseDouble(tradeField.getText().trim());
-            double compDisc = Double.parseDouble(compDiscField.getText().trim());
-            double salesTax = Double.parseDouble(taxField.getText().trim());
+            String expiryStr  = expiryDate.toString();
+            int    totalBoxes = Integer.parseInt(qtyField.getText().trim());
+            double boxCost    = Double.parseDouble(costField.getText().trim());
+            double boxTrade   = Double.parseDouble(tradeField.getText().trim());
+            double compDisc   = Double.parseDouble(compDiscField.getText().trim());
+            double salesTax   = Double.parseDouble(taxField.getText().trim());
 
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to proceed with this purchase?");
             if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
 
-            double netBoxCost = com.my.pharmacy.util.CalculationEngine.calculateNetPurchaseCost(boxCost, compDisc, salesTax);
+            double netBoxCost          = com.my.pharmacy.util.CalculationEngine.calculateNetPurchaseCost(boxCost, compDisc, salesTax);
             double totalPayableToDealer = netBoxCost * totalBoxes;
 
             Payment purchaseLedgerEntry = new Payment(0, selectedDealer.getId(), "DEALER", totalPayableToDealer, "PURCHASE",
-                    "Purchased " + totalBoxes + " boxes of " + selectedProduct.getName(), new java.sql.Timestamp(System.currentTimeMillis()));
+                    "Purchased " + totalBoxes + " boxes of " + selectedProduct.getName(),
+                    new java.sql.Timestamp(System.currentTimeMillis()));
 
             Batch existingBatch = batchDAO.getExactBatchMatch(selectedProduct.getId(), batchNo, expiryStr, boxCost, boxTrade);
 
@@ -126,27 +121,26 @@ public class PurchaseController {
                 existingBatch.setQtyOnHand(existingBatch.getQtyOnHand() + totalBoxes);
                 existingBatch.setCompanyDiscount(compDisc);
                 existingBatch.setSalesTax(salesTax);
-
                 batchDAO.updateBatch(existingBatch);
                 paymentDAO.recordPayment(purchaseLedgerEntry);
-                batchDAO.recordPurchaseHistory(selectedDealer.getId(), selectedProduct.getId(), selectedProduct.getName(), batchNo, invoiceNo, totalBoxes, boxCost, boxTrade);
-
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Stock merged perfectly. Dealer account updated.");
+                batchDAO.recordPurchaseHistory(selectedDealer.getId(), selectedProduct.getId(),
+                        selectedProduct.getName(), batchNo, invoiceNo, totalBoxes, boxCost, boxTrade);
+                NotificationService.success("Stock merged successfully. Dealer account updated.");
                 clearFields();
                 return;
             }
 
-            // Passing 0.0 for Retail Price temporarily until Phase 5
-            Batch newBatch = new Batch(0, selectedProduct.getId(), batchNo, expiryStr, totalBoxes, boxCost, boxTrade, 0.0, compDisc, salesTax);
+            Batch newBatch = new Batch(0, selectedProduct.getId(), batchNo, expiryStr,
+                    totalBoxes, boxCost, boxTrade, 0.0, compDisc, salesTax);
             batchDAO.addBatch(newBatch);
             paymentDAO.recordPayment(purchaseLedgerEntry);
-            batchDAO.recordPurchaseHistory(selectedDealer.getId(), selectedProduct.getId(), selectedProduct.getName(), batchNo, invoiceNo, totalBoxes, boxCost, boxTrade);
-
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Purchased " + totalBoxes + " boxes. Dealer account updated.");
+            batchDAO.recordPurchaseHistory(selectedDealer.getId(), selectedProduct.getId(),
+                    selectedProduct.getName(), batchNo, invoiceNo, totalBoxes, boxCost, boxTrade);
+            NotificationService.success("Purchased " + totalBoxes + " boxes. Dealer account updated.");
             clearFields();
 
         } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.ERROR, "Input Error", "Please enter valid numeric values for Quantity and Prices.");
+            NotificationService.error("Please enter valid numeric values for Quantity and Prices.");
         }
     }
 
@@ -155,13 +149,5 @@ public class PurchaseController {
         batchNoField.clear(); qtyField.clear(); costField.clear(); marginField.clear();
         tradeField.clear(); invoiceNoField.clear(); expiryPicker.setValue(null);
         compDiscField.setText("0.0"); taxField.setText("0.0");
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 }

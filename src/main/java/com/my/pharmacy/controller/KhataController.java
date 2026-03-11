@@ -2,6 +2,7 @@ package com.my.pharmacy.controller;
 
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
+import com.my.pharmacy.util.NotificationService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -14,7 +15,6 @@ import java.sql.Timestamp;
 
 public class KhataController {
 
-    // --- Customer UI ---
     @FXML private TextField searchCustomerField;
     @FXML private ComboBox<Customer> customerComboBox;
     @FXML private TableView<LedgerRecord> customerLedgerTable;
@@ -24,7 +24,6 @@ public class KhataController {
     @FXML private TextField custPaymentAmountField, custPaymentDescField;
     @FXML private VBox vboxCustPayment;
 
-    // --- Dealer UI ---
     @FXML private TextField searchDealerField;
     @FXML private ComboBox<Dealer> dealerComboBox;
     @FXML private TableView<LedgerRecord> dealerLedgerTable;
@@ -35,11 +34,11 @@ public class KhataController {
     @FXML private VBox vboxDealPayment;
 
     private final CustomerDAO customerDAO = new CustomerDAOImpl();
-    private final DealerDAO dealerDAO = new DealerDAOImpl();
-    private final PaymentDAO paymentDAO = new PaymentDAOImpl();
+    private final DealerDAO dealerDAO     = new DealerDAOImpl();
+    private final PaymentDAO paymentDAO   = new PaymentDAOImpl();
 
     private final ObservableList<Customer> customerMasterData = FXCollections.observableArrayList();
-    private final ObservableList<Dealer> dealerMasterData = FXCollections.observableArrayList();
+    private final ObservableList<Dealer>   dealerMasterData   = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -61,7 +60,6 @@ public class KhataController {
 
         customerMasterData.setAll(customerDAO.getAllCustomers());
         FilteredList<Customer> filteredCustomers = new FilteredList<>(customerMasterData, p -> true);
-
         searchCustomerField.textProperty().addListener((obs, oldVal, newVal) -> {
             filteredCustomers.setPredicate(c -> {
                 if (newVal == null || newVal.isEmpty()) return true;
@@ -69,7 +67,6 @@ public class KhataController {
             });
             if (!filteredCustomers.isEmpty()) customerComboBox.getSelectionModel().selectFirst();
         });
-
         customerComboBox.setItems(filteredCustomers);
         customerComboBox.setConverter(new StringConverter<>() {
             @Override public String toString(Customer c) { return c == null ? "" : c.getName(); }
@@ -85,7 +82,6 @@ public class KhataController {
 
         dealerMasterData.setAll(dealerDAO.getAllDealers());
         FilteredList<Dealer> filteredDealers = new FilteredList<>(dealerMasterData, p -> true);
-
         searchDealerField.textProperty().addListener((obs, oldVal, newVal) -> {
             filteredDealers.setPredicate(d -> {
                 if (newVal == null || newVal.isEmpty()) return true;
@@ -95,7 +91,6 @@ public class KhataController {
             });
             if (!filteredDealers.isEmpty()) dealerComboBox.getSelectionModel().selectFirst();
         });
-
         dealerComboBox.setItems(filteredDealers);
         dealerComboBox.setConverter(new StringConverter<>() {
             @Override public String toString(Dealer d) { return d == null ? "" : d.getCompanyName() + " (" + d.getName() + ")"; }
@@ -114,15 +109,17 @@ public class KhataController {
     @FXML
     private void handleSaveCustomerPayment() {
         Customer c = customerComboBox.getValue();
-        if (c == null) { showAlert("Error", "Please select a customer first."); return; }
+        if (c == null) { NotificationService.warn("Please select a customer first."); return; }
         try {
             double amount = Double.parseDouble(custPaymentAmountField.getText());
             String desc = custPaymentDescField.getText().isEmpty() ? "Cash Payment Received" : custPaymentDescField.getText();
             paymentDAO.recordPayment(new Payment(0, c.getId(), "CUSTOMER", amount, "CASH", desc, new Timestamp(System.currentTimeMillis())));
-            showAlert("Success", "Customer payment recorded successfully.");
+            NotificationService.success("Customer payment recorded successfully.");
             custPaymentAmountField.clear(); custPaymentDescField.clear();
             loadCustomerLedger();
-        } catch (NumberFormatException e) { showAlert("Invalid Input", "Please enter a valid amount."); }
+        } catch (NumberFormatException e) {
+            NotificationService.error("Please enter a valid amount.");
+        }
     }
 
     @FXML
@@ -136,19 +133,16 @@ public class KhataController {
     @FXML
     private void handleSaveDealerPayment() {
         Dealer d = dealerComboBox.getValue();
-        if (d == null) { showAlert("Error", "Please select a dealer first."); return; }
+        if (d == null) { NotificationService.warn("Please select a dealer first."); return; }
         try {
             double amount = Double.parseDouble(dealPaymentAmountField.getText());
             String desc = dealPaymentDescField.getText().isEmpty() ? "Cash/Bank Payment Made" : dealPaymentDescField.getText();
             paymentDAO.recordPayment(new Payment(0, d.getId(), "DEALER", amount, "CASH", desc, new Timestamp(System.currentTimeMillis())));
-            showAlert("Success", "Dealer payment recorded successfully.");
+            NotificationService.success("Dealer payment recorded successfully.");
             dealPaymentAmountField.clear(); dealPaymentDescField.clear();
             loadDealerLedger();
-        } catch (NumberFormatException e) { showAlert("Invalid Input", "Please enter a valid amount."); }
-    }
-
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
+        } catch (NumberFormatException e) {
+            NotificationService.error("Please enter a valid amount.");
+        }
     }
 }

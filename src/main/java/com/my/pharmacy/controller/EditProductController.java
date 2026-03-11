@@ -3,8 +3,8 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.ProductDAO;
 import com.my.pharmacy.dao.ProductDAOImpl;
 import com.my.pharmacy.model.Product;
+import com.my.pharmacy.util.NotificationService;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -26,10 +26,9 @@ public class EditProductController {
     @FXML
     private void handleSave() {
         if (nameField.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Medicine Name is required.");
+            NotificationService.warn("Medicine Name is required.");
             return;
         }
-
         try {
             int packSize = Integer.parseInt(packSizeField.getText().trim());
             int minStock = Integer.parseInt(minStockField.getText().trim());
@@ -41,19 +40,13 @@ public class EditProductController {
             productToEdit.setMinStockLevel(minStock);
 
             productDAO.updateProduct(productToEdit);
-
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Product updated successfully!");
+            NotificationService.success("Product updated successfully.");
             closeWindow();
         } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.ERROR, "Input Error", "Pack Size and Min Stock must be valid numbers.");
+            NotificationService.error("Pack Size and Min Stock must be valid numbers.");
         }
     }
 
     @FXML private void handleCancel() { closeWindow(); }
     private void closeWindow() { ((Stage) nameField.getScene().getWindow()).close(); }
-
-    private void showAlert(Alert.AlertType type, String title, String msg) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(msg); alert.showAndWait();
-    }
 }

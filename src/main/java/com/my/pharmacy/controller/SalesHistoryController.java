@@ -3,6 +3,9 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
 import com.my.pharmacy.util.CalculationEngine;
+import com.my.pharmacy.util.NotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.my.pharmacy.util.InvoiceGenerator;
 import com.my.pharmacy.util.ThermalPrinter;
 import javafx.collections.FXCollections;
@@ -15,6 +18,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public class SalesHistoryController {
+
+    private static final Logger log = LoggerFactory.getLogger(SalesHistoryController.class);
 
     @FXML private DatePicker datePicker;
     @FXML private TableView<Sale> invoiceTable;
@@ -103,13 +108,13 @@ public class SalesHistoryController {
         SaleItem selectedItem = itemTable.getSelectionModel().getSelectedItem();
 
         if (selectedInvoice == null || selectedItem == null) {
-            showAlert(Alert.AlertType.WARNING, "Selection Required", "Please select an invoice and a specific item to return.");
+            NotificationService.warn("Please select an invoice and a specific item to return.");
             return;
         }
 
         int availableToReturn = selectedItem.getQuantity() - selectedItem.getReturnedQty();
         if (availableToReturn <= 0) {
-            showAlert(Alert.AlertType.ERROR, "Invalid Return", "All quantities of this item have already been returned.");
+            NotificationService.error("All quantities of this item have already been returned.");
             return;
         }
 
@@ -150,7 +155,7 @@ public class SalesHistoryController {
                 try {
                     int qtyToReturn = Integer.parseInt(qtyField.getText());
                     if (qtyToReturn <= 0 || qtyToReturn > maxQty) {
-                        showAlert(Alert.AlertType.ERROR, "Invalid Quantity", "Quantity must be between 1 and " + maxQty);
+                        NotificationService.error("Quantity must be between 1 and " + maxQty);
                         return null;
                     }
 
@@ -167,12 +172,12 @@ public class SalesHistoryController {
                             invoice, item, qtyToReturn, refundAmount,
                             methodCombo.getValue(), reasonField.getText());
 
-                    showAlert(Alert.AlertType.INFORMATION, "Success", String.format("Return processed successfully. Refund: Rs. %.2f", refundAmount));
+                    NotificationService.success(String.format("Return processed. Refund: Rs. %.2f", refundAmount));
                     // Refresh Detail Table
                     itemTable.setItems(FXCollections.observableArrayList(saleDAO.getSaleItemsBySaleId(invoice.getId())));
 
                 } catch (NumberFormatException e) {
-                    showAlert(Alert.AlertType.ERROR, "Input Error", "Please enter a valid numeric quantity.");
+                    NotificationService.error("Please enter a valid numeric quantity.");
                 }
             }
             return null;
@@ -185,7 +190,7 @@ public class SalesHistoryController {
     private void handleReprintInvoice() {
         Sale selectedInvoice = invoiceTable.getSelectionModel().getSelectedItem();
         if (selectedInvoice == null) {
-            showAlert(Alert.AlertType.WARNING, "Selection Required", "Please select an invoice from the top table to reprint.");
+            NotificationService.warn("Please select an invoice to reprint.");
             return;
         }
 
@@ -214,7 +219,7 @@ public class SalesHistoryController {
                 }
             });
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to process reprint: " + e.getMessage());
+            NotificationService.error("Failed to process reprint: " + e.getMessage());
             e.printStackTrace();
         }
     }

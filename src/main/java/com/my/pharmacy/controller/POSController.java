@@ -2,10 +2,8 @@ package com.my.pharmacy.controller;
 
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
-import com.my.pharmacy.util.CalculationEngine;
-import com.my.pharmacy.util.InvoiceGenerator;
-import com.my.pharmacy.util.ThermalPrinter;
-import com.my.pharmacy.util.UserSession;
+import com.my.pharmacy.service.CartService;
+import com.my.pharmacy.util.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -19,11 +17,16 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
 public class POSController {
+
+    private static final Logger log = LoggerFactory.getLogger(POSController.class);
 
     @FXML private TextField searchField;
     @FXML private TableView<Batch> productTable;
@@ -39,7 +42,6 @@ public class POSController {
     @FXML private Label totalLabel;
     @FXML private TextField amountPaidField;
     @FXML private Label balanceDueLabel;
-
     @FXML private HBox customerSection;
     @FXML private ComboBox<Customer> customerComboBox;
 
@@ -48,16 +50,20 @@ public class POSController {
     private final CustomerDAO customerDAO = new CustomerDAOImpl();
 
     private final ObservableList<Batch> masterData = FXCollections.observableArrayList();
-    private final ObservableList<SaleItem> cartData = FXCollections.observableArrayList();
     private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
+    private final CartService cartService = new CartService();
 
-    private final Customer WALK_IN_CUSTOMER = new Customer(1, "Counter Sale (Walk-in)", "", "", "REGULAR", 0.0, "");    @FXML
+    private final Customer WALK_IN_CUSTOMER = new Customer(1, "Counter Sale (Walk-in)", "", "", "REGULAR", 0.0, "");
+
+    @FXML
     public void initialize() {
+        log.info("POSController initializing");
         setupTableColumns();
         loadStockData();
         setupSearchFilter();
         setupCustomerSelector(null);
         setupPaymentListeners();
+        log.info("POSController ready");
     }
 
     private void setupTableColumns() {
@@ -66,7 +72,6 @@ public class POSController {
         colBatch.setCellValueFactory(new PropertyValueFactory<>("batchNo"));
         colExpiry.setCellValueFactory(new PropertyValueFactory<>("expiryDate"));
         colStock.setCellValueFactory(new PropertyValueFactory<>("qtyOnHand"));
-
         colPrice.setText("Price (TP)");
         colPrice.setCellValueFactory(new PropertyValueFactory<>("tradePrice"));
 
@@ -77,18 +82,15 @@ public class POSController {
         colCartTotal.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
 
         productTable.setItems(masterData);
-        cartTable.setItems(cartData);
+        cartTable.setItems(cartService.getCartData());
     }
 
     private void setupCustomerSelector(Integer selectId) {
         customerList.clear();
         customerList.add(WALK_IN_CUSTOMER);
-
         List<Customer> allClients = customerDAO.getAllCustomers().stream()
-                .filter(c -> c.getId() != 1)
-                .toList();
+                .filter(c -> c.getId() != 1).toList();
         customerList.addAll(allClients);
-
         customerComboBox.setItems(customerList);
         customerComboBox.setConverter(new StringConverter<>() {
             @Override public String toString(Customer c) {
@@ -98,11 +100,8 @@ public class POSController {
             }
             @Override public Customer fromString(String s) { return null; }
         });
-
         if (selectId != null) {
-            customerList.stream()
-                    .filter(c -> c.getId() == selectId)
-                    .findFirst()
+            customerList.stream().filter(c -> c.getId() == selectId).findFirst()
                     .ifPresent(c -> customerComboBox.getSelectionModel().select(c));
         } else {
             customerComboBox.getSelectionModel().selectFirst();
@@ -116,7 +115,9 @@ public class POSController {
 
     @FXML
     private void loadStockData() {
+        log.debug("Loading stock data");
         masterData.setAll(batchDAO.getAllBatches());
+        log.debug("Loaded {} batches", masterData.size());
     }
 
     private void setupSearchFilter() {
@@ -124,13 +125,11 @@ public class POSController {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
             filteredData.setPredicate(batch -> {
                 if (newVal == null || newVal.isEmpty()) return true;
-
                 String query = newVal.toLowerCase().trim();
                 String productName = batch.getProduct().getName().toLowerCase();
                 String genericName = batch.getProduct().getGenericName().toLowerCase();
-
-                return com.my.pharmacy.util.FuzzySearchUtil.isFuzzyMatch(query, productName) ||
-                        com.my.pharmacy.util.FuzzySearchUtil.isFuzzyMatch(query, genericName);
+                return FuzzySearchUtil.isFuzzyMatch(query, productName) ||
+                        FuzzySearchUtil.isFuzzyMatch(query, genericName);
             });
         });
         SortedList<Batch> sortedData = new SortedList<>(filteredData);
@@ -141,7 +140,10 @@ public class POSController {
     @FXML
     private void handleAddToCart() {
         Batch selected = productTable.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
+        if (selected == null) {
+            log.debug("Add to cart attempted with no product selected");
+            return;
+        }
         openAddToCartDialog(selected);
     }
 
@@ -152,67 +154,38 @@ public class POSController {
             stage.setScene(new Scene(loader.load()));
             stage.setTitle("Item Details");
             stage.initModality(Modality.APPLICATION_MODAL);
-
             AddToCartController controller = loader.getController();
             controller.setBatchData(selected);
             stage.showAndWait();
 
             if (controller.isConfirmed()) {
                 SaleItem newItem = controller.getCreatedItem();
-
-                // FIX #2: Prevent duplicate batch lines — merge into existing cart entry instead.
-                // If the same batch already exists in the cart, add quantities together
-                // rather than creating a second line. This avoids a double stock-deduction
-                // bug where both lines pass the stock check against the original qty.
-                java.util.Optional<SaleItem> existing = cartData.stream()
-                        .filter(i -> i.getBatchId() == newItem.getBatchId())
-                        .findFirst();
-
-                if (existing.isPresent()) {
-                    SaleItem existingItem = existing.get();
-                    int mergedQty   = existingItem.getQuantity()  + newItem.getQuantity();
-                    int mergedBonus = existingItem.getBonusQty()  + newItem.getBonusQty();
-                    int totalNeeded = mergedQty + mergedBonus;
-
-                    if (totalNeeded > selected.getQtyOnHand()) {
-                        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-                        alert.setTitle("Insufficient Stock");
-                        alert.setHeaderText(null);
-                        alert.setContentText("Cannot merge: total requested (" + totalNeeded +
-                                " boxes) exceeds available stock (" + selected.getQtyOnHand() + ").");
-                        alert.showAndWait();
-                        return;
-                    }
-
-                    existingItem.setBonusQty(mergedBonus);
-                    existingItem.setQuantity(mergedQty); // triggers recalculate() internally
-                    cartTable.refresh(); // Force the TableView to re-render the updated row
-                } else {
-                    cartData.add(newItem);
+                String error = cartService.addOrMerge(newItem, selected);
+                if (error != null) {
+                    NotificationService.error(error);
+                    return;
                 }
-
+                cartTable.refresh();
                 updateTotal();
             }
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            log.error("Failed to open AddToCart dialog: {}", e.getMessage(), e);
+            NotificationService.error("Could not open item dialog.");
+        }
     }
 
     private void updateTotal() {
-        double total = calculateCartTotal();
+        double total = cartService.getGrandTotal();
         totalLabel.setText(String.format("Total: %.2f", total));
         amountPaidField.setText(String.format("%.2f", total));
         calculateBalanceDue();
     }
 
-    private double calculateCartTotal() {
-        return CalculationEngine.calculateGrandTotal(cartData.stream().map(SaleItem::getSubTotal).toList());
-    }
-
     private void calculateBalanceDue() {
         try {
-            double total = calculateCartTotal();
+            double total = cartService.getGrandTotal();
             String paidText = amountPaidField.getText().trim();
             double paid = paidText.isEmpty() ? 0.0 : Double.parseDouble(paidText);
-
             Customer c = customerComboBox.getValue();
             boolean isWalkIn = (c == null || c.getId() == 1);
 
@@ -224,13 +197,9 @@ public class POSController {
                 }
             } else {
                 double balance = CalculationEngine.calculateBalanceDue(total, paid);
-                if (balance > 0) {
-                    balanceDueLabel.setText(String.format("Add to Khata: %.2f", balance));
-                } else if (balance < 0) {
-                    balanceDueLabel.setText(String.format("Advance Payment: %.2f", Math.abs(balance)));
-                } else {
-                    balanceDueLabel.setText("Fully Paid");
-                }
+                if (balance > 0) balanceDueLabel.setText(String.format("Add to Khata: %.2f", balance));
+                else if (balance < 0) balanceDueLabel.setText(String.format("Advance Payment: %.2f", Math.abs(balance)));
+                else balanceDueLabel.setText("Fully Paid");
             }
         } catch (NumberFormatException e) {
             balanceDueLabel.setText("Invalid Amount");
@@ -239,73 +208,77 @@ public class POSController {
 
     @FXML
     private void handleCheckout() {
-        if (cartData.isEmpty()) return;
+        if (cartService.isEmpty()) {
+            log.debug("Checkout attempted with empty cart");
+            return;
+        }
 
         Customer currentCustomer = customerComboBox.getValue();
         int customerId = (currentCustomer != null) ? currentCustomer.getId() : 1;
         boolean isWalkIn = (customerId == 1);
 
         try {
-            double total = calculateCartTotal();
+            double total = cartService.getGrandTotal();
             double paid = Double.parseDouble(amountPaidField.getText());
 
             if (isWalkIn && paid < total) {
-                showAlert(Alert.AlertType.WARNING, "Payment Error", "Walk-in customers must pay the full amount.");
+                NotificationService.warn("Walk-in customers must pay the full amount.");
                 return;
             }
 
             double dbBalanceDue = isWalkIn ? 0.0 : CalculationEngine.calculateBalanceDue(total, paid);
             double dbAmountPaid = isWalkIn ? total : paid;
-
-            // FIX #7: Use logged-in user's ID instead of hardcoded 1.
-            // Every sale is now correctly attributed to whoever is logged in.
             int loggedInUserId = UserSession.getInstance().getUser().getId();
+
+            log.info("Processing checkout — customer={} total={} paid={} user={}", customerId, total, paid, loggedInUserId);
 
             Sale sale = new Sale(0, new Timestamp(System.currentTimeMillis()), total, "CASH",
                     customerId, loggedInUserId, dbAmountPaid, dbBalanceDue);
-
-            sale.setItems(cartData);
+            sale.setItems(cartService.getCartData());
             saleDAO.saveSale(sale);
+            log.info("Sale saved with id={}", sale.getId());
 
-            // ── 1. Always save a silent PDF soft copy ──
-            sale.setItems(new java.util.ArrayList<>(cartData));
-            String invoicePath = com.my.pharmacy.util.AppPaths.invoicePath(sale.getId());
-            InvoiceGenerator.generateThermalReceipt(sale, currentCustomer, invoicePath);
+            // Save PDF soft copy
+            sale.setItems(new java.util.ArrayList<>(cartService.getCartData()));
+            String invoicePath = AppPaths.invoicePath(sale.getId());
+            try {
+                InvoiceGenerator.generateThermalReceipt(sale, currentCustomer, invoicePath);
+                log.info("Invoice PDF saved: {}", invoicePath);
+            } catch (Exception e) {
+                log.error("Failed to save invoice PDF: {}", e.getMessage(), e);
+                NotificationService.warn("Sale saved but PDF invoice could not be generated.");
+            }
 
-            // ── 2. Ask if they want to print the physical receipt ──
+            // Ask to print thermal
             Alert printConfirm = new Alert(Alert.AlertType.CONFIRMATION);
             printConfirm.setTitle("Print Invoice");
             printConfirm.setHeaderText(null);
             printConfirm.setContentText("Sale saved. Print receipt for Invoice #" + sale.getId() + "?");
             printConfirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-
             printConfirm.showAndWait().ifPresent(btn -> {
                 if (btn == ButtonType.YES) {
-                    ThermalPrinter.printInvoice(sale, currentCustomer, "Invoice #" + sale.getId());
+                    try {
+                        ThermalPrinter.printInvoice(sale, currentCustomer, "Invoice #" + sale.getId());
+                        log.info("Thermal receipt printed for sale {}", sale.getId());
+                    } catch (Exception e) {
+                        log.error("Thermal print failed for sale {}: {}", sale.getId(), e.getMessage(), e);
+                        NotificationService.error("Printer error: " + e.getMessage());
+                    }
                 }
             });
 
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Sale Completed! Stock and Ledger updated.");
-
-            cartData.clear();
+            NotificationService.success("Sale #" + sale.getId() + " completed successfully.");
+            cartService.clear();
             loadStockData();
             updateTotal();
-
             setupCustomerSelector(customerId);
             searchField.requestFocus();
             searchField.clear();
 
         } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.ERROR, "Input Error", "Please verify the Amount Paid is a valid number.");
+            log.warn("Checkout failed — invalid amount paid: {}", amountPaidField.getText());
+            NotificationService.error("Please enter a valid amount in the Amount Paid field.");
         }
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 
     @FXML
@@ -318,6 +291,9 @@ public class POSController {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
             setupCustomerSelector(null);
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            log.error("Failed to open AddCustomerDialog: {}", e.getMessage(), e);
+            NotificationService.error("Could not open customer registration.");
+        }
     }
 }

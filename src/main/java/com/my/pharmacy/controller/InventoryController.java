@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.BatchDAO;
 import com.my.pharmacy.dao.BatchDAOImpl;
 import com.my.pharmacy.model.Batch;
+import com.my.pharmacy.util.NotificationService;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -19,14 +20,10 @@ import java.io.IOException;
 public class InventoryController {
 
     @FXML private TableView<Batch> inventoryTable;
-    @FXML private TableColumn<Batch, String> colName;
-    @FXML private TableColumn<Batch, String> colBatch;
-    @FXML private TableColumn<Batch, String> colExpiry;
-    @FXML private TableColumn<Batch, Integer> colPackSize;
-    @FXML private TableColumn<Batch, Integer> colStock;
-    @FXML private TableColumn<Batch, Double> colTradePrice;
-    @FXML private Button btnAdjustStock;
-    @FXML private Button btnEditProduct;
+    @FXML private TableColumn<Batch, String>  colName, colBatch, colExpiry;
+    @FXML private TableColumn<Batch, Integer> colPackSize, colStock;
+    @FXML private TableColumn<Batch, Double>  colTradePrice;
+    @FXML private Button btnAdjustStock, btnEditProduct;
 
     private final BatchDAO batchDAO = new BatchDAOImpl();
     private final ObservableList<Batch> batchList = FXCollections.observableArrayList();
@@ -35,15 +32,11 @@ public class InventoryController {
     public void initialize() {
         setupColumns();
         loadInventoryData();
-
-        // RBAC Enforcement
         boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance() != null &&
                 com.my.pharmacy.util.UserSession.getInstance().getUser() != null &&
                 com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
-        btnAdjustStock.setVisible(isAdmin);
-        btnAdjustStock.setManaged(isAdmin);
-        btnEditProduct.setVisible(isAdmin);
-        btnEditProduct.setManaged(isAdmin);
+        btnAdjustStock.setVisible(isAdmin); btnAdjustStock.setManaged(isAdmin);
+        btnEditProduct.setVisible(isAdmin); btnEditProduct.setManaged(isAdmin);
     }
 
     private void setupColumns() {
@@ -62,7 +55,6 @@ public class InventoryController {
 
     @FXML
     private void handleAddNewProduct() {
-        // Bypasses the mode check and loads the unified Wholesale FXML directly
         openDialog("/fxml/AddProduct.fxml", "Add New Product");
     }
 
@@ -70,25 +62,40 @@ public class InventoryController {
     private void handleAdjustStock() {
         Batch selected = inventoryTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("Selection Required", "Please select a batch from the table to adjust.");
+            NotificationService.warn("Please select a batch to adjust.");
             return;
         }
-
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/StockAdjustmentDialog.fxml"));
             Stage stage = new Stage();
             stage.setScene(new Scene(loader.load()));
             stage.setTitle("Adjust Stock: " + selected.getProduct().getName());
             stage.initModality(Modality.APPLICATION_MODAL);
-
             StockAdjustmentController controller = loader.getController();
             controller.setBatchData(selected);
-
             stage.showAndWait();
-            loadInventoryData(); // Refresh table after dialog closes
-        } catch (IOException e) {
-            e.printStackTrace();
+            loadInventoryData();
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    @FXML
+    private void handleEditProduct() {
+        Batch selected = inventoryTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            NotificationService.warn("Please select a batch to edit.");
+            return;
         }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EditProductDialog.fxml"));
+            Stage stage = new Stage();
+            stage.setScene(new Scene(loader.load()));
+            stage.setTitle("Edit Product: " + selected.getProduct().getName());
+            stage.initModality(Modality.APPLICATION_MODAL);
+            EditProductController controller = loader.getController();
+            controller.setProductData(selected.getProduct());
+            stage.showAndWait();
+            loadInventoryData();
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     private void openDialog(String fxmlPath, String title) {
@@ -100,41 +107,6 @@ public class InventoryController {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
             loadInventoryData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleEditProduct() {
-        Batch selected = inventoryTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Selection Required", "Please select a batch from the table to edit its master product info.");
-            return;
-        }
-
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EditProductDialog.fxml"));
-            Stage stage = new Stage();
-            stage.setScene(new Scene(loader.load()));
-            stage.setTitle("Edit Product: " + selected.getProduct().getName());
-            stage.initModality(Modality.APPLICATION_MODAL);
-
-            EditProductController controller = loader.getController();
-            controller.setProductData(selected.getProduct());
-
-            stage.showAndWait();
-            loadInventoryData(); // Refresh table to show updated names/pack sizes
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        } catch (IOException e) { e.printStackTrace(); }
     }
 }

@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.CustomerDAO;
 import com.my.pharmacy.dao.CustomerDAOImpl;
 import com.my.pharmacy.model.Customer;
+import com.my.pharmacy.util.NotificationService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -50,7 +51,7 @@ public class CustomerController {
                 String lower = newVal.toLowerCase();
                 return customer.getName().toLowerCase().contains(lower) ||
                         (customer.getPhone() != null && customer.getPhone().contains(newVal)) ||
-                        (customer.getCnic() != null && customer.getCnic().contains(newVal));
+                        (customer.getCnic()  != null && customer.getCnic().contains(newVal));
             });
         });
         customerTable.setItems(filteredData);
@@ -60,7 +61,7 @@ public class CustomerController {
     private void handleEditSelection() {
         Customer selected = customerTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("Selection Required", "Please select a customer to edit.");
+            NotificationService.warn("Please select a customer to edit.");
             return;
         }
         editingCustomer = selected;
@@ -68,7 +69,6 @@ public class CustomerController {
         phoneField.setText(selected.getPhone());
         addressField.setText(selected.getAddress());
         cnicField.setText(selected.getCnic());
-
         btnSave.setText("Update Customer");
         btnSave.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;");
     }
@@ -76,22 +76,21 @@ public class CustomerController {
     @FXML
     private void handleSave() {
         if (nameField.getText().trim().isEmpty()) {
-            showAlert("Validation Error", "Name is required.");
+            NotificationService.warn("Customer name is required.");
             return;
         }
-
         if (editingCustomer == null) {
             Customer newCustomer = new Customer(0, nameField.getText().trim(), phoneField.getText().trim(),
                     addressField.getText().trim(), "REGULAR", 0.0, cnicField.getText().trim());
             customerDAO.addCustomer(newCustomer);
-            showAlert("Success", "Customer added successfully!");
+            NotificationService.success("Customer added successfully.");
         } else {
-            Customer updatedCustomer = new Customer(editingCustomer.getId(), nameField.getText().trim(), phoneField.getText().trim(),
-                    addressField.getText().trim(), editingCustomer.getType(), editingCustomer.getCurrentBalance(), cnicField.getText().trim());
+            Customer updatedCustomer = new Customer(editingCustomer.getId(), nameField.getText().trim(),
+                    phoneField.getText().trim(), addressField.getText().trim(),
+                    editingCustomer.getType(), editingCustomer.getCurrentBalance(), cnicField.getText().trim());
             customerDAO.updateCustomer(updatedCustomer);
-            showAlert("Success", "Customer updated successfully!");
+            NotificationService.success("Customer updated successfully.");
         }
-
         loadData();
         clearFields();
     }
@@ -102,10 +101,5 @@ public class CustomerController {
         editingCustomer = null;
         btnSave.setText("Save Customer");
         btnSave.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;");
-    }
-
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
     }
 }

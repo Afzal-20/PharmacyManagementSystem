@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.UserDAO;
 import com.my.pharmacy.dao.UserDAOImpl;
 import com.my.pharmacy.model.User;
+import com.my.pharmacy.util.NotificationService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,9 +18,7 @@ public class UserManagementController {
     @FXML private ComboBox<String> roleComboBox;
     @FXML private TableView<User> userTable;
     @FXML private TableColumn<User, String> colName, colUsername, colRole, colStatus;
-
-    @FXML private Button btnCreateUser;
-    @FXML private Button btnDeactivate;
+    @FXML private Button btnCreateUser, btnDeactivate;
 
     private final UserDAO userDAO = new UserDAOImpl();
     private final ObservableList<User> userList = FXCollections.observableArrayList();
@@ -30,10 +29,8 @@ public class UserManagementController {
         setupTable();
         loadUsers();
 
-        // Security Guard
         boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance() != null &&
                 com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
-
         btnCreateUser.setDisable(!isAdmin);
         btnDeactivate.setDisable(!isAdmin);
         if (!isAdmin) {
@@ -48,7 +45,8 @@ public class UserManagementController {
         colName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
         colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
         colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
-        colStatus.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().isActive() ? "Active" : "Disabled"));
+        colStatus.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().isActive() ? "Active" : "Disabled"));
     }
 
     private void loadUsers() {
@@ -58,17 +56,18 @@ public class UserManagementController {
 
     @FXML
     private void handleSaveUser() {
-        if (fullNameField.getText().isEmpty() || usernameField.getText().isEmpty() || passwordField.getText().isEmpty() || roleComboBox.getValue() == null) {
-            showAlert(Alert.AlertType.ERROR, "Missing Info", "Please fill all fields.");
+        if (fullNameField.getText().isEmpty() || usernameField.getText().isEmpty() ||
+                passwordField.getText().isEmpty() || roleComboBox.getValue() == null) {
+            NotificationService.warn("Please fill all fields.");
             return;
         }
         User newUser = new User(0, usernameField.getText(), "", roleComboBox.getValue(), fullNameField.getText(), true);
         if (userDAO.addUser(newUser, passwordField.getText())) {
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Account created successfully.");
+            NotificationService.success("Account created successfully.");
             clearFields();
             loadUsers();
         } else {
-            showAlert(Alert.AlertType.ERROR, "Error", "Username might already exist.");
+            NotificationService.error("Username might already exist.");
         }
     }
 
@@ -77,7 +76,7 @@ public class UserManagementController {
         User selected = userTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
         if (selected.getId() == 1) {
-            showAlert(Alert.AlertType.WARNING, "Not Allowed", "Cannot deactivate the primary Admin account.");
+            NotificationService.warn("Cannot deactivate the primary Admin account.");
             return;
         }
         userDAO.toggleUserStatus(selected.getId(), !selected.isActive());
@@ -87,10 +86,5 @@ public class UserManagementController {
     @FXML
     private void clearFields() {
         fullNameField.clear(); usernameField.clear(); passwordField.clear(); roleComboBox.setValue(null);
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String msg) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(msg); alert.showAndWait();
     }
 }

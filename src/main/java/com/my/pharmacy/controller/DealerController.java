@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.DealerDAO;
 import com.my.pharmacy.dao.DealerDAOImpl;
 import com.my.pharmacy.model.Dealer;
+import com.my.pharmacy.util.NotificationService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -49,7 +50,7 @@ public class DealerController {
                 String lower = newVal.toLowerCase();
                 return (dealer.getCompanyName() != null && dealer.getCompanyName().toLowerCase().contains(lower)) ||
                         (dealer.getLicenseNo() != null && dealer.getLicenseNo().toLowerCase().contains(lower)) ||
-                        (dealer.getName() != null && dealer.getName().toLowerCase().contains(lower));
+                        (dealer.getName()      != null && dealer.getName().toLowerCase().contains(lower));
             });
         });
         dealerTable.setItems(filteredData);
@@ -59,7 +60,7 @@ public class DealerController {
     private void handleEditSelection() {
         Dealer selected = dealerTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Selection Required", "Please select a dealer to edit.");
+            NotificationService.warn("Please select a dealer to edit.");
             return;
         }
         editingDealer = selected;
@@ -68,7 +69,6 @@ public class DealerController {
         phoneField.setText(selected.getPhone());
         addressField.setText(selected.getAddress());
         licenseField.setText(selected.getLicenseNo());
-
         btnSave.setText("Update Dealer");
         btnSave.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;");
     }
@@ -80,7 +80,7 @@ public class DealerController {
 
         com.my.pharmacy.dao.PaymentDAO paymentDAO = new com.my.pharmacy.dao.PaymentDAOImpl();
         if (!paymentDAO.getDealerLedger(selected.getId()).isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "Deletion Blocked", "Cannot delete dealer. They have existing payment/ledger history.");
+            NotificationService.error("Cannot delete dealer — they have existing payment/ledger history.");
             return;
         }
 
@@ -95,20 +95,19 @@ public class DealerController {
     @FXML
     private void handleSave() {
         if (companyField.getText().trim().isEmpty() || phoneField.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Company Name and Phone are required.");
+            NotificationService.warn("Company Name and Phone are required.");
             return;
         }
-
         if (editingDealer == null) {
             Dealer newDealer = new Dealer(0, nameField.getText().trim(), companyField.getText().trim(),
                     phoneField.getText().trim(), addressField.getText().trim(), licenseField.getText().trim());
             dealerDAO.addDealer(newDealer);
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Dealer registered successfully!");
+            NotificationService.success("Dealer registered successfully.");
         } else {
             Dealer updatedDealer = new Dealer(editingDealer.getId(), nameField.getText().trim(), companyField.getText().trim(),
                     phoneField.getText().trim(), addressField.getText().trim(), licenseField.getText().trim());
             dealerDAO.updateDealer(updatedDealer);
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Dealer updated successfully!");
+            NotificationService.success("Dealer updated successfully.");
         }
         loadData();
         clearFields();
@@ -120,10 +119,5 @@ public class DealerController {
         editingDealer = null;
         btnSave.setText("Save Dealer");
         btnSave.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
     }
 }

@@ -4,12 +4,26 @@ import com.my.pharmacy.model.Customer;
 import com.my.pharmacy.model.Sale;
 import com.my.pharmacy.model.SaleItem;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.print.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.print.attribute.HashPrintRequestAttributeSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.print.attribute.PrintRequestAttributeSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.print.attribute.standard.JobName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
 
 /**
@@ -27,6 +41,7 @@ import java.text.SimpleDateFormat;
  * gracefully — the sale is already saved regardless.
  */
 public class ThermalPrinter {
+    private static final Logger log = LoggerFactory.getLogger(ThermalPrinter.class);
 
     // ── ESC/POS Command Constants ─────────────────────────────────────────────
     private static final byte ESC  = 0x1B;

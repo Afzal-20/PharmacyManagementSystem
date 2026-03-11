@@ -7,66 +7,71 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane fx:id="mainLayout" prefHeight="700.0" prefWidth="1100.0" stylesheets="@../styles/style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.MainController">
+<StackPane fx:id="rootStack" prefHeight="700.0" prefWidth="1100.0"
+           stylesheets="@../styles/style.css"
+           xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.my.pharmacy.controller.MainController">
 
-    <left>
-        <VBox prefWidth="220.0" spacing="5" styleClass="sidebar">
-            <padding>
-                <Insets bottom="20" left="0" right="0" top="20" />
-            </padding>
+    <BorderPane fx:id="mainLayout">
 
-            <VBox alignment="CENTER">
-                <ImageView fitWidth="40" preserveRatio="true">
-                    <image>
-                        <Image url="@../images/logo.png" />
-                    </image>
-                    <VBox.margin>
-                        <Insets bottom="10" />
-                    </VBox.margin>
-                </ImageView>
-                <Label opacity="0.9" styleClass="app-title" text="PHARMDESK" />
+        <left>
+            <VBox prefWidth="220.0" spacing="5" styleClass="sidebar">
                 <padding>
-                    <Insets bottom="10" />
+                    <Insets bottom="20" left="0" right="0" top="20" />
                 </padding>
+
+                <VBox alignment="CENTER">
+                    <ImageView fitWidth="40" preserveRatio="true">
+                        <image>
+                            <Image url="@../images/logo.png" />
+                        </image>
+                        <VBox.margin>
+                            <Insets bottom="10" />
+                        </VBox.margin>
+                    </ImageView>
+                    <Label opacity="0.9" styleClass="app-title" text="PHARMDESK" />
+                    <padding>
+                        <Insets bottom="10" />
+                    </padding>
+                </VBox>
+
+                <Button maxWidth="Infinity" onAction="#showDashboard" styleClass="nav-button" text="🏠  Home Dashboard" />
+                <Button maxWidth="Infinity" onAction="#showPOS" styleClass="nav-button" text="🛒  Point of Sale" />
+                <Button maxWidth="Infinity" onAction="#showInventory" styleClass="nav-button" text="📦  Inventory" />
+                <Button maxWidth="Infinity" onAction="#showPurchaseEntry" styleClass="nav-button" text="➕  Stock Purchase" />
+                <Button maxWidth="Infinity" onAction="#showCustomers" styleClass="nav-button" text="👥  Customers" />
+                <Button maxWidth="Infinity" onAction="#showDealers" styleClass="nav-button" text="🏢  Dealers" />
+                <Button maxWidth="Infinity" onAction="#showItemLedger" styleClass="nav-button" text="🔍  Item Ledger" />
+                <Button maxWidth="Infinity" onAction="#showKhata" styleClass="nav-button" text="📘  Khata Ledgers" />
+                <Button maxWidth="Infinity" onAction="#showHistory" styleClass="nav-button" text="📜  Sales History" />
+                <Button fx:id="btnManageUsers" maxWidth="Infinity" onAction="#showUserManagement" styleClass="nav-button" text="👥  Manage Users" />
+
+                <VBox style="-fx-border-radius: 10px;" VBox.vgrow="ALWAYS" />
+
+                <HBox spacing="6">
+                    <Button maxWidth="Infinity" onAction="#showChangePassword" prefHeight="35.0"
+                            style="-fx-background-color: #cc8616; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 0; -fx-cursor: hand; -fx-font-size: 11px;"
+                            text="🔑 Password" HBox.hgrow="ALWAYS">
+                        <HBox.margin><Insets left="3.0" /></HBox.margin>
+                    </Button>
+                    <Button maxWidth="Infinity" onAction="#handleLogout"
+                            style="-fx-background-color: #c94436; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 0; -fx-cursor: hand; -fx-font-size: 11px;"
+                            text="🚪 Logout" HBox.hgrow="ALWAYS">
+                        <HBox.margin><Insets right="2.0" /></HBox.margin>
+                    </Button>
+                    <opaqueInsets><Insets /></opaqueInsets>
+                    <VBox.margin><Insets left="2.0" right="2.0" /></VBox.margin>
+                </HBox>
             </VBox>
+        </left>
 
-            <Button maxWidth="Infinity" onAction="#showDashboard" styleClass="nav-button" text="🏠  Home Dashboard" />
+        <center>
+        </center>
 
-            <Button maxWidth="Infinity" onAction="#showPOS" styleClass="nav-button" text="🛒  Point of Sale" />
-            <Button maxWidth="Infinity" onAction="#showInventory" styleClass="nav-button" text="📦  Inventory" />
-            <Button maxWidth="Infinity" onAction="#showPurchaseEntry" styleClass="nav-button" text="➕  Stock Purchase" />
+    </BorderPane>
 
-            <Button maxWidth="Infinity" onAction="#showCustomers" styleClass="nav-button" text="👥  Customers" />
-            <Button maxWidth="Infinity" onAction="#showDealers" styleClass="nav-button" text="🏢  Dealers" />
-            <Button maxWidth="Infinity" onAction="#showItemLedger" styleClass="nav-button" text="🔍  Item Ledger" />
-            <Button maxWidth="Infinity" onAction="#showKhata" styleClass="nav-button" text="📘  Khata Ledgers" />
-            <Button maxWidth="Infinity" onAction="#showHistory" styleClass="nav-button" text="📜  Sales History" />
-            <Button fx:id="btnManageUsers" maxWidth="Infinity" onAction="#showUserManagement" styleClass="nav-button" text="👥  Manage Users" />
-
-            <VBox style="-fx-border-radius: 10px;" VBox.vgrow="ALWAYS" />
-
-            <HBox spacing="6">
-                <Button maxWidth="Infinity" onAction="#showChangePassword" prefHeight="35.0" prefWidth="57.0" style="-fx-background-color: #cc8616; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 0; -fx-cursor: hand; -fx-font-size: 11px;" text="🔑 Password" HBox.hgrow="ALWAYS">
-               <HBox.margin>
-                  <Insets left="3.0" />
-               </HBox.margin></Button>
-                <Button maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: #c94436; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 0; -fx-cursor: hand; -fx-font-size: 11px;" text="🚪 Logout" HBox.hgrow="ALWAYS">
-               <HBox.margin>
-                  <Insets right="2.0" />
-               </HBox.margin></Button>
-            <opaqueInsets>
-               <Insets />
-            </opaqueInsets>
-            <VBox.margin>
-               <Insets left="2.0" right="2.0" />
-            </VBox.margin>
-            </HBox>
-        </VBox>
-    </left>
-
-    <center>
-    </center>
-
-</BorderPane>
+</StackPane>

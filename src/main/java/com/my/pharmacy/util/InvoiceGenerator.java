@@ -7,14 +7,27 @@ import com.my.pharmacy.model.Customer;
 import com.my.pharmacy.model.Sale;
 import com.my.pharmacy.model.SaleItem;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.awt.Desktop;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.FileOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.format.DateTimeFormatter;
 
 public class InvoiceGenerator {
+    private static final Logger log = LoggerFactory.getLogger(InvoiceGenerator.class);
 
     // 80mm thermal paper width is ~226 points.
     private static final Rectangle THERMAL_ROLL = new Rectangle(226, 1000);

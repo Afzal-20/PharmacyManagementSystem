@@ -14,11 +14,16 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 import static com.my.pharmacy.App.primaryStage;
 
 public class LoginController {
+
+    private static final Logger log = LoggerFactory.getLogger(LoginController.class);
 
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
@@ -26,20 +31,20 @@ public class LoginController {
 
     private final UserDAO userDAO = new UserDAOImpl();
 
-    // Brute-force protection state
     private int failedAttempts = 0;
-    private static final int MAX_ATTEMPTS  = 5;
-    private static final int LOCKOUT_MS    = 5000; // 5 seconds per lockout
+    private static final int MAX_ATTEMPTS = 5;
+    private static final int LOCKOUT_MS   = 5000;
     private boolean isLockedOut = false;
 
     @FXML
     public void initialize() {
         passwordField.setOnAction(e -> handleLogin());
+        log.debug("LoginController initialized");
     }
 
     @FXML
     private void handleLogin() {
-        if (isLockedOut) return; // Ignore clicks during lockout
+        if (isLockedOut) return;
 
         String user = usernameField.getText();
         String pass = passwordField.getText();
@@ -49,18 +54,21 @@ public class LoginController {
             return;
         }
 
+        log.info("Login attempt: username={}", user);
         User authenticatedUser = userDAO.authenticate(user, pass);
 
         if (authenticatedUser != null) {
-            failedAttempts = 0; // Reset on success
+            failedAttempts = 0;
             UserSession.login(authenticatedUser);
-            System.out.println("✅ Login Successful: (" + authenticatedUser.getRole() + ")");
+            log.info("Login successful: user={} role={}", authenticatedUser.getUsername(), authenticatedUser.getRole());
             loadMainDashboard();
         } else {
             failedAttempts++;
             int remaining = MAX_ATTEMPTS - failedAttempts;
+            log.warn("Login failed for user={} — {} attempt(s) remaining", user, remaining);
 
             if (failedAttempts >= MAX_ATTEMPTS) {
+                log.warn("Max login attempts reached for user={} — triggering lockout", user);
                 triggerLockout();
             } else {
                 errorLabel.setText("Invalid credentials. " + remaining + " attempt(s) remaining.");
@@ -74,7 +82,6 @@ public class LoginController {
         passwordField.setDisable(true);
         errorLabel.setStyle("-fx-text-fill: red;");
 
-        // Countdown on a background thread, UI updates on FX thread
         Thread lockoutThread = new Thread(() -> {
             try {
                 for (int i = LOCKOUT_MS / 1000; i > 0; i--) {
@@ -94,6 +101,7 @@ public class LoginController {
                     passwordField.clear();
                     errorLabel.setStyle("");
                     errorLabel.setText("Account unlocked. Please try again.");
+                    log.info("Login lockout expired — fields re-enabled");
                 });
             }
         });
@@ -103,24 +111,23 @@ public class LoginController {
 
     private void loadMainDashboard() {
         try {
+            log.debug("Loading main dashboard");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainLayout.fxml"));
             Parent root = loader.load();
-
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setTitle("PharmDesk (" + UserSession.getInstance().getUser().getRole() + ")");
-
             try {
-                primaryStage.getIcons().add(new javafx.scene.image.Image(App.class.getResourceAsStream("/images/logo.png")));
+                primaryStage.getIcons().add(new javafx.scene.image.Image(
+                        App.class.getResourceAsStream("/images/logo.png")));
             } catch (Exception e) {
-                System.err.println("Warning: Logo image not found at /images/logo.png");
+                log.warn("Logo image not found: {}", e.getMessage());
             }
-
             stage.setScene(new Scene(root, 1100, 750));
             stage.centerOnScreen();
             stage.show();
-
+            log.info("Dashboard loaded successfully");
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Failed to load dashboard: {}", e.getMessage(), e);
             errorLabel.setText("Critical Error: Failed to load dashboard.");
         }
     }

@@ -4,6 +4,8 @@ import com.my.pharmacy.config.DatabaseConnection;
 import com.my.pharmacy.model.Sale;
 import com.my.pharmacy.model.SaleItem;
 import com.my.pharmacy.model.SaleLedgerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar; // Required for TimeZone fix

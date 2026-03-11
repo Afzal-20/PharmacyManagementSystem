@@ -2,6 +2,8 @@ package com.my.pharmacy.dao;
 
 import com.my.pharmacy.config.DatabaseConnection;
 import com.my.pharmacy.model.Dealer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

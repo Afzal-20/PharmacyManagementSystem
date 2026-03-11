@@ -1,5 +1,7 @@
 package com.my.pharmacy.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
 
 /**
@@ -18,6 +20,7 @@ import java.io.File;
  * On non-Windows systems (dev/testing), falls back to user.home/PharmDesk/
  */
 public class AppPaths {
+    private static final Logger log = LoggerFactory.getLogger(AppPaths.class);
 
     /** Root data directory: C:\ProgramData\PharmDesk\ */
     public static final String ROOT;
