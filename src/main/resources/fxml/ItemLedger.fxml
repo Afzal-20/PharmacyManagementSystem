@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
@@ -22,25 +23,28 @@
         <Label style="-fx-font-weight: bold;" text="Find Medicine:" />
         <TextField fx:id="searchField" prefWidth="200" promptText="Type name to filter..." style="-fx-background-radius: 8;" />
         <ComboBox fx:id="productComboBox" prefWidth="250" promptText="Select from filtered list..." style="-fx-background-radius: 8;" />
-        <Button onAction="#loadLedgerData" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 8;" text="Load Ledger" />
+        <Button onAction="#loadLedgerData" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 8;" text="Load Ledger">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor></Button>
     </HBox>
 
-    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+    <TabPane stylesheets="@../styles/tablestyles.css" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <tabs>
-            <Tab style="-fx-background-radius: 10 10 0 0;" text="1 - Sales History">
+            <Tab style="-fx-background-radius: 10 10 0 0;" text="Sales History">
                 <VBox>
                     <TableView fx:id="salesTable" style="-fx-background-radius: 0 0 10 10;" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="colSaleDate" prefWidth="150" text="Date" />
-                            <TableColumn fx:id="colInvoiceNo" prefWidth="100" text="Invoice No" />
-                            <TableColumn fx:id="colSaleQty" prefWidth="100" text="Qty Sold" />
-                            <TableColumn fx:id="colSaleRate" prefWidth="100" text="Rate" />
-                            <TableColumn fx:id="colSaleTotal" prefWidth="120" text="Total Amount" />
+                            <TableColumn fx:id="colSaleDate" prefWidth="176.00002670288086" text="Date" />
+                            <TableColumn fx:id="colInvoiceNo" prefWidth="162.3999786376953" text="Invoice No" />
+                            <TableColumn fx:id="colSaleQty" prefWidth="112.0" text="Qty Sold" />
+                            <TableColumn fx:id="colSaleRate" prefWidth="122.39999389648438" text="Rate" />
+                            <TableColumn fx:id="colSaleTotal" prefWidth="192.79998779296875" text="Total Amount" />
                         </columns>
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab style="-fx-background-radius: 10 10 0 0;" text="2 - Purchase History (Audit)">
+            <Tab style="-fx-background-radius: 10 10 0 0;" text="Purchase History">
                 <VBox>
                     <TableView fx:id="purchaseHistoryTable" style="-fx-background-radius: 0 0 10 10;" VBox.vgrow="ALWAYS">
                         <columns>
@@ -49,7 +53,7 @@
                             <TableColumn fx:id="colInvoiceNoPurch" prefWidth="120" text="Invoice #" />
                             <TableColumn fx:id="colPurchasedQty" prefWidth="100" text="Initial Boxes" />
                             <TableColumn fx:id="colPurchCost" prefWidth="100" text="Cost Price" />
-                            <TableColumn fx:id="colPurchTrade" prefWidth="100" text="Trade Price" />
+                            <TableColumn fx:id="colPurchTrade" prefWidth="100.80001220703127" text="Trade Price" />
                         </columns>
                     </TableView>
                 </VBox>

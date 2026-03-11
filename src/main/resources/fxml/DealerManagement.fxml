@@ -24,7 +24,7 @@
     </VBox>
     <VBox spacing="10" HBox.hgrow="ALWAYS">
         <TextField fx:id="searchField" promptText="Search by Company or License..." style="-fx-background-radius: 8;" />
-        <TableView fx:id="dealerTable" style="-fx-background-radius: 10; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
+        <TableView fx:id="dealerTable" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colCompany" prefWidth="150" style="-fx-background-radius: 10 0 0 0;" text="Company" />
                 <TableColumn fx:id="colName" prefWidth="120" text="Contact Person" />

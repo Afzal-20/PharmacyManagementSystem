@@ -23,8 +23,14 @@
         <Button onAction="#handleReprintInvoice" style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 8;" text="🖨️ Reprint Selected Invoice" />
     </HBox>
      <VBox spacing="5" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: WHITE; -fx-background-color: WHITE;">
-         <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="Invoices" />
-         <TableView fx:id="invoiceTable" style="-fx-background-radius: 10; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
+         <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="Invoices">
+         <font>
+            <Font size="14.0" />
+         </font>
+         <VBox.margin>
+            <Insets left="8.0" />
+         </VBox.margin></Label>
+         <TableView fx:id="invoiceTable" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
              <columns>
                  <TableColumn fx:id="colInvId" prefWidth="80" style="-fx-background-radius: 10 0 0 0;" text="Invoice #" />
                  <TableColumn fx:id="colInvDate" prefWidth="150" text="Time" />
@@ -38,8 +44,11 @@
          <HBox alignment="CENTER_LEFT" spacing="15">
              <Label style="-fx-font-weight: bold;" text="Invoice Items">
             <HBox.margin>
-               <Insets left="5.0" />
+               <Insets left="8.0" />
             </HBox.margin>
+            <font>
+               <Font size="14.0" />
+            </font>
          </Label>
              <Region HBox.hgrow="ALWAYS" />
              <Button fx:id="btnProcessReturn" onAction="#handleProcessReturn" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Process Return ">
@@ -48,7 +57,7 @@
             </HBox.margin>
          </Button>
          </HBox>
-         <TableView fx:id="itemTable" style="-fx-background-radius: 10; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
+         <TableView fx:id="itemTable" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
              <columns>
                  <TableColumn fx:id="colItemName" prefWidth="200" style="-fx-background-radius: 10 0 0 0;" text="Medicine" />
                  <TableColumn fx:id="colItemQty" prefWidth="80" text="Qty Sold" />

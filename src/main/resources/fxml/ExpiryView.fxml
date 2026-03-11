@@ -21,22 +21,22 @@
 
     <!-- Summary cards -->
     <HBox spacing="16">
-        <VBox style="-fx-background-color: #f5b7b1; -fx-background-radius: 8; -fx-padding: 16;" HBox.hgrow="ALWAYS">
+        <VBox style="-fx-background-color: #f5b7b1; -fx-background-radius: 10; -fx-padding: 16;" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight: bold; -fx-text-fill: #922b21;" text="EXPIRED" />
             <Label fx:id="lblExpired" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #922b21;" text="0" />
             <Label style="-fx-text-fill: #922b21; -fx-font-size: 11px;" text="Already expired" />
         </VBox>
-        <VBox style="-fx-background-color: #fadbd8; -fx-background-radius: 8; -fx-padding: 16;" HBox.hgrow="ALWAYS">
+        <VBox style="-fx-background-color: #fadbd8; -fx-background-radius: 10; -fx-padding: 16;" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight: bold; -fx-text-fill: #c0392b;" text="CRITICAL (≤ 30 days)" />
             <Label fx:id="lblCritical" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #c0392b;" text="0" />
             <Label style="-fx-text-fill: #c0392b; -fx-font-size: 11px;" text="Expiring this month" />
         </VBox>
-        <VBox style="-fx-background-color: #fdebd0; -fx-background-radius: 8; -fx-padding: 16;" HBox.hgrow="ALWAYS">
+        <VBox style="-fx-background-color: #fdebd0; -fx-background-radius: 10; -fx-padding: 16;" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight: bold; -fx-text-fill: #d35400;" text="WARNING (31–60 days)" />
             <Label fx:id="lblWarning" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #d35400;" text="0" />
             <Label style="-fx-text-fill: #d35400; -fx-font-size: 11px;" text="Expiring within 2 months" />
         </VBox>
-        <VBox style="-fx-background-color: #fef9e7; -fx-background-radius: 8; -fx-padding: 16;" HBox.hgrow="ALWAYS">
+        <VBox style="-fx-background-color: #fef9e7; -fx-background-radius: 10; -fx-padding: 16;" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight: bold; -fx-text-fill: #7d6608;" text="TOTAL ALERTS" />
             <Label fx:id="lblTotal" style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #7d6608;" text="0" />
             <Label style="-fx-text-fill: #7d6608; -fx-font-size: 11px;" text="Batches needing attention" />
@@ -44,14 +44,14 @@
     </HBox>
 
     <!-- Table + actions -->
-    <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 0);" VBox.vgrow="ALWAYS">
+    <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 0);" VBox.vgrow="ALWAYS">
 
         <HBox alignment="CENTER_LEFT" spacing="12">
             <Button onAction="#loadExpiryData" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 8; -fx-cursor: hand;" text="🔄  Refresh" />
             <Button fx:id="btnWriteOff" onAction="#handleWriteOff" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 8; -fx-cursor: hand;" text="🗑  Write Off Selected Batch" />
         </HBox>
 
-        <TableView fx:id="expiryTable" style="-fx-background-radius: 10; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
+        <TableView fx:id="expiryTable" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colProduct" prefWidth="220" style="-fx-background-radius: 10 0 0 0;" text="Product Name" />
                 <TableColumn fx:id="colBatchNo" prefWidth="110" text="Batch No" />

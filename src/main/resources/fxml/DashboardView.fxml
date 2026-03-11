@@ -13,36 +13,36 @@
     </Label>
 
     <HBox spacing="20">
-        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-weight: bold;" text="THIS MONTH'S SALES" textFill="#7f8c8d" />
-            <Label fx:id="lblMonthlySales" text="Rs. 0" textFill="#27ae60">
+        <VBox style="-fx-background-color: #27ae60; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+            <Label style="-fx-font-weight: bold;" text="THIS MONTH'S SALES" textFill="WHITE" />
+            <Label fx:id="lblMonthlySales" text="Rs. 0" textFill="WHITE">
                 <font><Font name="System Bold" size="28.0" /></font>
             </Label>
-            <Label text="Gross Revenue (Month)" textFill="#95a5a6" />
+            <Label text="Gross Revenue (Month)" textFill="WHITE" />
         </VBox>
 
-        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-weight: bold;" text="LOW STOCK ALERTS" textFill="#7f8c8d" />
-            <Label fx:id="lblLowStock" text="0" textFill="#e74c3c">
+        <VBox style="-fx-background-color: #e74c3c; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+            <Label style="-fx-font-weight: bold;" text="LOW STOCK ALERTS" textFill="WHITE" />
+            <Label fx:id="lblLowStock" text="0" textFill="WHITE">
                 <font><Font name="System Bold" size="28.0" /></font>
             </Label>
-            <Label text="Below minimum levels" textFill="#95a5a6" />
+            <Label text="Below minimum levels" textFill="WHITE" />
         </VBox>
 
-        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-weight: bold;" text="EXPIRING SOON" textFill="#7f8c8d" />
-            <Label fx:id="lblExpiry" text="0" textFill="#f39c12">
+        <VBox style="-fx-background-color: #f39c12; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+            <Label style="-fx-font-weight: bold;" text="EXPIRING SOON" textFill="WHITE" />
+            <Label fx:id="lblExpiry" text="0" textFill="WHITE">
                 <font><Font name="System Bold" size="28.0" /></font>
             </Label>
-            <Label text="Within next 6 months" textFill="#95a5a6" />
+            <Label text="Within next 6 months" textFill="WHITE" />
         </VBox>
 
-        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-weight: bold;" text="ACTIVE DEALERS" textFill="#7f8c8d" />
-            <Label fx:id="lblDealers" text="0" textFill="#3498db">
+        <VBox style="-fx-background-color: #3498db; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+            <Label style="-fx-font-weight: bold;" text="ACTIVE DEALERS" textFill="WHITE" />
+            <Label fx:id="lblDealers" text="0" textFill="WHITE">
                 <font><Font name="System Bold" size="28.0" /></font>
             </Label>
-            <Label text="Registered Suppliers" textFill="#95a5a6" />
+            <Label text="Registered Suppliers" textFill="WHITE" />
         </VBox>
     </HBox>
 
@@ -51,25 +51,25 @@
     </Label>
 
     <HBox spacing="20">
-        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight: bold;" text="TOTAL SALES" textFill="#7f8c8d" />
             <Label fx:id="lblCloseSales" text="Rs. 0" textFill="#2c3e50">
                 <font><Font name="System Bold" size="22.0" /></font>
             </Label>
         </VBox>
-        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight: bold;" text="NET CASH IN DRAWER" textFill="#7f8c8d" />
             <Label fx:id="lblCloseCashIn" text="Rs. 0" textFill="#27ae60">
                 <font><Font name="System Bold" size="22.0" /></font>
             </Label>
         </VBox>
-        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight: bold;" text="KHATA BILLED" textFill="#7f8c8d" />
             <Label fx:id="lblCloseKhata" text="Rs. 0" textFill="#e67e22">
                 <font><Font name="System Bold" size="22.0" /></font>
             </Label>
         </VBox>
-        <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
+        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight: bold;" text="CASH REFUNDS (OUT)" textFill="#7f8c8d" />
             <Label fx:id="lblCloseRefunds" text="Rs. 0" textFill="#c0392b">
                 <font><Font name="System Bold" size="22.0" /></font>

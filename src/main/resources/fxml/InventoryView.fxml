@@ -19,7 +19,7 @@
         <Button fx:id="btnAdjustStock" onAction="#handleAdjustStock" style="-fx-background-color: #f39c12; -fx-background-radius: 8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;" text="✎ Adjust Stock" />
         <Button onAction="#handleAddNewProduct" style="-fx-background-color: #27ae60; -fx-background-radius: 8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;" text="+ Add New Product" />
     </HBox>
-    <TableView fx:id="inventoryTable" style="-fx-background-radius: 10;" VBox.vgrow="ALWAYS">
+    <TableView fx:id="inventoryTable" style="-fx-background-radius: 10;" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colName" prefWidth="200" style="-fx-background-radius: 10 0 0 0;" text="Medicine Name" />
             <TableColumn fx:id="colBatch" prefWidth="100" text="Batch #" />

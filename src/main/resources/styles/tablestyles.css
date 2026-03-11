@@ -1,0 +1,54 @@
+.table-view .column-header .label {
+    -fx-text-fill: white; /* Change header text color */
+
+}
+.table-view .column-header-background {
+    -fx-background-color: #2c3e50;
+    -fx-border-width:0;
+    -fx-background-radius: 10;
+}
+.table-view{
+    -fx-background-radius:10;
+    -fx-border-radius:10;
+    -fx-background-color:white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 0);
+
+}
+.filler {
+    -fx-background-radius:0 10 0 0;
+    -fx-background-color: #2c3e50;
+}
+.column-header {
+    -fx-background-color: #2c3e50;
+}
+
+.tab-header-background {
+    -fx-background-color: #2c3e50;
+    -fx-background-radius:10 10 0 0;
+}
+.headers-region{
+    -fx-background-radius:10 10 0 0;
+    -fx-border-radius:10 10 0 0;
+}
+.tab  {
+    -fx-background-color:rgba(116, 174, 212,1);
+    -fx-background-radius:10 10 0 0;
+    -fx-border-radius:10 10 0 0;
+    -fx-cursor:hand;
+}
+.tab-label{
+    -fx-text-fill:white;
+    -fx-font-weight: bold;
+}
+.tab:hover{
+    -fx-background-color:rgba(204, 219, 219,0.6);
+}
+.tab:selected .focus-indicator {
+    -fx-border-radius:10 10 0 0;
+    -fx-border-color:none;
+}
+
+#salesTable .filler , #purchaseHistoryTable .filler{
+    -fx-background-radius:0;
+}
+

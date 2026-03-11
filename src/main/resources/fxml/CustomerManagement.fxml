@@ -23,7 +23,7 @@
     </VBox>
     <VBox spacing="10" HBox.hgrow="ALWAYS">
         <TextField fx:id="searchField" promptText="Search by Name, Phone, or CNIC..." style="-fx-background-radius: 8;" />
-        <TableView fx:id="customerTable" style="-fx-background-radius: 8;" VBox.vgrow="ALWAYS">
+        <TableView fx:id="customerTable" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colName" prefWidth="150" style="-fx-background-radius: 8 0 0 0;" text="Name" />
                 <TableColumn fx:id="colType" prefWidth="100" text="Type" />
