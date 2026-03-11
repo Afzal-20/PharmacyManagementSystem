@@ -250,7 +250,7 @@ public class POSController {
             }
 
             // Ask to print thermal
-            if (DialogUtil.confirm("Print Invoice", "Sale saved.", "Print receipt for Invoice #" + sale.getId() + "?")) {
+            if (DialogUtil.confirm("Print Invoice", "Print receipt for Invoice #" + sale.getId() + "?", "")) {
                 {
                     try {
                         ThermalPrinter.printInvoice(sale, currentCustomer, "Invoice #" + sale.getId());

@@ -19,7 +19,7 @@ public class MinimalAddProductController {
             int packSize = Integer.parseInt(packSizeField.getText());
             Product product = new Product(0, nameField.getText(), genericField.getText(), manufacturerField.getText(), "", packSize, 10, "");
 
-            if (!DialogUtil.confirm("Confirm", "Add this product?", "Are you sure you want to proceed?")) return;
+            if (!DialogUtil.confirm("Add Product", "Are you sure you want to add this product?", "")) return;
 
             productDAO.addProduct(product);
             closeWindow();

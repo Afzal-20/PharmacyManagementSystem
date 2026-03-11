@@ -40,7 +40,7 @@ public class DialogUtil {
 
         // Clean minimal pane
         dp.setStyle(
-                "-fx-background-color: #ffffff;" +
+                "-fx-background-color: #fafafa;" +
                         "-fx-background-radius: 10px;" +
                         "-fx-border-width: 1px;" +
                         "-fx-border-radius: 10px;" +
@@ -89,7 +89,7 @@ public class DialogUtil {
         dp.lookupAll(".button").forEach(node -> {
             boolean isDefault = node.getStyleClass().contains("default-button");
 
-            String bg      = isDefault ? "#1abc9c" : "transparent";
+            String bg      = isDefault ? "#2c3e50" : "transparent";
             String bgHover = isDefault ? "#16a085" : "#f0f0f0";
             String border  = isDefault ? "transparent" : "#cccccc";
             String color   = isDefault ? "white" : "#333333";

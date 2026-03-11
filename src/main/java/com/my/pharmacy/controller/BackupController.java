@@ -84,9 +84,8 @@ public class BackupController {
     private void confirmAndRestore(File backupFile) {
         boolean confirmed = DialogUtil.confirm(
                 "Confirm Restore",
-                "⚠️  All current data will be replaced.",
-                "Restoring: " + backupFile.getName() +
-                "\n\nA safety backup will be created first. App must restart after restore."
+                "All current data will be replaced.",
+                "Restoring: " + backupFile.getName() + "  |  App must restart after restore."
         );
         if (confirmed) {
             boolean success = BackupService.restoreFromFile(backupFile);

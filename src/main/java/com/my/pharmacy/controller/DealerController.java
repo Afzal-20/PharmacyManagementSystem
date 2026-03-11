@@ -85,7 +85,7 @@ public class DealerController {
             return;
         }
 
-        if (DialogUtil.confirm("Delete Dealer", "Delete " + selected.getCompanyName() + "?", "This action cannot be undone.")) {
+        if (DialogUtil.confirm("Delete Dealer", "Delete " + selected.getCompanyName() + "?", "This cannot be undone.")) {
             dealerDAO.deleteDealer(selected.getId());
             loadData();
             clearFields();

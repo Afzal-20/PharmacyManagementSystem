@@ -34,8 +34,8 @@ public class StockAdjustmentController {
                 return;
             }
             if (!DialogUtil.confirm("Confirm Stock Adjustment",
-                    "Change stock from " + selectedBatch.getQtyOnHand() + " to " + newBoxes + " boxes?",
-                    "An audit record will be created for this change.")) return;
+                    "Change stock from " + selectedBatch.getQtyOnHand() + " → " + newBoxes + " boxes?",
+                    "An audit record will be saved for this change.")) return;
 
             int oldQty = selectedBatch.getQtyOnHand();
             int userId = UserSession.getInstance().getUser().getId();

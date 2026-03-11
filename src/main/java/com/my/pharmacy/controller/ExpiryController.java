@@ -115,9 +115,8 @@ public class ExpiryController {
 
         boolean confirmed = DialogUtil.confirm(
                 "Confirm Write-Off",
-                "Write off: " + selected.getProduct().getName() + " — Batch: " + selected.getBatchNo(),
-                "Stock: " + selected.getQtyOnHand() + " units  |  Expiry: " + selected.getExpiryDate() +
-                "\n\nThis will set stock to 0 and log the write-off in the audit trail."
+                "Write off " + selected.getProduct().getName() + " (Batch: " + selected.getBatchNo() + ")?",
+                selected.getQtyOnHand() + " units in stock  |  Expired: " + selected.getExpiryDate()
         );
         if (confirmed) {
             int userId = UserSession.getInstance().getUser().getId();

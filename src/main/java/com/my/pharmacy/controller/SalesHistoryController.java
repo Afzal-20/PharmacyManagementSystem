@@ -207,7 +207,7 @@ public class SalesHistoryController {
             InvoiceGenerator.generateThermalReceipt(selectedInvoice, customer, reprintPath);
 
             // ── 2. Ask if they want to print the physical receipt ──
-            if (DialogUtil.confirm("Reprint Invoice", "Print receipt?", "Invoice #" + selectedInvoice.getId())) {
+            if (DialogUtil.confirm("Reprint Invoice", "Print receipt for Invoice #" + selectedInvoice.getId() + "?", "")) {
                 com.my.pharmacy.util.ThermalPrinter.printInvoice(
                         selectedInvoice, customer, "Reprint Invoice #" + selectedInvoice.getId());
             }
