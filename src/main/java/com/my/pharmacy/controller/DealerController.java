@@ -71,7 +71,7 @@ public class DealerController {
         addressField.setText(selected.getAddress());
         licenseField.setText(selected.getLicenseNo());
         btnSave.setText("Update Dealer");
-        btnSave.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnSave.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;-fx-background-radius: 8;");
     }
 
     @FXML
@@ -118,6 +118,6 @@ public class DealerController {
         nameField.clear(); companyField.clear(); phoneField.clear(); licenseField.clear(); addressField.clear();
         editingDealer = null;
         btnSave.setText("Save Dealer");
-        btnSave.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnSave.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;-fx-background-radius: 8;");
     }
 }

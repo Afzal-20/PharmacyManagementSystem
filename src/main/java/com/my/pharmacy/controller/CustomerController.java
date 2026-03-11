@@ -70,7 +70,7 @@ public class CustomerController {
         addressField.setText(selected.getAddress());
         cnicField.setText(selected.getCnic());
         btnSave.setText("Update Customer");
-        btnSave.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnSave.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;-fx-background-radius: 8;");
     }
 
     @FXML
@@ -100,6 +100,6 @@ public class CustomerController {
         nameField.clear(); phoneField.clear(); cnicField.clear(); addressField.clear();
         editingCustomer = null;
         btnSave.setText("Save Customer");
-        btnSave.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnSave.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;-fx-background-radius: 8;");
     }
 }
