@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
 import com.my.pharmacy.util.CalculationEngine;
+import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,18 +207,10 @@ public class SalesHistoryController {
             InvoiceGenerator.generateThermalReceipt(selectedInvoice, customer, reprintPath);
 
             // ── 2. Ask if they want to print the physical receipt ──
-            Alert printConfirm = new Alert(Alert.AlertType.CONFIRMATION);
-            printConfirm.setTitle("Reprint Invoice");
-            printConfirm.setHeaderText(null);
-            printConfirm.setContentText("Print receipt for Invoice #" + selectedInvoice.getId() + "?");
-            printConfirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-
-            printConfirm.showAndWait().ifPresent(btn -> {
-                if (btn == ButtonType.YES) {
-                    com.my.pharmacy.util.ThermalPrinter.printInvoice(
-                            selectedInvoice, customer, "Reprint Invoice #" + selectedInvoice.getId());
-                }
-            });
+            if (DialogUtil.confirm("Reprint Invoice", "Print receipt?", "Invoice #" + selectedInvoice.getId())) {
+                com.my.pharmacy.util.ThermalPrinter.printInvoice(
+                        selectedInvoice, customer, "Reprint Invoice #" + selectedInvoice.getId());
+            }
         } catch (Exception e) {
             NotificationService.error("Failed to process reprint: " + e.getMessage());
             e.printStackTrace();

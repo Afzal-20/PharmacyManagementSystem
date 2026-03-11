@@ -250,13 +250,8 @@ public class POSController {
             }
 
             // Ask to print thermal
-            Alert printConfirm = new Alert(Alert.AlertType.CONFIRMATION);
-            printConfirm.setTitle("Print Invoice");
-            printConfirm.setHeaderText(null);
-            printConfirm.setContentText("Sale saved. Print receipt for Invoice #" + sale.getId() + "?");
-            printConfirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-            printConfirm.showAndWait().ifPresent(btn -> {
-                if (btn == ButtonType.YES) {
+            if (DialogUtil.confirm("Print Invoice", "Sale saved.", "Print receipt for Invoice #" + sale.getId() + "?")) {
+                {
                     try {
                         ThermalPrinter.printInvoice(sale, currentCustomer, "Invoice #" + sale.getId());
                         log.info("Thermal receipt printed for sale {}", sale.getId());
@@ -265,7 +260,7 @@ public class POSController {
                         NotificationService.error("Printer error: " + e.getMessage());
                     }
                 }
-            });
+            }
 
             NotificationService.success("Sale #" + sale.getId() + " completed successfully.");
             cartService.clear();

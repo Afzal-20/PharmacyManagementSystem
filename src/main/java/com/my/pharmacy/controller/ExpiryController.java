@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.BatchDAO;
 import com.my.pharmacy.dao.BatchDAOImpl;
 import com.my.pharmacy.model.Batch;
+import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
 import com.my.pharmacy.util.UserSession;
 import javafx.beans.property.SimpleStringProperty;
@@ -112,23 +113,19 @@ public class ExpiryController {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirm Write-Off");
-        confirm.setHeaderText("Write off: " + selected.getProduct().getName() + " — Batch: " + selected.getBatchNo());
-        confirm.setContentText(
-                "Current stock: " + selected.getQtyOnHand() + " units\n" +
-                "Expiry: " + selected.getExpiryDate() + "\n\n" +
-                "This will set stock to 0 and log the write-off in the audit trail.\n\nProceed?"
+        boolean confirmed = DialogUtil.confirm(
+                "Confirm Write-Off",
+                "Write off: " + selected.getProduct().getName() + " — Batch: " + selected.getBatchNo(),
+                "Stock: " + selected.getQtyOnHand() + " units  |  Expiry: " + selected.getExpiryDate() +
+                "\n\nThis will set stock to 0 and log the write-off in the audit trail."
         );
-
-        confirm.showAndWait().ifPresent(response -> {
-            if (response != ButtonType.OK) return;
+        if (confirmed) {
             int userId = UserSession.getInstance().getUser().getId();
             batchDAO.adjustStockWithAudit(selected.getId(), selected.getQtyOnHand(), 0,
                     "WRITE-OFF — Expired batch (" + selected.getExpiryDate() + ")", userId);
             NotificationService.success(selected.getProduct().getName() + " (Batch: " + selected.getBatchNo() + ") written off.");
             loadExpiryData();
-        });
+        }
     }
 
     private long daysUntilExpiry(String expiryDateStr) {

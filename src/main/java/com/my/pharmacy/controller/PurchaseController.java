@@ -2,6 +2,7 @@ package com.my.pharmacy.controller;
 
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
+import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -105,8 +106,8 @@ public class PurchaseController {
             double compDisc   = Double.parseDouble(compDiscField.getText().trim());
             double salesTax   = Double.parseDouble(taxField.getText().trim());
 
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to proceed with this purchase?");
-            if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+            if (!DialogUtil.confirm("Confirm Purchase", "Proceed with this purchase?",
+                    totalBoxes + " boxes of " + selectedProduct.getName() + " from " + selectedDealer.getName())) return;
 
             double netBoxCost          = com.my.pharmacy.util.CalculationEngine.calculateNetPurchaseCost(boxCost, compDisc, salesTax);
             double totalPayableToDealer = netBoxCost * totalBoxes;

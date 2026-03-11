@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.BatchDAO;
 import com.my.pharmacy.dao.BatchDAOImpl;
 import com.my.pharmacy.model.Batch;
+import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
 import com.my.pharmacy.util.UserSession;
 import javafx.fxml.FXML;
@@ -32,9 +33,9 @@ public class StockAdjustmentController {
                 NotificationService.warn("Stock quantity cannot be negative.");
                 return;
             }
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                    "Change stock from " + selectedBatch.getQtyOnHand() + " to " + newBoxes + " boxes?");
-            if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+            if (!DialogUtil.confirm("Confirm Stock Adjustment",
+                    "Change stock from " + selectedBatch.getQtyOnHand() + " to " + newBoxes + " boxes?",
+                    "An audit record will be created for this change.")) return;
 
             int oldQty = selectedBatch.getQtyOnHand();
             int userId = UserSession.getInstance().getUser().getId();

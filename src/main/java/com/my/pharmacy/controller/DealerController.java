@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.DealerDAO;
 import com.my.pharmacy.dao.DealerDAOImpl;
 import com.my.pharmacy.model.Dealer;
+import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -84,8 +85,7 @@ public class DealerController {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete dealer " + selected.getCompanyName() + "?");
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+        if (DialogUtil.confirm("Delete Dealer", "Delete " + selected.getCompanyName() + "?", "This action cannot be undone.")) {
             dealerDAO.deleteDealer(selected.getId());
             loadData();
             clearFields();

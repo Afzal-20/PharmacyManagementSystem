@@ -1,6 +1,7 @@
 package com.my.pharmacy.controller;
 
 import com.my.pharmacy.util.BackupService;
+import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
 import com.my.pharmacy.util.UserSession;
 import javafx.collections.FXCollections;
@@ -81,16 +82,13 @@ public class BackupController {
     }
 
     private void confirmAndRestore(File backupFile) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirm Restore");
-        confirm.setHeaderText("⚠️  All current data will be replaced.");
-        confirm.setContentText(
-                "Restoring from:  " + backupFile.getName() + "\n\n" +
-                "Your current database will be saved as a pre-restore safety backup first.\n\n" +
-                "The application must be restarted after restore.\n\nAre you sure?"
+        boolean confirmed = DialogUtil.confirm(
+                "Confirm Restore",
+                "⚠️  All current data will be replaced.",
+                "Restoring: " + backupFile.getName() +
+                "\n\nA safety backup will be created first. App must restart after restore."
         );
-        confirm.showAndWait().ifPresent(response -> {
-            if (response != ButtonType.OK) return;
+        if (confirmed) {
             boolean success = BackupService.restoreFromFile(backupFile);
             if (success) {
                 NotificationService.success("Database restored. Please restart the application.");
@@ -98,6 +96,6 @@ public class BackupController {
                 NotificationService.error("Restore failed. Your original database is unchanged.");
             }
             loadBackupList();
-        });
+        }
     }
 }
