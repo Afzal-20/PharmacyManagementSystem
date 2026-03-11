@@ -15,6 +15,7 @@ public class Sale {
     // Payment Tracking
     private double amountPaid;
     private double balanceDue;
+    private String customerName = ""; // populated at display time, not stored in DB
 
     private List<SaleItem> items = new ArrayList<>();
 
@@ -58,4 +59,6 @@ public class Sale {
     public void setBalanceDue(double balanceDue) { this.balanceDue = balanceDue; }
     public List<SaleItem> getItems() { return items; }
     public void setItems(List<SaleItem> items) { this.items = items; }
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
 }

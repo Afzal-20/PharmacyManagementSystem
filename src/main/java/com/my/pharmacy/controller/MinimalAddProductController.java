@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.ProductDAO;
 import com.my.pharmacy.dao.ProductDAOImpl;
 import com.my.pharmacy.model.Product;
+import com.my.pharmacy.util.NotificationService;
 import javafx.fxml.FXML;
 import com.my.pharmacy.util.DialogUtil;
 import javafx.scene.control.Alert;
@@ -24,7 +25,7 @@ public class MinimalAddProductController {
             productDAO.addProduct(product);
             closeWindow();
         } catch (NumberFormatException e) {
-            new Alert(Alert.AlertType.ERROR, "Pack size must be a number.").show();
+            NotificationService.error("Pack size must be a number.");
         }
     }
     @FXML private void handleCancel() { closeWindow(); }

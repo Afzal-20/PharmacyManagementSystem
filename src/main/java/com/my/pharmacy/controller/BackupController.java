@@ -3,6 +3,7 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.util.BackupService;
 import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
+import com.my.pharmacy.util.ShortcutManager;
 import com.my.pharmacy.util.UserSession;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -30,6 +31,12 @@ public class BackupController {
         btnRestoreSelected.setDisable(!isAdmin);
         btnRestoreFromFile.setDisable(!isAdmin);
         loadBackupList();
+
+        // Register backup now shortcut
+        backupListView.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null)
+                ShortcutManager.register(newScene, "shortcut.backup", "F12", this::handleBackupNow);
+        });
     }
 
     private void loadBackupList() {

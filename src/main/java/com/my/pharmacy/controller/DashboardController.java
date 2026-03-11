@@ -109,8 +109,7 @@ public class DashboardController {
                 if ("CASH".equals(mode)) {
                     cashRecoveries += amount; // Old debt collected today
                 } else if ("CASH_REFUND".equals(mode)) {
-                    // Refunds are stored as negative values, convert to positive for display
-                    cashRefunds += Math.abs(amount);
+                    cashRefunds += amount; // Now stored as positive value directly
                 }
             }
         } catch (Exception e) {

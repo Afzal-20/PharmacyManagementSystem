@@ -64,11 +64,15 @@ public class PaymentDAOImpl implements PaymentDAO {
     @Override
     public List<LedgerRecord> getCustomerLedger(int customerId) {
         List<LedgerRecord> ledger = new ArrayList<>();
+        // Debits  : invoices where balance was put on khata (balance_due > 0)
+        // Credits : CASH payments received + RETURN_CREDIT (khata cancelled via return)
+        // CASH_REFUND is NOT shown here — it is cash out of the drawer, not a ledger credit
         String sql = "SELECT sale_date as date_val, 'Invoice #' || id as desc, balance_due as debit, 0 as credit " +
                 "FROM sales WHERE customer_id = ? AND balance_due > 0 " +
                 "UNION ALL " +
                 "SELECT payment_date as date_val, description as desc, 0 as debit, amount as credit " +
-                "FROM payments WHERE entity_id = ? AND entity_type = 'CUSTOMER' AND payment_mode = 'CASH' " +
+                "FROM payments WHERE entity_id = ? AND entity_type = 'CUSTOMER' " +
+                "AND payment_mode IN ('CASH', 'RETURN_CREDIT') " +
                 "ORDER BY date_val ASC";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -110,9 +114,9 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public double getDynamicCustomerBalance(int customerId) {
-        // FIX #5: Only subtract CASH payments (genuine recoveries), not CASH_REFUND entries.
-        // CASH_REFUND amounts are negative in the DB and would incorrectly inflate the balance
-        // if included in the SUM.
+        // Balance = total khata billed − (CASH recoveries + RETURN_CREDIT reductions)
+        // CASH_REFUND is excluded here: every cash refund is accompanied by a RETURN_CREDIT
+        // entry that already cancels the khata portion. Including CASH_REFUND would double-count.
         String sql = "SELECT " +
                 "(SELECT TOTAL(balance_due) FROM sales WHERE customer_id = ?) - " +
                 "(SELECT TOTAL(amount) FROM payments " +

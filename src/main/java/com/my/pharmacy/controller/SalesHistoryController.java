@@ -5,17 +5,21 @@ import com.my.pharmacy.model.*;
 import com.my.pharmacy.util.CalculationEngine;
 import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
+import com.my.pharmacy.util.ShortcutManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.my.pharmacy.util.InvoiceGenerator;
 import com.my.pharmacy.util.ThermalPrinter;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public class SalesHistoryController {
@@ -23,9 +27,10 @@ public class SalesHistoryController {
     private static final Logger log = LoggerFactory.getLogger(SalesHistoryController.class);
 
     @FXML private DatePicker datePicker;
+    @FXML private TextField searchField;          // invoice# or customer name search
     @FXML private TableView<Sale> invoiceTable;
     @FXML private TableColumn<Sale, Integer> colInvId;
-    @FXML private TableColumn<Sale, String> colInvDate, colInvMode;
+    @FXML private TableColumn<Sale, String> colInvDate, colInvMode, colInvCustomer;
     @FXML private TableColumn<Sale, Double> colInvTotal;
 
     @FXML private TableView<SaleItem> itemTable;
@@ -35,23 +40,33 @@ public class SalesHistoryController {
     @FXML private Button btnProcessReturn;
 
     private final CustomerDAO customerDAO = new CustomerDAOImpl();
-
     private final SaleDAO saleDAO = new SaleDAOImpl();
+
+    // Master list for search filtering
+    private final ObservableList<Sale> allSales = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
-        datePicker.setValue(LocalDate.now()); // Default to today
+        datePicker.setValue(LocalDate.now());
         setupColumns();
         setupSelectionListener();
         setupRowHighlighter();
+        setupSearch();
         loadInvoices();
 
-        // RBAC Enforcement
         boolean isAdmin = com.my.pharmacy.util.UserSession.getInstance() != null &&
                 com.my.pharmacy.util.UserSession.getInstance().getUser() != null &&
                 com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
         btnProcessReturn.setVisible(isAdmin);
         btnProcessReturn.setManaged(isAdmin);
+
+        // Register return shortcut
+        invoiceTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                ShortcutManager.register(newScene, "shortcut.return", "F11", this::handleProcessReturn);
+                log.debug("Return shortcut registered");
+            }
+        });
     }
 
     private void setupColumns() {
@@ -97,10 +112,46 @@ public class SalesHistoryController {
     @FXML
     private void loadInvoices() {
         LocalDate selectedDate = datePicker.getValue();
-        if (selectedDate != null) {
-            invoiceTable.setItems(FXCollections.observableArrayList(saleDAO.getSalesByDate(selectedDate)));
-            itemTable.getItems().clear();
+        List<Sale> loaded = (selectedDate != null)
+                ? saleDAO.getSalesByDate(selectedDate)
+                : saleDAO.getAllSales();
+
+        // Attach customer names for display + search
+        loaded.forEach(s -> {
+            if (s.getCustomerName() == null || s.getCustomerName().isEmpty()) {
+                Customer c = customerDAO.getCustomerById(s.getCustomerId());
+                if (c != null) s.setCustomerName(c.getName());
+            }
+        });
+
+        allSales.setAll(loaded);
+        itemTable.getItems().clear();
+
+        // Re-apply search filter after reload
+        applySearch(searchField != null ? searchField.getText() : "");
+    }
+
+    private void setupSearch() {
+        if (searchField == null) return;
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> applySearch(newVal));
+        searchField.setPromptText("Search invoice #, customer name...");
+    }
+
+    private void applySearch(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            invoiceTable.setItems(allSales);
+            return;
         }
+        String lower = query.trim().toLowerCase();
+        FilteredList<Sale> filtered = new FilteredList<>(allSales, sale -> {
+            // Match invoice number
+            if (String.valueOf(sale.getId()).contains(lower)) return true;
+            // Match customer name
+            String custName = sale.getCustomerName();
+            if (custName != null && custName.toLowerCase().contains(lower)) return true;
+            return false;
+        });
+        invoiceTable.setItems(filtered);
     }
 
     @FXML
@@ -160,20 +211,47 @@ public class SalesHistoryController {
                         return null;
                     }
 
-                    // Engine handles the exact math including past discounts applied
-                    double refundAmount = CalculationEngine.calculateRefundAmount(item.getUnitPrice(), qtyToReturn, item.getDiscountPercent());
+                    // --- REFUND MATH ---
+                    // Full value of the returned goods (discount-adjusted)
+                    double refundAmount = CalculationEngine.calculateRefundAmount(
+                            item.getUnitPrice(), qtyToReturn, item.getDiscountPercent());
 
-                    saleDAO.processReturn(invoice.getId(), invoice.getCustomerId(), item, qtyToReturn, refundAmount, methodCombo.getValue(), reasonField.getText());
+                    // Proportion of this item being returned (e.g. 5 of 10 = 0.5)
+                    double returnRatio = (double) qtyToReturn / item.getQuantity();
+
+                    double cashRefundAmount;
+                    double khataReduction;
+
+                    if ("CASH REFUND".equals(methodCombo.getValue())) {
+                        // Pharmacy returns only the cash it actually received for this item.
+                        // The outstanding khata portion is also cancelled (medicine came back).
+                        cashRefundAmount = invoice.getAmountPaid()
+                                * (item.getSubTotal() / invoice.getTotalAmount())
+                                * returnRatio;
+                        khataReduction   = invoice.getBalanceDue()
+                                * (item.getSubTotal() / invoice.getTotalAmount())
+                                * returnRatio;
+                    } else {
+                        // KHATA CREDIT — full calculated value reduces the balance
+                        cashRefundAmount = 0;
+                        khataReduction   = refundAmount;
+                    }
+
+                    saleDAO.processReturn(invoice.getId(), invoice.getCustomerId(), item,
+                            qtyToReturn, cashRefundAmount, khataReduction,
+                            refundAmount, methodCombo.getValue(), reasonField.getText());
 
                     // Save silent PDF soft copy of the return receipt
-                    InvoiceGenerator.generateReturnReceipt(invoice, item, qtyToReturn, refundAmount, methodCombo.getValue(), reasonField.getText());
+                    // Receipt shows what the customer actually receives in hand
+                    double receiptRefundAmount = "CASH REFUND".equals(methodCombo.getValue())
+                            ? cashRefundAmount : khataReduction;
 
-                    // Print thermal receipt automatically (user already confirmed via "Process Return")
+                    InvoiceGenerator.generateReturnReceipt(invoice, item, qtyToReturn, receiptRefundAmount, methodCombo.getValue(), reasonField.getText());
                     com.my.pharmacy.util.ThermalPrinter.printReturnReceipt(
-                            invoice, item, qtyToReturn, refundAmount,
+                            invoice, item, qtyToReturn, receiptRefundAmount,
                             methodCombo.getValue(), reasonField.getText());
 
-                    NotificationService.success(String.format("Return processed. Refund: Rs. %.2f", refundAmount));
+                    NotificationService.success(String.format("Return processed. Refund: Rs. %.2f", receiptRefundAmount));
                     // Refresh Detail Table
                     itemTable.setItems(FXCollections.observableArrayList(saleDAO.getSaleItemsBySaleId(invoice.getId())));
 

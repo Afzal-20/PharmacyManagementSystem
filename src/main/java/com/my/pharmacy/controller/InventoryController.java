@@ -4,6 +4,7 @@ import com.my.pharmacy.dao.BatchDAO;
 import com.my.pharmacy.dao.BatchDAOImpl;
 import com.my.pharmacy.model.Batch;
 import com.my.pharmacy.util.NotificationService;
+import com.my.pharmacy.util.ShortcutManager;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -37,6 +38,12 @@ public class InventoryController {
                 com.my.pharmacy.util.UserSession.getInstance().getUser().isAdmin();
         btnAdjustStock.setVisible(isAdmin); btnAdjustStock.setManaged(isAdmin);
         btnEditProduct.setVisible(isAdmin); btnEditProduct.setManaged(isAdmin);
+
+        // Register add product shortcut
+        inventoryTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null)
+                ShortcutManager.register(newScene, "shortcut.add_product", "CTRL+N", this::handleAddNewProduct);
+        });
     }
 
     private void setupColumns() {

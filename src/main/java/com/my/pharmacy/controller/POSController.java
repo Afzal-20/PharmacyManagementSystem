@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class POSController {
@@ -64,6 +66,14 @@ public class POSController {
         setupCustomerSelector(null);
         setupPaymentListeners();
         log.info("POSController ready");
+
+        // Register POS action shortcut after scene is available
+        searchField.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                ShortcutManager.register(newScene, "shortcut.checkout", "F10", this::handleCheckout);
+                log.debug("POS checkout shortcut registered");
+            }
+        });
     }
 
     private void setupTableColumns() {
@@ -148,6 +158,41 @@ public class POSController {
     }
 
     private void openAddToCartDialog(Batch selected) {
+        // ── Expiry Check ─────────────────────────────────────────────────────
+        try {
+            LocalDate expiry = LocalDate.parse(selected.getExpiryDate());
+            LocalDate today  = LocalDate.now();
+
+            if (!expiry.isAfter(today)) {
+                // Hard block — expired medicine cannot be sold
+                NotificationService.error("❌ Cannot sell expired medicine — "
+                        + selected.getProduct().getName()
+                        + " expired on " + selected.getExpiryDate());
+                log.warn("Blocked sale of expired batch: {} expiry={}", selected.getBatchNo(), selected.getExpiryDate());
+                return;
+            }
+
+            long daysLeft = ChronoUnit.DAYS.between(today, expiry);
+            int warnDays = 0;
+            try {
+                warnDays = Integer.parseInt(ConfigUtil.get("expiry.warn_days", "30"));
+            } catch (NumberFormatException ignored) { warnDays = 30; }
+
+            if (daysLeft <= warnDays) {
+                // Soft warning — cashier can still choose to sell
+                boolean proceed = DialogUtil.confirm(
+                        "⚠ Expiry Warning",
+                        selected.getProduct().getName() + " expires in " + daysLeft + " day(s)",
+                        "Expiry date: " + selected.getExpiryDate() + ". Sell anyway?"
+                );
+                if (!proceed) return;
+                log.warn("Cashier chose to sell near-expiry batch: {} daysLeft={}", selected.getBatchNo(), daysLeft);
+            }
+        } catch (Exception e) {
+            log.warn("Could not parse expiry date for batch {}: {}", selected.getBatchNo(), e.getMessage());
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AddToCart.fxml"));
             Stage stage = new Stage();

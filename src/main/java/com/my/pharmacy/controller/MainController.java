@@ -1,6 +1,7 @@
 package com.my.pharmacy.controller;
 
 import com.my.pharmacy.util.NotificationService;
+import com.my.pharmacy.util.ShortcutManager;
 import com.my.pharmacy.util.UserSession;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -34,6 +35,11 @@ public class MainController {
         // Wire the notification toast system to this window's root StackPane
         NotificationService.setContainer(rootStack);
 
+        // Register global keyboard shortcuts (configurable via config.properties)
+        rootStack.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) registerShortcuts(newScene);
+        });
+
         showDashboard();
 
         boolean isAdmin = UserSession.getInstance() != null &&
@@ -43,6 +49,20 @@ public class MainController {
             btnManageUsers.setManaged(isAdmin);
         }
         log.info("MainController ready — isAdmin={}", isAdmin);
+    }
+
+    private void registerShortcuts(javafx.scene.Scene scene) {
+        // Navigation shortcuts
+        ShortcutManager.register(scene, "shortcut.pos",           "F1",  this::showPOS);
+        ShortcutManager.register(scene, "shortcut.inventory",     "F2",  this::showInventory);
+        ShortcutManager.register(scene, "shortcut.purchase",      "F3",  this::showPurchaseEntry);
+        ShortcutManager.register(scene, "shortcut.sales_history", "F4",  this::showHistory);
+        ShortcutManager.register(scene, "shortcut.khata",         "F5",  this::showKhata);
+        ShortcutManager.register(scene, "shortcut.customers",     "F6",  this::showCustomers);
+        ShortcutManager.register(scene, "shortcut.dealers",       "F7",  this::showDealers);
+        ShortcutManager.register(scene, "shortcut.expiry",        "F8",  this::showExpiry);
+        ShortcutManager.register(scene, "shortcut.dashboard",     "F9",  this::showDashboard);
+        log.info("Navigation shortcuts registered");
     }
 
     @FXML public void showDashboard()      { loadView("/fxml/DashboardView.fxml"); }

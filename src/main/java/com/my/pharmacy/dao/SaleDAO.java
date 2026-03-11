@@ -16,7 +16,9 @@ public interface SaleDAO {
     Sale getSaleById(int id); // For "Reprint Invoice"
     List<SaleLedgerRecord> getSalesHistoryByProductId(int productId);
     List<Sale> getSalesByDate(java.time.LocalDate date);
-    void processReturn(int saleId, int customerId, SaleItem item, int returnQty, double refundAmount, String refundMethod, String reason);
+    void processReturn(int saleId, int customerId, SaleItem item, int returnQty,
+                       double cashRefundAmount, double khataReduction,
+                       double refundAmount, String refundMethod, String reason);
     List<SaleItem> getSaleItemsBySaleId(int saleId);
     double getCurrentMonthTotalSales();
 

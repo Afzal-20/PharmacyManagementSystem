@@ -195,12 +195,15 @@ public class SaleDAOImpl implements SaleDAO {
     }
 
     @Override
-    public void processReturn(int saleId, int customerId, SaleItem item, int returnQty, double refundAmount, String refundMethod, String reason) {
+    public void processReturn(int saleId, int customerId, SaleItem item, int returnQty,
+                              double cashRefundAmount, double khataReduction,
+                              double refundAmount, String refundMethod, String reason) {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
 
+            // 1. Log the return record (refundAmount = total value of returned goods)
             String insertReturn = "INSERT INTO sale_returns (sale_id, sale_item_id, batch_id, returned_qty, refund_amount, refund_method, reason) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(insertReturn)) {
                 pstmt.setInt(1, saleId);
@@ -212,40 +215,78 @@ public class SaleDAOImpl implements SaleDAO {
                 pstmt.setString(7, reason);
                 pstmt.executeUpdate();
             }
+
+            // 2. Mark returned qty on sale item
             String updateSaleItem = "UPDATE sale_items SET returned_qty = returned_qty + ? WHERE id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(updateSaleItem)) {
                 pstmt.setInt(1, returnQty);
                 pstmt.setInt(2, item.getId());
                 pstmt.executeUpdate();
             }
+
+            // 3. Restore stock to batch
             String updateBatch = "UPDATE batches SET qty_on_hand = qty_on_hand + ? WHERE id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(updateBatch)) {
                 pstmt.setInt(1, returnQty);
                 pstmt.setInt(2, item.getBatchId());
                 pstmt.executeUpdate();
             }
-            // Use exact string matching for Khata Logic
+
             if ("KHATA CREDIT".equals(refundMethod) && customerId != 1) {
+                // ── KHATA CREDIT ──────────────────────────────────────────────────────
+                // Full calculated refund reduces the khata balance.
+                // e.g. Sale: total=100, paid=40, balance_due=60 → return all
+                //      khataReduction = 100 → balance goes from 60 to −40 (pharmacy owes 40)
+                //      That negative balance is correct and visible in the ledger.
                 String updateKhata = "UPDATE customers SET current_balance = current_balance - ? WHERE id = ?";
                 try (PreparedStatement pstmt = conn.prepareStatement(updateKhata)) {
-                    pstmt.setDouble(1, refundAmount);
+                    pstmt.setDouble(1, khataReduction);
                     pstmt.setInt(2, customerId);
                     pstmt.executeUpdate();
                 }
                 String insertPayment = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'RETURN_CREDIT', ?)";
                 try (PreparedStatement pstmt = conn.prepareStatement(insertPayment)) {
                     pstmt.setInt(1, customerId);
-                    pstmt.setDouble(2, refundAmount);
-                    pstmt.setString(3, "Refund for Invoice #" + saleId);
+                    pstmt.setDouble(2, khataReduction);
+                    pstmt.setString(3, "Khata Credit — Return for Invoice #" + saleId);
                     pstmt.executeUpdate();
                 }
+
             } else {
-                String insertPayment = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'CASH_REFUND', ?)";
-                try (PreparedStatement pstmt = conn.prepareStatement(insertPayment)) {
-                    pstmt.setInt(1, customerId);
-                    pstmt.setDouble(2, -refundAmount);
-                    pstmt.setString(3, "Cash Refund Inv #" + saleId);
-                    pstmt.executeUpdate();
+                // ── CASH REFUND ───────────────────────────────────────────────────────
+                // Only refund the proportional cash that was actually paid.
+                // e.g. Sale: total=100, paid=40, balance_due=60 → return all
+                //      cashRefundAmount = 40  (pharmacy pays back what it received)
+                //      khataReduction   = 60  (outstanding balance also wiped out)
+                //
+                // Both entries go into payments so the ledger stays accurate.
+
+                // (a) Record the cash going out of the drawer
+                if (cashRefundAmount > 0) {
+                    String insertCashRefund = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'CASH_REFUND', ?)";
+                    try (PreparedStatement pstmt = conn.prepareStatement(insertCashRefund)) {
+                        pstmt.setInt(1, customerId);
+                        pstmt.setDouble(2, cashRefundAmount); // stored POSITIVE — no more negative amounts
+                        pstmt.setString(3, "Cash Refund — Invoice #" + saleId);
+                        pstmt.executeUpdate();
+                    }
+                }
+
+                // (b) Wipe out the proportional khata balance (medicine returned = debt cancelled)
+                if (khataReduction > 0 && customerId != 1) {
+                    String updateKhata = "UPDATE customers SET current_balance = current_balance - ? WHERE id = ?";
+                    try (PreparedStatement pstmt = conn.prepareStatement(updateKhata)) {
+                        pstmt.setDouble(1, khataReduction);
+                        pstmt.setInt(2, customerId);
+                        pstmt.executeUpdate();
+                    }
+                    String insertKhataWipeout = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'RETURN_CREDIT', ?)";
+                    try (PreparedStatement pstmt = conn.prepareStatement(insertKhataWipeout)) {
+                        pstmt.setInt(1, customerId);
+                        pstmt.setDouble(2, khataReduction);
+                        pstmt.setString(3, "Khata Cancelled — Cash Return for Invoice #" + saleId);
+                        pstmt.executeUpdate();
+                    }
                 }
             }
             conn.commit();

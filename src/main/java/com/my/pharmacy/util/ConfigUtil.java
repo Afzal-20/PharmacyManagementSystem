@@ -19,6 +19,22 @@ import java.util.Properties;
  * pharmacy.phone    — Displayed on all invoices and receipts
  * db.name           — SQLite database filename (default: wholesale_pharmacy.db)
  * printer.name      — Exact Windows printer name for thermal receipts
+ *
+ * ── SHORTCUT KEYS ────────────────────────────────────────────────────────────
+ * shortcut.pos              — Point of Sale           (default: F1)
+ * shortcut.inventory        — Inventory               (default: F2)
+ * shortcut.purchase         — Stock Purchase          (default: F3)
+ * shortcut.sales_history    — Sales History           (default: F4)
+ * shortcut.khata            — Khata Ledgers           (default: F5)
+ * shortcut.customers        — Customers               (default: F6)
+ * shortcut.dealers          — Dealers                 (default: F7)
+ * shortcut.expiry           — Expiry Management       (default: F8)
+ * shortcut.dashboard        — Dashboard               (default: F9)
+ * shortcut.backup           — Backup & Restore        (default: F10)
+ * shortcut.checkout         — Complete sale / POS     (default: F12)
+ * shortcut.add_product      — Add product dialog      (default: INSERT)
+ * shortcut.process_return   — Process return          (default: CTRL+R)
+ * shortcut.backup_now       — Backup now button       (default: CTRL+B)
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * To add a new config key:
@@ -87,6 +103,23 @@ public class ConfigUtil {
         defaults.setProperty("pharmacy.phone",   "0300-0000000");
         defaults.setProperty("db.name",          "wholesale_pharmacy.db");
         defaults.setProperty("printer.name",     "");
+        // Days before expiry to show warning at POS (0 = disable warning)
+        defaults.setProperty("expiry.warn_days", "30");
+        // Shortcut keys — change to any valid JavaFX KeyCode name
+        defaults.setProperty("shortcut.pos",            "F1");
+        defaults.setProperty("shortcut.inventory",      "F2");
+        defaults.setProperty("shortcut.purchase",       "F3");
+        defaults.setProperty("shortcut.sales_history",  "F4");
+        defaults.setProperty("shortcut.khata",          "F5");
+        defaults.setProperty("shortcut.customers",      "F6");
+        defaults.setProperty("shortcut.dealers",        "F7");
+        defaults.setProperty("shortcut.expiry",         "F8");
+        defaults.setProperty("shortcut.dashboard",      "F9");
+        defaults.setProperty("shortcut.backup",         "F10");
+        defaults.setProperty("shortcut.checkout",       "F12");
+        defaults.setProperty("shortcut.add_product",    "INSERT");
+        defaults.setProperty("shortcut.process_return", "CTRL+R");
+        defaults.setProperty("shortcut.backup_now",     "CTRL+B");
 
         try (OutputStream out = new FileOutputStream(destination)) {
             defaults.store(out,
