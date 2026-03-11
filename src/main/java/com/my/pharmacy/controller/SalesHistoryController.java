@@ -74,6 +74,7 @@ public class SalesHistoryController {
         colInvDate.setCellValueFactory(new PropertyValueFactory<>("saleDate"));
         colInvTotal.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
         colInvMode.setCellValueFactory(new PropertyValueFactory<>("paymentMode"));
+        colInvCustomer.setCellValueFactory(new PropertyValueFactory<>("customerName"));
 
         colItemName.setCellValueFactory(new PropertyValueFactory<>("productName"));
         colItemQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));

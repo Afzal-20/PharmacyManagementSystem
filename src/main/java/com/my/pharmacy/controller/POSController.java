@@ -40,6 +40,7 @@ public class POSController {
     @FXML private TableColumn<SaleItem, String> colCartName;
     @FXML private TableColumn<SaleItem, Integer> colCartQty;
     @FXML private TableColumn<SaleItem, Double> colCartPrice, colCartDisc, colCartTotal;
+    @FXML private Button btnRemoveFromCart;
 
     @FXML private Label totalLabel;
     @FXML private TextField amountPaidField;
@@ -93,6 +94,11 @@ public class POSController {
 
         productTable.setItems(masterData);
         cartTable.setItems(cartService.getCartData());
+
+        // Disable remove button when no cart row is selected
+        btnRemoveFromCart.setDisable(true);
+        cartTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, old, selected) -> btnRemoveFromCart.setDisable(selected == null));
     }
 
     private void setupCustomerSelector(Integer selectId) {
@@ -319,6 +325,16 @@ public class POSController {
             log.warn("Checkout failed — invalid amount paid: {}", amountPaidField.getText());
             NotificationService.error("Please enter a valid amount in the Amount Paid field.");
         }
+    }
+
+    @FXML
+    private void handleRemoveFromCart() {
+        SaleItem selected = cartTable.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+        cartService.removeItem(selected);
+        cartTable.refresh();
+        updateTotal();
+        log.info("Removed from cart: {}", selected.getProductName());
     }
 
     @FXML

@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
@@ -15,59 +16,63 @@
 <VBox prefHeight="1027.0" prefWidth="652.0" spacing="15" style="-fx-padding: 20; -fx-background-color: #f4f7f6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.my.pharmacy.controller.SalesHistoryController">
     <Label style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;" text="HISTORY &amp; RETURNS"><font><Font size="22.0" /></font></Label>
 
+    <!-- Row 1: Date filter + Reprint -->
     <HBox alignment="CENTER_LEFT" spacing="15">
-        <Label prefHeight="19.0" prefWidth="94.0" style="-fx-font-weight: bold;" text="Filter by Date:" />
+        <Label prefWidth="94.0" style="-fx-font-weight: bold;" text="Filter by Date:" />
         <DatePicker fx:id="datePicker" style="-fx-background-radius: 8; -fx-border-radius: 8;" />
         <Button onAction="#loadInvoices" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 8;" text="Load Invoices" />
         <Pane HBox.hgrow="ALWAYS" />
         <Button onAction="#handleReprintInvoice" style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 8;" text="🖨️ Reprint Selected Invoice" />
     </HBox>
-     <VBox spacing="5" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: WHITE; -fx-background-color: WHITE;">
-         <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="Invoices">
-         <font>
-            <Font size="14.0" />
-         </font>
-         <VBox.margin>
-            <Insets left="8.0" />
-         </VBox.margin></Label>
-         <TableView fx:id="invoiceTable" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
-             <columns>
-                 <TableColumn fx:id="colInvId" prefWidth="80" style="-fx-background-radius: 10 0 0 0;" text="Invoice #" />
-                 <TableColumn fx:id="colInvDate" prefWidth="150" text="Time" />
-                 <TableColumn fx:id="colInvTotal" prefWidth="120" text="Grand Total" />
-                 <TableColumn fx:id="colInvMode" prefWidth="259.1999877929687" style="-fx-background-radius: 0 10 0 0;" text="Type" />
-             </columns>
-         </TableView>
-     </VBox>
 
-     <VBox prefHeight="434.0" prefWidth="612.0" spacing="10" style="-fx-padding: 10 0 0 0; -fx-border-color: white; -fx-background-color: white; -fx-background-radius: 10; -fx-border-radius: 10;">
-         <HBox alignment="CENTER_LEFT" spacing="15">
-             <Label style="-fx-font-weight: bold;" text="Invoice Items">
-            <HBox.margin>
-               <Insets left="8.0" />
-            </HBox.margin>
-            <font>
-               <Font size="14.0" />
-            </font>
-         </Label>
-             <Region HBox.hgrow="ALWAYS" />
-             <Button fx:id="btnProcessReturn" onAction="#handleProcessReturn" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Process Return ">
-            <HBox.margin>
-               <Insets right="5.0" />
-            </HBox.margin>
-         </Button>
-         </HBox>
-         <TableView fx:id="itemTable" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
-             <columns>
-                 <TableColumn fx:id="colItemName" prefWidth="200" style="-fx-background-radius: 10 0 0 0;" text="Medicine" />
-                 <TableColumn fx:id="colItemQty" prefWidth="80" text="Qty Sold" />
-                 <TableColumn fx:id="colItemPrice" prefWidth="100" text="Unit Rate" />
-                 <TableColumn fx:id="colItemDisc" prefWidth="80" text="Disc %" />
-                 <TableColumn fx:id="colItemRet" prefWidth="145.60001220703123" style="-fx-background-radius: 0 10 0 0;" text="Returned Qty" />
-             </columns>
-         <VBox.margin>
-            <Insets />
-         </VBox.margin>
-         </TableView>
-     </VBox>
+    <!-- Row 2: Search bar -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label style="-fx-font-weight: bold;" text="🔍 Search:" />
+        <TextField fx:id="searchField" prefHeight="32.0" HBox.hgrow="ALWAYS"
+                   promptText="Invoice number or customer name..."
+                   style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-padding: 6 10; -fx-border-color: #dce1e7; -fx-border-width: 1;" />
+    </HBox>
+
+    <!-- Invoices table -->
+    <VBox spacing="5" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: WHITE; -fx-background-color: WHITE;">
+        <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="Invoices">
+            <font><Font size="14.0" /></font>
+            <VBox.margin><Insets left="8.0" /></VBox.margin>
+        </Label>
+        <TableView fx:id="invoiceTable" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colInvId"       prefWidth="80"   style="-fx-background-radius: 10 0 0 0;" text="Invoice #" />
+                <TableColumn fx:id="colInvDate"     prefWidth="150"  text="Time" />
+                <TableColumn fx:id="colInvTotal"    prefWidth="110"  text="Grand Total" />
+                <TableColumn fx:id="colInvCustomer" prefWidth="160"  text="Customer" />
+                <TableColumn fx:id="colInvMode"     prefWidth="120"  style="-fx-background-radius: 0 10 0 0;" text="Type" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- Invoice Items table -->
+    <VBox prefHeight="434.0" prefWidth="612.0" spacing="10" style="-fx-padding: 10 0 0 0; -fx-border-color: white; -fx-background-color: white; -fx-background-radius: 10; -fx-border-radius: 10;">
+        <HBox alignment="CENTER_LEFT" spacing="15">
+            <Label style="-fx-font-weight: bold;" text="Invoice Items">
+                <HBox.margin><Insets left="8.0" /></HBox.margin>
+                <font><Font size="14.0" /></font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnProcessReturn" onAction="#handleProcessReturn"
+                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;"
+                    text="Process Return">
+                <HBox.margin><Insets right="5.0" /></HBox.margin>
+            </Button>
+        </HBox>
+        <TableView fx:id="itemTable" stylesheets="@../styles/tablestyles.css" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colItemName"  prefWidth="200" style="-fx-background-radius: 10 0 0 0;" text="Medicine" />
+                <TableColumn fx:id="colItemQty"   prefWidth="80"  text="Qty Sold" />
+                <TableColumn fx:id="colItemPrice" prefWidth="100" text="Unit Rate" />
+                <TableColumn fx:id="colItemDisc"  prefWidth="80"  text="Disc %" />
+                <TableColumn fx:id="colItemRet"   prefWidth="145" style="-fx-background-radius: 0 10 0 0;" text="Returned Qty" />
+            </columns>
+            <VBox.margin><Insets /></VBox.margin>
+        </TableView>
+    </VBox>
 </VBox>
