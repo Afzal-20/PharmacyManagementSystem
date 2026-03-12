@@ -1,11 +1,5 @@
 ; ============================================================
-; PharmDesk - Inno Setup Installer Script
-; ============================================================
-; BEFORE BUILDING:
-;   1. Run: .\mvnw.cmd package
-;   2. Confirm target\PharmDesk.jar exists
-;   3. Confirm javafx-sdk-25.0.2\ is in the project root
-;   4. Open this file in Inno Setup Compiler and click Build
+; PharmDesk - Inno Setup Installer Script (With Bundled JRE)
 ; ============================================================
 
 #define AppName      "PharmDesk"
@@ -13,7 +7,6 @@
 #define AppPublisher "Afzal"
 #define AppExeName   "PharmDesk.exe"
 #define ProjectRoot  "D:\Pharmacy Management\Pharmacy"
-#define JavaFXDir    "D:\Pharmacy Management\Pharmacy\javafx-sdk\javafx-sdk-25.0.2"
 
 [Setup]
 AppId={{A3F2B1C4-7E8D-4F9A-B2C3-D4E5F6A7B8C9}
@@ -35,10 +28,14 @@ ArchitecturesInstallIn64BitMode=x64
 MinVersion=10.0
 
 [Files]
+; 1. The Fat JAR
 Source: "{#ProjectRoot}\target\PharmDesk.jar"; DestDir: "{app}"; Flags: ignoreversion
+; 2. The Application Icon
 Source: "{#ProjectRoot}\src\main\resources\images\logo 1.ico"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#JavaFXDir}\lib\*"; DestDir: "{app}\javafx\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
+; 3. Default Configuration File
 Source: "{#ProjectRoot}\config.properties"; DestDir: "{commonappdata}\{#AppName}"; Flags: ignoreversion onlyifdoesntexist
+; 4. Bundled Java Runtime Environment (JRE)
+Source: "{#ProjectRoot}\jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\PharmDesk.vbs"; WorkingDir: "{app}"; IconFilename: "{app}\logo 1.ico"
@@ -54,7 +51,6 @@ Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Uninstall\{#AppNa
 Filename: "{app}\PharmDesk.vbs"; Description: "Launch PharmDesk now"; Flags: postinstall nowait skipifsilent shellexec
 
 [Code]
-
 procedure CreateLauncher();
 var
   LauncherPath: string;
@@ -64,13 +60,7 @@ begin
   LauncherContent :=
     '@echo off' + #13#10 +
     'cd /d "%~dp0"' + #13#10 +
-    'start /b javaw' +
-    ' --module-path "%~dp0javafx\lib"' +
-    ' --add-modules javafx.controls,javafx.fxml' +
-    ' --add-opens java.base/java.lang=ALL-UNNAMED' +
-    ' --add-opens java.base/java.io=ALL-UNNAMED' +
-    ' --add-opens java.desktop/sun.awt=ALL-UNNAMED' +
-    ' -jar "%~dp0PharmDesk.jar"' + #13#10;
+    'start "" /b "%~dp0jre\bin\javaw.exe" -jar "%~dp0PharmDesk.jar"' + #13#10;
   SaveStringToFile(LauncherPath, LauncherContent, False);
 end;
 
