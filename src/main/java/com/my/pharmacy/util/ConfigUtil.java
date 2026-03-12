@@ -7,41 +7,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.Properties;
 
-/**
- * ConfigUtil — Single source of truth for all PharmDesk configuration keys.
- *
- * Live config location (editable by user):
- *   C:\ProgramData\PharmDesk\config.properties
- *
- * ── MASTER KEY LIST ──────────────────────────────────────────────────────────
- * pharmacy.name     — Displayed on all invoices and receipts
- * pharmacy.address  — Displayed on all invoices and receipts
- * pharmacy.phone    — Displayed on all invoices and receipts
- * db.name           — SQLite database filename (default: wholesale_pharmacy.db)
- * printer.name      — Exact Windows printer name for thermal receipts
- *
- * ── SHORTCUT KEYS ────────────────────────────────────────────────────────────
- * shortcut.pos              — Point of Sale           (default: F1)
- * shortcut.inventory        — Inventory               (default: F2)
- * shortcut.purchase         — Stock Purchase          (default: F3)
- * shortcut.sales_history    — Sales History           (default: F4)
- * shortcut.khata            — Khata Ledgers           (default: F5)
- * shortcut.customers        — Customers               (default: F6)
- * shortcut.dealers          — Dealers                 (default: F7)
- * shortcut.expiry           — Expiry Management       (default: F8)
- * shortcut.dashboard        — Dashboard               (default: F9)
- * shortcut.backup           — Backup & Restore        (default: F10)
- * shortcut.checkout         — Complete sale / POS     (default: F12)
- * shortcut.add_product      — Add product dialog      (default: INSERT)
- * shortcut.process_return   — Process return          (default: CTRL+R)
- * shortcut.backup_now       — Backup now button       (default: CTRL+B)
- * ─────────────────────────────────────────────────────────────────────────────
- *
- * To add a new config key:
- *   1. Add defaults.setProperty("your.key", "default") in writeHardcodedDefaults()
- *   2. Add a get("your.key", "default") call wherever you need it
- *   3. That's it — no other files need updating
- */
 public class ConfigUtil {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigUtil.class);
@@ -97,35 +62,61 @@ public class ConfigUtil {
      * Add new keys here when adding new config options.
      */
     private static void writeHardcodedDefaults(File destination) throws IOException {
-        Properties defaults = new Properties();
-        defaults.setProperty("pharmacy.name",    "YOUR PHARMACY NAME");
-        defaults.setProperty("pharmacy.address", "Shop No. X, Street Name, City");
-        defaults.setProperty("pharmacy.phone",   "0300-0000000");
-        defaults.setProperty("db.name",          "wholesale_pharmacy.db");
-        defaults.setProperty("printer.name",     "");
-        // Days before expiry to show warning at POS (0 = disable warning)
-        defaults.setProperty("expiry.warn_days", "30");
-        // Shortcut keys — change to any valid JavaFX KeyCode name
-        defaults.setProperty("shortcut.pos",            "F1");
-        defaults.setProperty("shortcut.inventory",      "F2");
-        defaults.setProperty("shortcut.purchase",       "F3");
-        defaults.setProperty("shortcut.sales_history",  "F4");
-        defaults.setProperty("shortcut.khata",          "F5");
-        defaults.setProperty("shortcut.customers",      "F6");
-        defaults.setProperty("shortcut.dealers",        "F7");
-        defaults.setProperty("shortcut.expiry",         "F8");
-        defaults.setProperty("shortcut.dashboard",      "F9");
-        defaults.setProperty("shortcut.backup",         "F10");
-        defaults.setProperty("shortcut.checkout",       "F12");
-        defaults.setProperty("shortcut.add_product",    "INSERT");
-        defaults.setProperty("shortcut.process_return", "CTRL+R");
-        defaults.setProperty("shortcut.backup_now",     "CTRL+B");
+        // Write a clean, human-readable file instead of using Properties.store()
+        // which produces random key order and ugly escaped characters.
+        String nl = "\r\n"; // Windows line endings so Notepad displays correctly
+        String content =
+                "# ============================================================" + nl +
+                        "#  PharmDesk Configuration" + nl +
+                        "#  Edit this file in Notepad, then restart PharmDesk." + nl +
+                        "#  Location: C:\\ProgramData\\PharmDesk\\config.properties" + nl +
+                        "# ============================================================" + nl +
+                        nl +
+                        "# -- Pharmacy Details (printed on every invoice) -------------" + nl +
+                        "pharmacy.name=YOUR PHARMACY NAME" + nl +
+                        "pharmacy.address=Shop No. X, Main Market, City" + nl +
+                        "pharmacy.phone=0300-0000000" + nl +
+                        nl +
+                        "# -- Database ------------------------------------------------" + nl +
+                        "db.name=wholesale_pharmacy.db" + nl +
+                        nl +
+                        "# -- Thermal Printer -----------------------------------------" + nl +
+                        "# Copy the exact printer name from Windows > Devices & Printers" + nl +
+                        "# Example: printer.name=Black Copper Turbo BC-85AC-G1" + nl +
+                        "printer.name=" + nl +
+                        nl +
+                        "# -- Expiry Warning at POS -----------------------------------" + nl +
+                        "# Show a warning when a medicine expires within this many days." + nl +
+                        "# Set to 0 to disable the warning completely." + nl +
+                        "expiry.warn_days=30" + nl +
+                        nl +
+                        "# -- Keyboard Shortcuts --------------------------------------" + nl +
+                        "# Valid values: F1-F12, A-Z, 0-9, INSERT, DELETE, HOME, END" + nl +
+                        "# Modifier combos: CTRL+S, ALT+P, SHIFT+F1, etc." + nl +
+                        "# Restart the app after changing any shortcut." + nl +
+                        nl +
+                        "# Navigation (work from any screen)" + nl +
+                        "shortcut.pos=F1" + nl +
+                        "shortcut.inventory=F2" + nl +
+                        "shortcut.purchase=F3" + nl +
+                        "shortcut.sales_history=F4" + nl +
+                        "shortcut.khata=F5" + nl +
+                        "shortcut.customers=F6" + nl +
+                        "shortcut.dealers=F7" + nl +
+                        "shortcut.expiry=F8" + nl +
+                        "shortcut.dashboard=F9" + nl +
+                        nl +
+                        "# Actions (screen-specific)" + nl +
+                        "shortcut.checkout=F12" + nl +
+                        "shortcut.backup=F10" + nl +
+                        "shortcut.add_product=INSERT" + nl +
+                        "shortcut.process_return=CTRL+R" + nl +
+                        "shortcut.backup_now=CTRL+B" + nl;
 
-        try (OutputStream out = new FileOutputStream(destination)) {
-            defaults.store(out,
-                    "PharmDesk Configuration\n" +
-                    "# Edit this file in Notepad, then restart PharmDesk.\n" +
-                    "# Location: C:\\ProgramData\\PharmDesk\\config.properties");
+        destination.getParentFile().mkdirs();
+        try (java.io.PrintWriter pw = new java.io.PrintWriter(
+                new java.io.OutputStreamWriter(new FileOutputStream(destination), java.nio.charset.StandardCharsets.UTF_8))) {
+            pw.print(content);
         }
         log.info("Hardcoded defaults written to {}", destination.getAbsolutePath());
     }
