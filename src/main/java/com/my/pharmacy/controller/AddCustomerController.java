@@ -22,7 +22,7 @@ public class AddCustomerController {
             return;
         }
         Customer customer = new Customer(0, nameField.getText().trim(), phoneField.getText().trim(),
-                addressField.getText().trim(), "REGULAR", 0.0, "");
+                addressField.getText().trim(), "REGULAR", "");
         int newId = customerDAO.addCustomer(customer);
         if (newId != -1) {
             this.savedCustomer = customerDAO.getCustomerById(newId);

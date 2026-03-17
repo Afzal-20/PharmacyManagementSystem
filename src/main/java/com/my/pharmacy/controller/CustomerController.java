@@ -70,7 +70,8 @@ public class CustomerController {
         addressField.setText(selected.getAddress());
         cnicField.setText(selected.getCnic());
         btnSave.setText("Update Customer");
-        btnSave.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;-fx-background-radius: 8;");
+        btnSave.getStyleClass().removeAll("btn-save-default", "btn-save-green");
+        btnSave.getStyleClass().add("btn-save-edit");
     }
 
     @FXML
@@ -81,13 +82,13 @@ public class CustomerController {
         }
         if (editingCustomer == null) {
             Customer newCustomer = new Customer(0, nameField.getText().trim(), phoneField.getText().trim(),
-                    addressField.getText().trim(), "REGULAR", 0.0, cnicField.getText().trim());
+                    addressField.getText().trim(), "REGULAR", cnicField.getText().trim());
             customerDAO.addCustomer(newCustomer);
             NotificationService.success("Customer added successfully.");
         } else {
             Customer updatedCustomer = new Customer(editingCustomer.getId(), nameField.getText().trim(),
                     phoneField.getText().trim(), addressField.getText().trim(),
-                    editingCustomer.getType(), editingCustomer.getCurrentBalance(), cnicField.getText().trim());
+                    editingCustomer.getType(), cnicField.getText().trim());
             customerDAO.updateCustomer(updatedCustomer);
             NotificationService.success("Customer updated successfully.");
         }
@@ -100,6 +101,7 @@ public class CustomerController {
         nameField.clear(); phoneField.clear(); cnicField.clear(); addressField.clear();
         editingCustomer = null;
         btnSave.setText("Save Customer");
-        btnSave.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;-fx-background-radius: 8;");
+        btnSave.getStyleClass().removeAll("btn-save-edit", "btn-save-green");
+        btnSave.getStyleClass().add("btn-save-default");
     }
 }

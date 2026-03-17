@@ -11,7 +11,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
-import java.sql.Timestamp;
+
+import com.my.pharmacy.util.TimeUtil;
 
 public class KhataController {
 
@@ -102,7 +103,18 @@ public class KhataController {
     private void loadCustomerLedger() {
         Customer c = customerComboBox.getValue();
         if (c == null) return;
-        lblCustomerBalance.setText(String.format("Rs. %,.2f", paymentDAO.getDynamicCustomerBalance(c.getId())));
+        double balance = paymentDAO.getDynamicCustomerBalance(c.getId());
+        lblCustomerBalance.getStyleClass().removeAll("balance-credit", "balance-owed");
+        if (balance < 0) {
+            lblCustomerBalance.setText(String.format("Rs. %,.2f (Advance / Overpaid)", Math.abs(balance)));
+            lblCustomerBalance.getStyleClass().add("balance-credit");
+        } else if (balance == 0) {
+            lblCustomerBalance.setText("Rs. 0.00 (Clear)");
+            lblCustomerBalance.getStyleClass().add("balance-credit");
+        } else {
+            lblCustomerBalance.setText(String.format("Rs. %,.2f", balance));
+            lblCustomerBalance.getStyleClass().add("balance-owed");
+        }
         customerLedgerTable.setItems(FXCollections.observableArrayList(paymentDAO.getCustomerLedger(c.getId())));
     }
 
@@ -113,7 +125,7 @@ public class KhataController {
         try {
             double amount = Double.parseDouble(custPaymentAmountField.getText());
             String desc = custPaymentDescField.getText().isEmpty() ? "Cash Payment Received" : custPaymentDescField.getText();
-            paymentDAO.recordPayment(new Payment(0, c.getId(), "CUSTOMER", amount, "CASH", desc, new Timestamp(System.currentTimeMillis())));
+            paymentDAO.recordPayment(new Payment(0, c.getId(), "CUSTOMER", amount, "CASH", desc, TimeUtil.nowTimestamp()));
             NotificationService.success("Customer payment recorded successfully.");
             custPaymentAmountField.clear(); custPaymentDescField.clear();
             loadCustomerLedger();
@@ -137,7 +149,7 @@ public class KhataController {
         try {
             double amount = Double.parseDouble(dealPaymentAmountField.getText());
             String desc = dealPaymentDescField.getText().isEmpty() ? "Cash/Bank Payment Made" : dealPaymentDescField.getText();
-            paymentDAO.recordPayment(new Payment(0, d.getId(), "DEALER", amount, "CASH", desc, new Timestamp(System.currentTimeMillis())));
+            paymentDAO.recordPayment(new Payment(0, d.getId(), "DEALER", amount, "CASH", desc, TimeUtil.nowTimestamp()));
             NotificationService.success("Dealer payment recorded successfully.");
             dealPaymentAmountField.clear(); dealPaymentDescField.clear();
             loadDealerLedger();

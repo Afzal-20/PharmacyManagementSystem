@@ -10,23 +10,26 @@ import java.util.List;
 
 public class CustomerDAOImpl implements CustomerDAO {
 
+    private static final Logger log = LoggerFactory.getLogger(CustomerDAOImpl.class);
+
     @Override
     public int addCustomer(Customer customer) {
-        String sql = "INSERT INTO customers (name, phone, address, type, current_balance, cnic) VALUES (?, ?, ?, ?, ?, ?)";
+        // current_balance column removed — balance is tracked via the payments ledger
+        String sql = "INSERT INTO customers (name, phone, address, type, cnic) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, customer.getName());
             pstmt.setString(2, customer.getPhone());
             pstmt.setString(3, customer.getAddress());
             pstmt.setString(4, customer.getType());
-            pstmt.setDouble(5, customer.getCurrentBalance());
-            pstmt.setString(6, customer.getCnic());
+            pstmt.setString(5, customer.getCnic());
             pstmt.executeUpdate();
-
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) return rs.getInt(1);
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            log.error("Failed to add customer: {}", e.getMessage(), e);
+        }
         return -1;
     }
 
@@ -38,10 +41,11 @@ public class CustomerDAOImpl implements CustomerDAO {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                customers.add(new Customer(rs.getInt("id"), rs.getString("name"), rs.getString("phone"),
-                        rs.getString("address"), rs.getString("type"), rs.getDouble("current_balance"), rs.getString("cnic")));
+                customers.add(mapRow(rs));
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            log.error("Failed to load customers: {}", e.getMessage(), e);
+        }
         return customers;
     }
 
@@ -52,16 +56,17 @@ public class CustomerDAOImpl implements CustomerDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) return new Customer(rs.getInt("id"), rs.getString("name"), rs.getString("phone"),
-                        rs.getString("address"), rs.getString("type"), rs.getDouble("current_balance"), rs.getString("cnic"));
+                if (rs.next()) return mapRow(rs);
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            log.error("Failed to get customer by id {}: {}", id, e.getMessage(), e);
+        }
         return null;
     }
 
     @Override
     public void updateCustomer(Customer customer) {
-        if (customer.getId() == 1) return;
+        if (customer.getId() == 1) return; // walk-in placeholder is system-protected
         String sql = "UPDATE customers SET name=?, phone=?, address=?, cnic=? WHERE id=?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -71,6 +76,19 @@ public class CustomerDAOImpl implements CustomerDAO {
             pstmt.setString(4, customer.getCnic());
             pstmt.setInt(5, customer.getId());
             pstmt.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            log.error("Failed to update customer {}: {}", customer.getId(), e.getMessage(), e);
+        }
+    }
+
+    private Customer mapRow(ResultSet rs) throws SQLException {
+        return new Customer(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("phone"),
+                rs.getString("address"),
+                rs.getString("type"),
+                rs.getString("cnic")
+        );
     }
 }

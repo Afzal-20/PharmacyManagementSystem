@@ -6,15 +6,48 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.*;
 import java.util.Properties;
-
+/**
+ * ConfigUtil — Single source of truth for all PharmDesk configuration keys.
+ *
+ * Live config location (editable by user):
+ *   C:\ProgramData\PharmDesk\config.properties
+ *
+ * ── MASTER KEY LIST ──────────────────────────────────────────────────────────
+ * pharmacy.name     — Displayed on all invoices and receipts
+ * pharmacy.address  — Displayed on all invoices and receipts
+ * pharmacy.phone    — Displayed on all invoices and receipts
+ * db.name           — SQLite database filename (default: wholesale_pharmacy.db)
+ * printer.name      — Exact Windows printer name for thermal receipts
+ *
+ * ── SHORTCUT KEYS ────────────────────────────────────────────────────────────
+ * shortcut.pos              — Point of Sale           (default: F1)
+ * shortcut.inventory        — Inventory               (default: F2)
+ * shortcut.purchase         — Stock Purchase          (default: F3)
+ * shortcut.sales_history    — Sales History           (default: F4)
+ * shortcut.khata            — Khata Ledgers           (default: F5)
+ * shortcut.customers        — Customers               (default: F6)
+ * shortcut.dealers          — Dealers                 (default: F7)
+ * shortcut.expiry           — Expiry Management       (default: F8)
+ * shortcut.dashboard        — Dashboard               (default: F9)
+ * shortcut.checkout         — Complete sale / POS     (default: F12)
+ * shortcut.add_to_cart      — Add to cart / POS       (default: ENTER)
+ * shortcut.return           — Process return          (default: F11)
+ * shortcut.backup           — Backup now              (default: F10)
+ * shortcut.add_product      — Add product dialog      (default: INSERT)
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * To add a new config key:
+ *   1. Add defaults.setProperty("your.key", "default") in writeHardcodedDefaults()
+ *   2. Add a get("your.key", "default") call wherever you need it
+ *   3. That's it — no other files need updating
+ */
 public class ConfigUtil {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigUtil.class);
 
-    private static final String LIVE_CONFIG_PATH =
-            System.getenv("PROGRAMDATA") != null
-                    ? System.getenv("PROGRAMDATA") + File.separator + "PharmDesk" + File.separator + "config.properties"
-                    : System.getProperty("user.home") + File.separator + "PharmDesk" + File.separator + "config.properties";
+    // FIX: use AppPaths.ROOT as single source of truth for the data directory path
+    // instead of duplicating the OS detection logic that already lives in AppPaths
+    private static final String LIVE_CONFIG_PATH = AppPaths.ROOT + "config.properties";
 
     private static final Properties properties = new Properties();
 
@@ -106,12 +139,12 @@ public class ConfigUtil {
                         "shortcut.expiry=F8" + nl +
                         "shortcut.dashboard=F9" + nl +
                         nl +
-                        "# Actions (screen-specific)" + nl +
+                        "# Actions (screen-specific -- only active on their screen)" + nl +
                         "shortcut.checkout=F12" + nl +
+                        "shortcut.add_to_cart=ENTER" + nl +
+                        "shortcut.return=F11" + nl +
                         "shortcut.backup=F10" + nl +
-                        "shortcut.add_product=INSERT" + nl +
-                        "shortcut.process_return=CTRL+R" + nl +
-                        "shortcut.backup_now=CTRL+B" + nl;
+                        "shortcut.add_product=INSERT" + nl;
 
         destination.getParentFile().mkdirs();
         try (java.io.PrintWriter pw = new java.io.PrintWriter(

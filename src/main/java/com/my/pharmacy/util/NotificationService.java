@@ -35,25 +35,25 @@ public class NotificationService {
 
     public static void success(String message) {
         log.info("SUCCESS notification: {}", message);
-        show(message, "rgba(39, 174, 96, 0.88)", "✅");
+        show(message, "toast-success", "✅");
     }
 
     public static void error(String message) {
         log.error("ERROR notification: {}", message);
-        show(message, "rgba(192, 57, 43, 0.88)", "❌");
+        show(message, "toast-error", "❌");
     }
 
     public static void warn(String message) {
         log.warn("WARN notification: {}", message);
-        show(message, "rgba(230, 126, 34, 0.88)", "⚠️");
+        show(message, "toast-warn", "⚠️");
     }
 
     public static void info(String message) {
         log.info("INFO notification: {}", message);
-        show(message, "rgba(41, 128, 185, 0.88)", "ℹ️");
+        show(message, "toast-info", "ℹ️");
     }
 
-    private static void show(String message, String color, String icon) {
+    private static void show(String message, String typeClass, String icon) {
         if (container == null) {
             log.warn("NotificationService container not set — notification dropped: {}", message);
             return;
@@ -61,10 +61,10 @@ public class NotificationService {
 
         Platform.runLater(() -> {
             Label iconLabel = new Label(icon);
-            iconLabel.setStyle("-fx-font-size: 14px;");
+            iconLabel.getStyleClass().add("toast-icon");
 
             Label textLabel = new Label(message);
-            textLabel.setStyle("-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;");
+            textLabel.getStyleClass().add("toast-text");
             textLabel.setWrapText(false);
 
             HBox toast = new HBox(8, iconLabel, textLabel);
@@ -75,11 +75,7 @@ public class NotificationService {
             toast.setMaxHeight(46);
             toast.setMinHeight(46);
             toast.setPrefHeight(46);
-            toast.setStyle(
-                    "-fx-background-color: " + color + ";" +
-                            "-fx-background-radius: 10;" +
-                            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 10, 0, 0, 3);"
-            );
+            toast.getStyleClass().addAll("toast-base", typeClass);
             toast.setOpacity(0);
 
             StackPane.setAlignment(toast, Pos.BOTTOM_CENTER);

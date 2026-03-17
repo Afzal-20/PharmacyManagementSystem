@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,7 +21,6 @@ public class BackupService {
     private static final Logger log = LoggerFactory.getLogger(BackupService.class);
     private static final String BACKUP_PREFIX = "pharmacy_backup_";
     private static final String BACKUP_SUFFIX = ".db";
-    private static final DateTimeFormatter TIMESTAMP_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
     public static void registerShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -43,7 +40,8 @@ public class BackupService {
             File backupDir = new File(AppPaths.BACKUPS_DIR);
             if (!backupDir.exists()) backupDir.mkdirs();
 
-            String timestamp = LocalDateTime.now().format(TIMESTAMP_FMT);
+            // FIX: use TimeUtil as single source of truth for timestamp formatting
+            String timestamp = TimeUtil.format(TimeUtil.nowLocal(), TimeUtil.PATTERN_FILE);
             String fileName = BACKUP_PREFIX + timestamp + BACKUP_SUFFIX;
             File dest = new File(backupDir, fileName);
 
@@ -66,7 +64,7 @@ public class BackupService {
             if (live.exists()) {
                 new File(AppPaths.BACKUPS_DIR).mkdirs();
                 String safetyName = BACKUP_PREFIX + "pre-restore_" +
-                        LocalDateTime.now().format(TIMESTAMP_FMT) + BACKUP_SUFFIX;
+                        TimeUtil.format(TimeUtil.nowLocal(), TimeUtil.PATTERN_FILE) + BACKUP_SUFFIX;
                 Files.copy(live.toPath(), new File(AppPaths.BACKUPS_DIR, safetyName).toPath(),
                         StandardCopyOption.REPLACE_EXISTING);
                 log.info("Pre-restore safety copy saved: {}", safetyName);

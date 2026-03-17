@@ -4,6 +4,7 @@ import com.my.pharmacy.util.BackupService;
 import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
 import com.my.pharmacy.util.ShortcutManager;
+import com.my.pharmacy.util.TimeUtil;
 import com.my.pharmacy.util.UserSession;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -12,8 +13,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 public class BackupController {
@@ -32,11 +31,8 @@ public class BackupController {
         btnRestoreFromFile.setDisable(!isAdmin);
         loadBackupList();
 
-        // Register backup now shortcut
-        backupListView.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null)
-                ShortcutManager.register(newScene, "shortcut.backup", "F12", this::handleBackupNow);
-        });
+        // Register screen-specific shortcut via global ShortcutManager registry
+        ShortcutManager.setBackupNowAction(this::handleBackupNow);
     }
 
     private void loadBackupList() {
@@ -46,10 +42,11 @@ public class BackupController {
             lblStatus.setText("No backups exist yet. A backup is created automatically when the app closes.");
             return;
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy  HH:mm:ss");
         var display = backupFiles.stream()
                 .map(f -> String.format("%-52s   %s   (%.1f KB)",
-                        f.getName(), sdf.format(new Date(f.lastModified())), f.length() / 1024.0))
+                        f.getName(),
+                        TimeUtil.format(new java.util.Date(f.lastModified()), "dd MMM yyyy  HH:mm:ss"),
+                        f.length() / 1024.0))
                 .toList();
         backupListView.setItems(FXCollections.observableArrayList(display));
         lblStatus.setText(backupFiles.size() + " backup file(s) found.");

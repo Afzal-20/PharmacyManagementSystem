@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import com.my.pharmacy.util.TimeUtil;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -51,12 +52,13 @@ public class POSController {
     private final BatchDAO batchDAO = new BatchDAOImpl();
     private final SaleDAO saleDAO = new SaleDAOImpl();
     private final CustomerDAO customerDAO = new CustomerDAOImpl();
+    private final PaymentDAO paymentDAO = new PaymentDAOImpl();
 
     private final ObservableList<Batch> masterData = FXCollections.observableArrayList();
     private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
     private final CartService cartService = new CartService();
 
-    private final Customer WALK_IN_CUSTOMER = new Customer(1, "Counter Sale (Walk-in)", "", "", "REGULAR", 0.0, "");
+    private final Customer WALK_IN_CUSTOMER = new Customer(1, "Counter Sale (Walk-in)", "", "", "REGULAR", "");
 
     @FXML
     public void initialize() {
@@ -68,13 +70,9 @@ public class POSController {
         setupPaymentListeners();
         log.info("POSController ready");
 
-        // Register POS action shortcut after scene is available
-        searchField.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null) {
-                ShortcutManager.register(newScene, "shortcut.checkout", "F10", this::handleCheckout);
-                log.debug("POS checkout shortcut registered");
-            }
-        });
+        // Register screen-specific shortcuts via global ShortcutManager registry
+        ShortcutManager.setCheckoutAction(this::handleCheckout);
+        ShortcutManager.setAddToCartAction(this::handleAddToCart);
     }
 
     private void setupTableColumns() {
@@ -112,7 +110,10 @@ public class POSController {
             @Override public String toString(Customer c) {
                 if (c == null) return "";
                 if (c.getId() == 1) return c.getName();
-                return c.getName() + " (Khata: " + c.getCurrentBalance() + ")";
+                // FIX: use dynamic balance calculated live from the payments ledger,
+                // not the stored current_balance which can drift out of sync
+                double balance = paymentDAO.getDynamicCustomerBalance(c.getId());
+                return c.getName() + " (Khata: " + String.format("%.0f", balance) + ")";
             }
             @Override public Customer fromString(String s) { return null; }
         });
@@ -167,7 +168,7 @@ public class POSController {
         // ── Expiry Check ─────────────────────────────────────────────────────
         try {
             LocalDate expiry = LocalDate.parse(selected.getExpiryDate());
-            LocalDate today  = LocalDate.now();
+            LocalDate today  = TimeUtil.today();
 
             if (!expiry.isAfter(today)) {
                 // Hard block — expired medicine cannot be sold
@@ -283,7 +284,7 @@ public class POSController {
 
             log.info("Processing checkout — customer={} total={} paid={} user={}", customerId, total, paid, loggedInUserId);
 
-            Sale sale = new Sale(0, new Timestamp(System.currentTimeMillis()), total, "CASH",
+            Sale sale = new Sale(0, TimeUtil.nowTimestamp(), total, "CASH",
                     customerId, loggedInUserId, dbAmountPaid, dbBalanceDue);
             sale.setItems(cartService.getCartData());
             saleDAO.saveSale(sale);

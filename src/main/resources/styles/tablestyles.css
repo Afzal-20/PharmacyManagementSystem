@@ -52,3 +52,25 @@
     -fx-background-radius:0;
 }
 
+
+/* ── EXPIRY TABLE ROW COLOURS (ExpiryController) ────────── */
+.row-expired {
+    -fx-background-color: #f5b7b1;
+}
+
+.row-critical {
+    -fx-background-color: #fadbd8;
+}
+
+.row-warning {
+    -fx-background-color: #fdebd0;
+}
+
+.row-watch {
+    -fx-background-color: #fef9e7;
+}
+
+/* ── SALES HISTORY RETURNED ITEM ROW (SalesHistoryController) */
+.row-returned {
+    -fx-background-color: #fadbd8;
+}

@@ -3,12 +3,18 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.model.Batch;
 import com.my.pharmacy.model.SaleItem;
 import com.my.pharmacy.util.NotificationService;
+import com.my.pharmacy.util.TimeUtil;
+import java.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 public class AddToCartController {
+
+    private static final Logger log = LoggerFactory.getLogger(AddToCartController.class);
 
     @FXML private Label productNameLabel;
     @FXML private TextField qtyField, bonusField, discountField;
@@ -33,12 +39,12 @@ public class AddToCartController {
             // Expiry hard stop
             try {
                 java.time.LocalDate expiry = java.time.LocalDate.parse(selectedBatch.getExpiryDate());
-                if (expiry.isBefore(java.time.LocalDate.now())) {
+                if (expiry.isBefore(TimeUtil.today())) {
                     NotificationService.error("Batch expired on " + expiry + ". Selling expired medicine is prohibited.");
                     return;
                 }
             } catch (Exception e) {
-                System.err.println("Warning: Could not parse expiry date for batch " + selectedBatch.getBatchNo());
+                log.warn("Could not parse expiry date for batch {}", selectedBatch.getBatchNo());
             }
 
             int    boxes      = Integer.parseInt(qtyField.getText().trim());
@@ -67,7 +73,7 @@ public class AddToCartController {
             NotificationService.error("Please enter valid numeric values for Quantity and Discount.");
         } catch (Exception e) {
             NotificationService.error("An unexpected error occurred: " + e.getMessage());
-            e.printStackTrace();
+            log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e);
         }
     }
 

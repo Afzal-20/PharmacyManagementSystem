@@ -6,6 +6,9 @@ import com.my.pharmacy.model.SaleItem;
 import com.my.pharmacy.model.SaleLedgerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar; // Required for TimeZone fix
@@ -14,6 +17,7 @@ import java.util.TimeZone; // Required for TimeZone fix
 
 public class SaleDAOImpl implements SaleDAO {
 
+    private static final Logger log = LoggerFactory.getLogger(SaleDAOImpl.class);
     private final BatchDAO batchDAO = new BatchDAOImpl();
 
     @Override
@@ -21,7 +25,6 @@ public class SaleDAOImpl implements SaleDAO {
         // FIX 1: Changed 'salesman_id' to 'user_id'
         String insertSaleSQL = "INSERT INTO sales (total_amount, amount_paid, balance_due, payment_mode, customer_id, user_id) VALUES (?, ?, ?, ?, ?, ?)";
         String insertItemSQL = "INSERT INTO sale_items (sale_id, product_id, batch_id, quantity, unit_price, sub_total, bonus_qty, discount_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        String updateCustomerSQL = "UPDATE customers SET current_balance = current_balance + ? WHERE id = ?";
 
         Connection conn = null;
         try {
@@ -45,16 +48,7 @@ public class SaleDAOImpl implements SaleDAO {
                     sale.setId(saleId); // Update ID in memory
                 }
 
-                // 2. Update Customer Khata Balance
-                if (sale.getBalanceDue() > 0) {
-                    try (PreparedStatement custStmt = conn.prepareStatement(updateCustomerSQL)) {
-                        custStmt.setDouble(1, sale.getBalanceDue());
-                        custStmt.setInt(2, sale.getCustomerId());
-                        custStmt.executeUpdate();
-                    }
-                }
-
-                // 3. Insert Items & Update Inventory
+                // 2. Insert Items & Update Inventory
                 try (PreparedStatement itemStmt = conn.prepareStatement(insertItemSQL)) {
                     for (SaleItem item : sale.getItems()) {
                         itemStmt.setInt(1, saleId);
@@ -73,13 +67,13 @@ public class SaleDAOImpl implements SaleDAO {
                 }
             }
             conn.commit();
-            System.out.println("✅ Sale saved successfully.");
+            log.info("Sale saved successfully.");
 
         } catch (SQLException e) {
-            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
-            e.printStackTrace();
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { log.error("{}: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex); }
+            log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e);
         } finally {
-            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (SQLException e) { e.printStackTrace(); }
+            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
         }
     }
 
@@ -97,35 +91,39 @@ public class SaleDAOImpl implements SaleDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) return mapRowToSale(rs);
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
         return null;
     }
 
-    // FIX 2: Correct TimeZone handling for Item Ledger (Sales Tab)
+    // Issue 1: Added customer name column. Issue 2: Timezone fixed using localtime modifier
     @Override
     public List<SaleLedgerRecord> getSalesHistoryByProductId(int productId) {
         List<SaleLedgerRecord> history = new ArrayList<>();
-        // Helper calendar to interpret DB time as UTC
-        Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-
-        String sql = "SELECT s.id, s.sale_date, si.quantity, si.unit_price, si.sub_total " +
-                "FROM sale_items si JOIN sales s ON si.sale_id = s.id " +
+        String sql = "SELECT s.id, datetime(s.sale_date, 'localtime') as sale_date_local, " +
+                "si.quantity, si.unit_price, si.sub_total, " +
+                "COALESCE(c.name, 'Counter Sale') as customer_name " +
+                "FROM sale_items si " +
+                "JOIN sales s ON si.sale_id = s.id " +
+                "LEFT JOIN customers c ON s.customer_id = c.id " +
                 "WHERE si.product_id = ? ORDER BY s.sale_date DESC";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, productId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
+                    // Parse the already-localtime string directly — no UTC calendar needed
+                    Timestamp ts = Timestamp.valueOf(rs.getString("sale_date_local"));
                     history.add(new SaleLedgerRecord(
                             rs.getInt("id"),
-                            rs.getTimestamp("sale_date", utcCal), // <--- Converts UTC DB time to Local Java time
+                            ts,
                             rs.getInt("quantity"),
                             rs.getDouble("unit_price"),
-                            rs.getDouble("sub_total")
+                            rs.getDouble("sub_total"),
+                            rs.getString("customer_name")
                     ));
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
         return history;
     }
 
@@ -150,7 +148,7 @@ public class SaleDAOImpl implements SaleDAO {
                     sales.add(mapRowToSale(rs));
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
         return sales;
     }
 
@@ -190,14 +188,14 @@ public class SaleDAOImpl implements SaleDAO {
                     items.add(item);
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
         return items;
     }
 
     @Override
-    public void processReturn(int saleId, int customerId, SaleItem item, int returnQty,
-                              double cashRefundAmount, double khataReduction,
-                              double refundAmount, String refundMethod, String reason) {
+    public boolean processReturn(int saleId, int customerId, SaleItem item, int returnQty,
+                                 double cashRefundAmount, double khataReduction,
+                                 double refundAmount, String refundMethod, String reason) {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
@@ -234,16 +232,9 @@ public class SaleDAOImpl implements SaleDAO {
 
             if ("KHATA CREDIT".equals(refundMethod) && customerId != 1) {
                 // ── KHATA CREDIT ──────────────────────────────────────────────────────
-                // Full calculated refund reduces the khata balance.
-                // e.g. Sale: total=100, paid=40, balance_due=60 → return all
-                //      khataReduction = 100 → balance goes from 60 to −40 (pharmacy owes 40)
-                //      That negative balance is correct and visible in the ledger.
-                String updateKhata = "UPDATE customers SET current_balance = current_balance - ? WHERE id = ?";
-                try (PreparedStatement pstmt = conn.prepareStatement(updateKhata)) {
-                    pstmt.setDouble(1, khataReduction);
-                    pstmt.setInt(2, customerId);
-                    pstmt.executeUpdate();
-                }
+                // Full calculated refund is recorded in the payments ledger as RETURN_CREDIT.
+                // getDynamicCustomerBalance() reads from the payments table, so no stored
+                // current_balance write is needed — removing it eliminates the dual source of truth.
                 String insertPayment = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'RETURN_CREDIT', ?)";
                 try (PreparedStatement pstmt = conn.prepareStatement(insertPayment)) {
                     pstmt.setInt(1, customerId);
@@ -272,14 +263,10 @@ public class SaleDAOImpl implements SaleDAO {
                     }
                 }
 
-                // (b) Wipe out the proportional khata balance (medicine returned = debt cancelled)
+                // (b) Wipe out the proportional khata balance via a RETURN_CREDIT payment entry.
+                // getDynamicCustomerBalance() subtracts RETURN_CREDIT entries, so no stored
+                // current_balance write is needed here.
                 if (khataReduction > 0 && customerId != 1) {
-                    String updateKhata = "UPDATE customers SET current_balance = current_balance - ? WHERE id = ?";
-                    try (PreparedStatement pstmt = conn.prepareStatement(updateKhata)) {
-                        pstmt.setDouble(1, khataReduction);
-                        pstmt.setInt(2, customerId);
-                        pstmt.executeUpdate();
-                    }
                     String insertKhataWipeout = "INSERT INTO payments (entity_id, entity_type, amount, payment_mode, description) VALUES (?, 'CUSTOMER', ?, 'RETURN_CREDIT', ?)";
                     try (PreparedStatement pstmt = conn.prepareStatement(insertKhataWipeout)) {
                         pstmt.setInt(1, customerId);
@@ -290,11 +277,13 @@ public class SaleDAOImpl implements SaleDAO {
                 }
             }
             conn.commit();
+            return true;
         } catch (SQLException e) {
-            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
-            e.printStackTrace();
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { log.error("{}: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex); }
+            log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e);
+            return false;
         } finally {
-            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (SQLException e) { e.printStackTrace(); }
+            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
         }
     }
 
@@ -308,7 +297,7 @@ public class SaleDAOImpl implements SaleDAO {
                 return rs.getDouble(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e);
         }
         return 0.0;
     }

@@ -5,6 +5,8 @@ import com.my.pharmacy.dao.BatchDAOImpl;
 import com.my.pharmacy.model.Batch;
 import com.my.pharmacy.util.NotificationService;
 import com.my.pharmacy.util.ShortcutManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -19,6 +21,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class InventoryController {
+
+    private static final Logger log = LoggerFactory.getLogger(InventoryController.class);
 
     @FXML private TableView<Batch> inventoryTable;
     @FXML private TableColumn<Batch, String>  colName, colBatch, colExpiry;
@@ -39,11 +43,8 @@ public class InventoryController {
         btnAdjustStock.setVisible(isAdmin); btnAdjustStock.setManaged(isAdmin);
         btnEditProduct.setVisible(isAdmin); btnEditProduct.setManaged(isAdmin);
 
-        // Register add product shortcut
-        inventoryTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null)
-                ShortcutManager.register(newScene, "shortcut.add_product", "CTRL+N", this::handleAddNewProduct);
-        });
+        // Register screen-specific shortcut via global ShortcutManager registry
+        ShortcutManager.setAddProductAction(this::handleAddNewProduct);
     }
 
     private void setupColumns() {
@@ -82,7 +83,7 @@ public class InventoryController {
             controller.setBatchData(selected);
             stage.showAndWait();
             loadInventoryData();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
     }
 
     @FXML
@@ -102,7 +103,7 @@ public class InventoryController {
             controller.setProductData(selected.getProduct());
             stage.showAndWait();
             loadInventoryData();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
     }
 
     private void openDialog(String fxmlPath, String title) {
@@ -114,6 +115,6 @@ public class InventoryController {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
             loadInventoryData();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
     }
 }

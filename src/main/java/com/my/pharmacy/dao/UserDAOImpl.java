@@ -11,6 +11,8 @@ import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
 
+    private static final Logger log = LoggerFactory.getLogger(UserDAOImpl.class);
+
     @Override
     public User authenticate(String username, String password) {
         String sql = "SELECT * FROM users WHERE username = ? AND is_active = 1";
@@ -26,7 +28,9 @@ public class UserDAOImpl implements UserDAO {
                     }
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            log.error("Authentication query failed for user '{}': {}", username, e.getMessage(), e);
+        }
         return null;
     }
 
@@ -41,7 +45,9 @@ public class UserDAOImpl implements UserDAO {
                 users.add(new User(rs.getInt("id"), rs.getString("username"), "",
                         rs.getString("role"), rs.getString("full_name"), rs.getInt("is_active") == 1));
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            log.error("Failed to load users: {}", e.getMessage(), e);
+        }
         return users;
     }
 
@@ -51,12 +57,15 @@ public class UserDAOImpl implements UserDAO {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, BCrypt.hashpw(plainTextPassword, BCrypt.gensalt())); // HASHING
+            pstmt.setString(2, BCrypt.hashpw(plainTextPassword, BCrypt.gensalt()));
             pstmt.setString(3, user.getRole());
             pstmt.setString(4, user.getFullName());
             pstmt.setInt(5, user.isActive() ? 1 : 0);
             return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) { e.printStackTrace(); return false; }
+        } catch (SQLException e) {
+            log.error("Failed to add user '{}': {}", user.getUsername(), e.getMessage(), e);
+            return false;
+        }
     }
 
     @Override
@@ -64,10 +73,13 @@ public class UserDAOImpl implements UserDAO {
         String sql = "UPDATE users SET password = ? WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, BCrypt.hashpw(newPlainTextPassword, BCrypt.gensalt())); // HASHING
+            pstmt.setString(1, BCrypt.hashpw(newPlainTextPassword, BCrypt.gensalt()));
             pstmt.setInt(2, userId);
             return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) { e.printStackTrace(); return false; }
+        } catch (SQLException e) {
+            log.error("Failed to update password for user id={}: {}", userId, e.getMessage(), e);
+            return false;
+        }
     }
 
     @Override
@@ -78,6 +90,9 @@ public class UserDAOImpl implements UserDAO {
             pstmt.setInt(1, isActive ? 1 : 0);
             pstmt.setInt(2, userId);
             return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) { e.printStackTrace(); return false; }
+        } catch (SQLException e) {
+            log.error("Failed to toggle status for user id={}: {}", userId, e.getMessage(), e);
+            return false;
+        }
     }
 }

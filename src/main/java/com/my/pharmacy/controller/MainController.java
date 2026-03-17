@@ -1,5 +1,6 @@
 package com.my.pharmacy.controller;
 
+import com.my.pharmacy.util.BackupService;
 import com.my.pharmacy.util.NotificationService;
 import com.my.pharmacy.util.ShortcutManager;
 import com.my.pharmacy.util.UserSession;
@@ -20,7 +21,10 @@ public class MainController {
 
     private static final Logger log = LoggerFactory.getLogger(MainController.class);
 
-    public static MainController instance;
+    private static MainController instance;
+
+    /** Returns the active MainController instance. Used by DashboardController for navigation. */
+    public static MainController getInstance() { return instance; }
 
     @FXML private StackPane rootStack;       // Wraps everything — toasts are overlaid here
     @FXML private BorderPane mainLayout;
@@ -52,17 +56,28 @@ public class MainController {
     }
 
     private void registerShortcuts(javafx.scene.Scene scene) {
-        // Navigation shortcuts
-        ShortcutManager.register(scene, "shortcut.pos",           "F1",  this::showPOS);
-        ShortcutManager.register(scene, "shortcut.inventory",     "F2",  this::showInventory);
-        ShortcutManager.register(scene, "shortcut.purchase",      "F3",  this::showPurchaseEntry);
-        ShortcutManager.register(scene, "shortcut.sales_history", "F4",  this::showHistory);
-        ShortcutManager.register(scene, "shortcut.khata",         "F5",  this::showKhata);
-        ShortcutManager.register(scene, "shortcut.customers",     "F6",  this::showCustomers);
-        ShortcutManager.register(scene, "shortcut.dealers",       "F7",  this::showDealers);
-        ShortcutManager.register(scene, "shortcut.expiry",        "F8",  this::showExpiry);
-        ShortcutManager.register(scene, "shortcut.dashboard",     "F9",  this::showDashboard);
-        log.info("Navigation shortcuts registered");
+        ShortcutManager.registerAll(scene, new ShortcutManager.MainControllerActions() {
+            public void showPOS()        { MainController.this.showPOS(); }
+            public void showInventory()  { MainController.this.showInventory(); }
+            public void showPurchase()   { MainController.this.showPurchaseEntry(); }
+            public void showHistory()    { MainController.this.showHistory(); }
+            public void showKhata()      { MainController.this.showKhata(); }
+            public void showCustomers()  { MainController.this.showCustomers(); }
+            public void showDealers()    { MainController.this.showDealers(); }
+            public void showExpiry()     { MainController.this.showExpiry(); }
+            public void showDashboard()  { MainController.this.showDashboard(); }
+        });
+
+        // Global backup fallback — fires from any screen when the Backup screen is not active.
+        // When the Backup screen IS active, BackupController.setBackupNowAction() takes priority
+        // and also refreshes the backup list after creating the backup.
+        ShortcutManager.setGlobalBackupFallback(() -> {
+            java.io.File result = BackupService.createBackup();
+            if (result != null) NotificationService.success("Backup created: " + result.getName());
+            else NotificationService.error("Backup failed. Check that the database exists.");
+        });
+
+        log.info("All shortcuts registered");
     }
 
     @FXML public void showDashboard()      { loadView("/fxml/DashboardView.fxml"); }
@@ -80,6 +95,8 @@ public class MainController {
 
     private void loadView(String fxmlPath) {
         log.debug("Loading view: {}", fxmlPath);
+        // Clear screen-specific shortcuts before loading new screen
+        ShortcutManager.clearScreenActions();
         try {
             URL resource = getClass().getResource(fxmlPath);
             if (resource == null) {

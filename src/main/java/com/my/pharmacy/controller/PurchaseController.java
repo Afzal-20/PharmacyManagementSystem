@@ -3,7 +3,10 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
 import com.my.pharmacy.util.DialogUtil;
+import com.my.pharmacy.util.CalculationEngine;
 import com.my.pharmacy.util.NotificationService;
+import com.my.pharmacy.util.TimeUtil;
+import com.my.pharmacy.util.Validator;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,10 +15,15 @@ import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 
 public class PurchaseController {
+
+    private static final Logger log = LoggerFactory.getLogger(PurchaseController.class);
 
     @FXML private ComboBox<Dealer> dealerComboBox;
     @FXML private ComboBox<Product> productComboBox;
@@ -60,7 +68,7 @@ public class PurchaseController {
         try {
             double cost   = Double.parseDouble(costField.getText());
             double margin = Double.parseDouble(marginField.getText());
-            double trade  = cost + (cost * (margin / 100.0));
+            double trade  = CalculationEngine.calculateTradePrice(cost, margin);
             tradeField.setText(String.valueOf(Math.round(trade)));
         } catch (NumberFormatException e) {
             tradeField.clear();
@@ -77,21 +85,36 @@ public class PurchaseController {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
             loadDropdownData();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
     }
 
     @FXML
     private void handleSavePurchase() {
+        Product selectedProduct = productComboBox.getSelectionModel().getSelectedItem();
+        Dealer  selectedDealer  = dealerComboBox.getSelectionModel().getSelectedItem();
+        LocalDate expiryDate    = expiryPicker.getValue();
+
+        // Validate dropdowns and date picker first
+        if (selectedProduct == null || selectedDealer == null || expiryDate == null) {
+            NotificationService.warn("Please select a Dealer, Product, and Expiry Date.");
+            return;
+        }
+
+        // Validate all numeric fields with visual feedback via Validator
+        List<String> errors = Validator.validate()
+                .requirePositiveInt(qtyField,       "Quantity")
+                .requirePositiveDouble(costField,   "Cost Price")
+                .requirePositiveDouble(tradeField,  "Trade Price")
+                .requireNonNegativeDouble(compDiscField, "Company Discount")
+                .requireNonNegativeDouble(taxField,      "Sales Tax")
+                .getErrors();
+
+        if (!errors.isEmpty()) {
+            NotificationService.error(errors.getFirst());
+            return;
+        }
+
         try {
-            Product selectedProduct = productComboBox.getSelectionModel().getSelectedItem();
-            Dealer  selectedDealer  = dealerComboBox.getSelectionModel().getSelectedItem();
-            LocalDate expiryDate    = expiryPicker.getValue();
-
-            if (selectedProduct == null || selectedDealer == null || expiryDate == null) {
-                NotificationService.warn("Please fill all required fields and select an Expiry Date.");
-                return;
-            }
-
             String rawBatch  = batchNoField.getText();
             String batchNo   = (rawBatch == null || rawBatch.trim().isEmpty())
                     ? "GEN-" + (System.currentTimeMillis() % 10000000) : rawBatch.trim();
@@ -109,12 +132,12 @@ public class PurchaseController {
             if (!DialogUtil.confirm("Confirm Purchase", "Proceed with this purchase?",
                     totalBoxes + " boxes of " + selectedProduct.getName() + " from " + selectedDealer.getName())) return;
 
-            double netBoxCost          = com.my.pharmacy.util.CalculationEngine.calculateNetPurchaseCost(boxCost, compDisc, salesTax);
-            double totalPayableToDealer = netBoxCost * totalBoxes;
+            double netBoxCost           = CalculationEngine.calculateNetPurchaseCost(boxCost, compDisc, salesTax);
+            double totalPayableToDealer = CalculationEngine.calculateTotalPayableToDealer(netBoxCost, totalBoxes);
 
             Payment purchaseLedgerEntry = new Payment(0, selectedDealer.getId(), "DEALER", totalPayableToDealer, "PURCHASE",
                     "Purchased " + totalBoxes + " boxes of " + selectedProduct.getName(),
-                    new java.sql.Timestamp(System.currentTimeMillis()));
+                    TimeUtil.nowTimestamp());
 
             Batch existingBatch = batchDAO.getExactBatchMatch(selectedProduct.getId(), batchNo, expiryStr, boxCost, boxTrade);
 
@@ -141,6 +164,8 @@ public class PurchaseController {
             clearFields();
 
         } catch (NumberFormatException e) {
+            // Validator guards above prevent this from ever being reached —
+            // kept as a safety net only
             NotificationService.error("Please enter valid numeric values for Quantity and Prices.");
         }
     }

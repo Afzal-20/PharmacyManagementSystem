@@ -1,11 +1,17 @@
+/* ============================================================
+   PharmDesk — style.css
+   Global styles, components, and state classes.
+   All inline setStyle() calls in Java should use these classes.
+   ============================================================ */
+
 /* GLOBAL FONT */
 .root {
     -fx-font-family: 'Segoe UI', sans-serif;
 }
 
-/* SIDEBAR STYLES */
+/* ── SIDEBAR ─────────────────────────────────────────────── */
 .sidebar {
-    -fx-background-color: #2c3e50; /* Dark Blue */
+    -fx-background-color: #2c3e50;
 }
 
 .app-title {
@@ -15,10 +21,10 @@
     -fx-padding: 0 0 20 0;
 }
 
-/* NAVIGATION BUTTONS */
+/* ── NAVIGATION BUTTONS ──────────────────────────────────── */
 .nav-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #bdc3c7; /* Light Grey */
+    -fx-text-fill: #bdc3c7;
     -fx-font-size: 14px;
     -fx-alignment: BASELINE_LEFT;
     -fx-padding: 12 20 12 20;
@@ -27,19 +33,172 @@
 }
 
 .nav-button:hover {
-    -fx-background-color: #34495e; /* Slightly Lighter Blue */
+    -fx-background-color: #34495e;
     -fx-text-fill: white;
 }
 
-/* The "Active" button (when selected) */
 .nav-button:focused {
-    -fx-background-color: #1abc9c; /* Teal Green */
+    -fx-background-color: #1abc9c;
     -fx-text-fill: white;
-    -fx-border-width: 0 0 0 4; /* Left Border */
+    -fx-border-width: 0 0 0 4;
     -fx-border-color: white;
 }
 
 .split-pane-divider {
-    -fx-background-radius:50px;
+    -fx-background-radius: 50px;
     -fx-background-color: #2c3e50;
+}
+
+/* ── SAVE BUTTON STATES (Customer & Dealer screens) ─────── */
+/* Default: add new record */
+.btn-save-default {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+
+/* Edit mode: updating existing record */
+.btn-save-edit {
+    -fx-background-color: #f39c12;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+
+/* Default green variant (Dealer screen) */
+.btn-save-green {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+
+/* ── KHATA BALANCE LABEL STATES ──────────────────────────── */
+.balance-credit {
+    -fx-text-fill: #27ae60;
+    -fx-font-weight: bold;
+}
+
+.balance-owed {
+    -fx-text-fill: #e74c3c;
+    -fx-font-weight: bold;
+}
+
+/* ── LOGIN ERROR LABEL ───────────────────────────────────── */
+.error-label-lockout {
+    -fx-text-fill: red;
+}
+
+/* ── VALIDATOR FIELD FEEDBACK ────────────────────────────── */
+.field-invalid {
+    -fx-border-color: #e74c3c;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 3px;
+}
+
+.field-valid {
+    -fx-border-color: null;
+    -fx-border-width: 0;
+}
+
+/* ── TOAST NOTIFICATIONS (NotificationService) ───────────── */
+.toast-base {
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 10, 0, 0, 3);
+}
+
+.toast-success {
+    -fx-background-color: rgba(39, 174, 96, 0.88);
+}
+
+.toast-error {
+    -fx-background-color: rgba(192, 57, 43, 0.88);
+}
+
+.toast-warn {
+    -fx-background-color: rgba(230, 126, 34, 0.88);
+}
+
+.toast-info {
+    -fx-background-color: rgba(41, 128, 185, 0.88);
+}
+
+.toast-icon {
+    -fx-font-size: 14px;
+}
+
+.toast-text {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* ── DIALOG (DialogUtil) ─────────────────────────────────── */
+.pharmdesk-dialog {
+    -fx-background-color: #fafafa;
+    -fx-background-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 16, 0, 0, 4);
+    -fx-padding: 8 4 4 4;
+}
+
+.pharmdesk-dialog .header-panel {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #e8e8e8 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 0 8 0;
+}
+
+.pharmdesk-dialog .header-panel .label {
+    -fx-text-fill: #1a1a2e;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16 4 16;
+}
+
+.pharmdesk-dialog .content.label {
+    -fx-text-fill: #555555;
+    -fx-font-size: 13px;
+    -fx-padding: 12 16 8 16;
+}
+
+.pharmdesk-dialog .button-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 8 16 16 16;
+}
+
+.dialog-btn-primary {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-padding: 7 7 7 7;
+    -fx-cursor: hand;
+    -fx-background-color: #2c3e50;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+}
+
+.dialog-btn-primary:hover {
+    -fx-background-color: #16a085;
+}
+
+.dialog-btn-secondary {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-padding: 7 7 7 7;
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+    -fx-text-fill: #333333;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1px;
+}
+
+.dialog-btn-secondary:hover {
+    -fx-background-color: #f0f0f0;
 }

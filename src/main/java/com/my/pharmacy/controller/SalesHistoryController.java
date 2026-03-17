@@ -16,8 +16,10 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
+import com.my.pharmacy.util.TimeUtil;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +49,7 @@ public class SalesHistoryController {
 
     @FXML
     public void initialize() {
-        datePicker.setValue(LocalDate.now());
+        datePicker.setValue(TimeUtil.today());
         setupColumns();
         setupSelectionListener();
         setupRowHighlighter();
@@ -60,18 +62,15 @@ public class SalesHistoryController {
         btnProcessReturn.setVisible(isAdmin);
         btnProcessReturn.setManaged(isAdmin);
 
-        // Register return shortcut
-        invoiceTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null) {
-                ShortcutManager.register(newScene, "shortcut.return", "F11", this::handleProcessReturn);
-                log.debug("Return shortcut registered");
-            }
-        });
+        // Register screen-specific shortcut via global ShortcutManager registry
+        ShortcutManager.setReturnAction(this::handleProcessReturn);
     }
 
     private void setupColumns() {
         colInvId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colInvDate.setCellValueFactory(new PropertyValueFactory<>("saleDate"));
+        // Format the UTC Timestamp from DB into local display time via TimeUtil
+        colInvDate.setCellValueFactory(data ->
+                new SimpleStringProperty(TimeUtil.format(data.getValue().getSaleDate(), TimeUtil.PATTERN_FULL)));
         colInvTotal.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
         colInvMode.setCellValueFactory(new PropertyValueFactory<>("paymentMode"));
         colInvCustomer.setCellValueFactory(new PropertyValueFactory<>("customerName"));
@@ -99,12 +98,9 @@ public class SalesHistoryController {
             @Override
             protected void updateItem(SaleItem item, boolean empty) {
                 super.updateItem(item, empty);
-                if (item == null || empty) {
-                    setStyle("");
-                } else if (item.getReturnedQty() > 0) {
-                    setStyle("-fx-background-color: #fadbd8;"); // Faint red
-                } else {
-                    setStyle("");
+                getStyleClass().remove("row-returned");
+                if (item != null && !empty && item.getReturnedQty() > 0) {
+                    getStyleClass().add("row-returned");
                 }
             }
         });
@@ -218,7 +214,7 @@ public class SalesHistoryController {
                             item.getUnitPrice(), qtyToReturn, item.getDiscountPercent());
 
                     // Proportion of this item being returned (e.g. 5 of 10 = 0.5)
-                    double returnRatio = (double) qtyToReturn / item.getQuantity();
+                    double returnRatio = CalculationEngine.calculateReturnRatio(qtyToReturn, item.getQuantity());
 
                     double cashRefundAmount;
                     double khataReduction;
@@ -226,34 +222,37 @@ public class SalesHistoryController {
                     if ("CASH REFUND".equals(methodCombo.getValue())) {
                         // Pharmacy returns only the cash it actually received for this item.
                         // The outstanding khata portion is also cancelled (medicine came back).
-                        cashRefundAmount = invoice.getAmountPaid()
-                                * (item.getSubTotal() / invoice.getTotalAmount())
-                                * returnRatio;
-                        khataReduction   = invoice.getBalanceDue()
-                                * (item.getSubTotal() / invoice.getTotalAmount())
-                                * returnRatio;
+                        cashRefundAmount = CalculationEngine.calculateProportionalCashRefund(
+                                invoice.getAmountPaid(), item.getSubTotal(),
+                                invoice.getTotalAmount(), returnRatio);
+                        khataReduction   = CalculationEngine.calculateProportionalKhataReduction(
+                                invoice.getBalanceDue(), item.getSubTotal(),
+                                invoice.getTotalAmount(), returnRatio);
                     } else {
                         // KHATA CREDIT — full calculated value reduces the balance
                         cashRefundAmount = 0;
                         khataReduction   = refundAmount;
                     }
 
-                    saleDAO.processReturn(invoice.getId(), invoice.getCustomerId(), item,
+                    boolean saved = saleDAO.processReturn(invoice.getId(), invoice.getCustomerId(), item,
                             qtyToReturn, cashRefundAmount, khataReduction,
                             refundAmount, methodCombo.getValue(), reasonField.getText());
 
-                    // Save silent PDF soft copy of the return receipt
-                    // Receipt shows what the customer actually receives in hand
+                    if (!saved) {
+                        NotificationService.error("Return could not be saved. No changes were made.");
+                        return null;
+                    }
+
+                    // DB committed successfully — now safe to generate PDF and print
                     double receiptRefundAmount = "CASH REFUND".equals(methodCombo.getValue())
                             ? cashRefundAmount : khataReduction;
 
-                    InvoiceGenerator.generateReturnReceipt(invoice, item, qtyToReturn, receiptRefundAmount, methodCombo.getValue(), reasonField.getText());
-                    com.my.pharmacy.util.ThermalPrinter.printReturnReceipt(
-                            invoice, item, qtyToReturn, receiptRefundAmount,
-                            methodCombo.getValue(), reasonField.getText());
+                    InvoiceGenerator.generateReturnReceipt(invoice, item, qtyToReturn,
+                            receiptRefundAmount, methodCombo.getValue(), reasonField.getText());
+                    ThermalPrinter.printReturnReceipt(invoice, item, qtyToReturn,
+                            receiptRefundAmount, methodCombo.getValue(), reasonField.getText());
 
                     NotificationService.success(String.format("Return processed. Refund: Rs. %.2f", receiptRefundAmount));
-                    // Refresh Detail Table
                     itemTable.setItems(FXCollections.observableArrayList(saleDAO.getSaleItemsBySaleId(invoice.getId())));
 
                 } catch (NumberFormatException e) {
@@ -291,8 +290,8 @@ public class SalesHistoryController {
                         selectedInvoice, customer, "Reprint Invoice #" + selectedInvoice.getId());
             }
         } catch (Exception e) {
+            log.error("Failed to process reprint for invoice {}: {}", selectedInvoice.getId(), e.getMessage(), e);
             NotificationService.error("Failed to process reprint: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

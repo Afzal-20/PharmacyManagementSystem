@@ -2,6 +2,7 @@ package com.my.pharmacy.controller;
 
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
+import com.my.pharmacy.util.CalculationEngine;
 import com.my.pharmacy.util.NotificationService;
 import javafx.fxml.FXML;
 import javafx.scene.control.DatePicker;
@@ -27,7 +28,7 @@ public class AddProductController {
         try {
             double cost   = Double.parseDouble(costField.getText().trim());
             double margin = Double.parseDouble(marginField.getText().trim());
-            double trade  = cost + (cost * (margin / 100.0));
+            double trade  = CalculationEngine.calculateTradePrice(cost, margin);
             tradePriceField.setText(String.valueOf(Math.round(trade)));
         } catch (NumberFormatException e) {
             tradePriceField.clear();

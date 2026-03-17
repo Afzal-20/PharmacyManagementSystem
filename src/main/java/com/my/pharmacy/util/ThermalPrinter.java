@@ -3,28 +3,16 @@ package com.my.pharmacy.util;
 import com.my.pharmacy.model.Customer;
 import com.my.pharmacy.model.Sale;
 import com.my.pharmacy.model.SaleItem;
+import com.my.pharmacy.util.CalculationEngine;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.print.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.print.attribute.HashPrintRequestAttributeSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.print.attribute.PrintRequestAttributeSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.print.attribute.standard.JobName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.text.SimpleDateFormat;
 
 /**
  * ThermalPrinter — Sends ESC/POS commands directly to the
@@ -106,7 +94,7 @@ public class ThermalPrinter {
 
             // ── Invoice metadata ──
             write(buffer, ALIGN_LEFT);
-            String dateStr = new SimpleDateFormat("dd-MMM-yyyy  HH:mm").format(sale.getSaleDate());
+            String dateStr = TimeUtil.format(sale.getSaleDate(), TimeUtil.PATTERN_FULL);
             writeLine(buffer, "Inv #: " + sale.getId() + "   " + dateStr);
 
             String custName = (customer != null && customer.getId() != 1)
@@ -122,7 +110,9 @@ public class ThermalPrinter {
             writeLine(buffer, DIVIDER);
 
             // ── Line items ──
-            double grandTotal = 0;
+            // Calculate grand total upfront via CalculationEngine, then render each item
+            double grandTotal = CalculationEngine.calculateGrandTotalFromItems(sale.getItems());
+
             for (SaleItem item : sale.getItems()) {
                 String name = truncate(item.getProductName(), 20);
                 String qty  = String.valueOf(item.getQuantity());
@@ -138,8 +128,6 @@ public class ThermalPrinter {
                 if (item.getDiscountPercent() > 0) {
                     writeLine(buffer, "  Disc: " + String.format("%.1f%%", item.getDiscountPercent()));
                 }
-
-                grandTotal += item.getSubTotal();
             }
 
             writeLine(buffer, THICK_DIVIDER);
@@ -178,8 +166,7 @@ public class ThermalPrinter {
             sendToWindowsPrinter(buffer.toByteArray(), jobLabel);
 
         } catch (IOException e) {
-            System.err.println("ThermalPrinter: Failed to build invoice ESC/POS data — " + e.getMessage());
-            e.printStackTrace();
+            log.error("ThermalPrinter: Failed to build invoice ESC/POS data: {}", e.getMessage(), e);
         }
     }
 
@@ -209,7 +196,7 @@ public class ThermalPrinter {
             write(buffer, BOLD_OFF);
             writeLine(buffer, DIVIDER);
 
-            String dateStr = new SimpleDateFormat("dd-MMM-yyyy HH:mm").format(new java.util.Date());
+            String dateStr = TimeUtil.format(TimeUtil.nowLocal(), TimeUtil.PATTERN_FULL);
             writeLine(buffer, "Date:         " + dateStr);
             writeLine(buffer, "Original Inv: #" + invoice.getId());
             writeLine(buffer, DIVIDER);
@@ -245,8 +232,7 @@ public class ThermalPrinter {
             sendToWindowsPrinter(buffer.toByteArray(), "Return - Inv #" + invoice.getId());
 
         } catch (IOException e) {
-            System.err.println("ThermalPrinter: Failed to build return receipt data — " + e.getMessage());
-            e.printStackTrace();
+            log.error("ThermalPrinter: Failed to build return receipt ESC/POS data: {}", e.getMessage(), e);
         }
     }
 
@@ -260,7 +246,7 @@ public class ThermalPrinter {
         String printerName = ConfigUtil.get("printer.name", "").trim();
 
         if (printerName.isEmpty()) {
-            System.err.println("ThermalPrinter: printer.name is not set in config.properties. Skipping print.");
+            log.warn("ThermalPrinter: printer.name is not set in config.properties. Skipping print.");
             return;
         }
 
@@ -277,12 +263,12 @@ public class ThermalPrinter {
         }
 
         if (targetService == null) {
-            System.err.println("ThermalPrinter: Printer '" + printerName + "' not found.");
-            System.err.println("Available printers on this system:");
+            log.warn("ThermalPrinter: Printer '{}' not found.", printerName);
+            log.warn("Available printers on this system:");
             for (PrintService s : services) {
-                System.err.println("  → " + s.getName());
+                log.warn("  -> {}", s.getName());
             }
-            System.err.println("Update 'printer.name' in config.properties to match one of the above.");
+            log.warn("Update 'printer.name' in config.properties to match one of the above.");
             return;
         }
 
@@ -294,11 +280,11 @@ public class ThermalPrinter {
             attrs.add(new JobName(jobName, null));
 
             printJob.print(doc, attrs);
-            System.out.println("✅ ThermalPrinter: Job '" + jobName + "' sent to '" + printerName + "'.");
+            log.info("ThermalPrinter: Job '{}' sent to '{}'.", jobName, printerName);
 
         } catch (PrintException e) {
-            System.err.println("ThermalPrinter: PrintException — " + e.getMessage());
-            e.printStackTrace();
+            log.error("ThermalPrinter: PrintException: {}", e.getMessage(), e);
+            log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e);
         }
     }
 

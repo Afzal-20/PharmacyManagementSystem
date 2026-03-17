@@ -35,11 +35,12 @@
                 <VBox>
                     <TableView fx:id="salesTable" style="-fx-background-radius: 0 0 10 10;" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="colSaleDate" prefWidth="176.00002670288086" text="Date" />
-                            <TableColumn fx:id="colInvoiceNo" prefWidth="162.3999786376953" text="Invoice No" />
-                            <TableColumn fx:id="colSaleQty" prefWidth="112.0" text="Qty Sold" />
-                            <TableColumn fx:id="colSaleRate" prefWidth="122.39999389648438" text="Rate" />
-                            <TableColumn fx:id="colSaleTotal" prefWidth="192.79998779296875" text="Total Amount" />
+                            <TableColumn fx:id="colSaleDate"     prefWidth="150" text="Date" />
+                            <TableColumn fx:id="colInvoiceNo"    prefWidth="100" text="Invoice No" />
+                            <TableColumn fx:id="colSaleCustomer" prefWidth="160" text="Customer" />
+                            <TableColumn fx:id="colSaleQty"      prefWidth="90"  text="Qty Sold" />
+                            <TableColumn fx:id="colSaleRate"     prefWidth="100" text="Rate" />
+                            <TableColumn fx:id="colSaleTotal"    prefWidth="150" text="Total Amount" />
                         </columns>
                     </TableView>
                 </VBox>

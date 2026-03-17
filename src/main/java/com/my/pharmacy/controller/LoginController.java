@@ -80,7 +80,7 @@ public class LoginController {
         isLockedOut = true;
         usernameField.setDisable(true);
         passwordField.setDisable(true);
-        errorLabel.setStyle("-fx-text-fill: red;");
+        errorLabel.getStyleClass().add("error-label-lockout");
 
         Thread lockoutThread = new Thread(() -> {
             try {
@@ -99,7 +99,7 @@ public class LoginController {
                     usernameField.setDisable(false);
                     passwordField.setDisable(false);
                     passwordField.clear();
-                    errorLabel.setStyle("");
+                    errorLabel.getStyleClass().remove("error-label-lockout");
                     errorLabel.setText("Account unlocked. Please try again.");
                     log.info("Login lockout expired — fields re-enabled");
                 });

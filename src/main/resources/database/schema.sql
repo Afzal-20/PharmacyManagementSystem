@@ -37,13 +37,14 @@ CREATE TABLE IF NOT EXISTS dealers (
 );
 
 -- 4. Customers Table
+-- type DEFAULT 'REGULAR' — all code paths insert REGULAR, so the default matches.
+-- current_balance removed — balance is calculated live from getDynamicCustomerBalance().
 CREATE TABLE IF NOT EXISTS customers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     phone TEXT,
     address TEXT,
-    type TEXT DEFAULT 'WHOLESALE',
-    current_balance REAL DEFAULT 0.0,
+    type TEXT DEFAULT 'REGULAR',
     cnic TEXT
 );
 
@@ -136,8 +137,8 @@ CREATE TABLE IF NOT EXISTS users (
     is_active INTEGER DEFAULT 1
 );
 
-INSERT OR IGNORE INTO customers (id, name, phone, address, type, current_balance, cnic)
-VALUES (1, 'Counter Sale (Walk-in)', '', '', 'REGULAR', 0.0, '');
+INSERT OR IGNORE INTO customers (id, name, phone, address, type, cnic)
+VALUES (1, 'Counter Sale (Walk-in)', '', '', 'REGULAR', '');
 
 CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
 CREATE INDEX IF NOT EXISTS idx_batches_number ON batches(batch_no);

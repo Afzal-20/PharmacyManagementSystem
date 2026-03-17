@@ -1,6 +1,7 @@
 package com.my.pharmacy.model;
 
 import java.sql.Timestamp;
+import com.my.pharmacy.util.TimeUtil;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class Sale {
     }
 
     public Sale() {
-        this.saleDate = new Timestamp(System.currentTimeMillis());
+        this.saleDate = TimeUtil.nowTimestamp();
         this.paymentMode = "CASH";
     }
 

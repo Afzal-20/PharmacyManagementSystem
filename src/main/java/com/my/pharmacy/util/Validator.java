@@ -177,10 +177,13 @@ public class Validator {
     // ── Visual feedback ────────────────────────────────────────────────────────
 
     private void markInvalid(TextField field) {
-        field.setStyle("-fx-border-color: #e74c3c; -fx-border-width: 1.5px; -fx-border-radius: 3px;");
+        field.getStyleClass().remove("field-valid");
+        if (!field.getStyleClass().contains("field-invalid")) {
+            field.getStyleClass().add("field-invalid");
+        }
     }
 
     private void markValid(TextField field) {
-        field.setStyle("");
+        field.getStyleClass().remove("field-invalid");
     }
 }

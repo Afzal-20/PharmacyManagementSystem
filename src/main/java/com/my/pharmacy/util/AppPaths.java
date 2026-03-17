@@ -59,7 +59,7 @@ public class AppPaths {
         ensureDir(INVOICES_DIR);
         ensureDir(RETURNS_DIR);
         ensureDir(BACKUPS_DIR);
-        System.out.println("✅ AppPaths: Data directory ready at: " + ROOT);
+        log.info("AppPaths: Data directory ready at: {}", ROOT);
     }
 
     /**
@@ -80,10 +80,13 @@ public class AppPaths {
 
     /**
      * Returns the full path for a return receipt PDF.
-     * e.g. C:\ProgramData\PharmDesk\Returns\Return_Inv_42_1234567890.pdf
+     * Timestamp in filename guarantees uniqueness when the same invoice
+     * has multiple returns processed on the same day.
+     * e.g. C:\ProgramData\PharmDesk\Returns\Return_Inv_42_2025-03-15_14-30-00.pdf
      */
     public static String returnReceiptPath(int saleId) {
-        return RETURNS_DIR + "Return_Inv_" + saleId + "_" + System.currentTimeMillis() + ".pdf";
+        String timestamp = TimeUtil.format(TimeUtil.nowLocal(), TimeUtil.PATTERN_FILE);
+        return RETURNS_DIR + "Return_Inv_" + saleId + "_" + timestamp + ".pdf";
     }
 
     private static void ensureDir(String path) {
@@ -91,9 +94,9 @@ public class AppPaths {
         if (!dir.exists()) {
             boolean created = dir.mkdirs();
             if (created) {
-                System.out.println("✅ AppPaths: Created directory: " + path);
+                log.info("AppPaths: Created directory: {}", path);
             } else {
-                System.err.println("❌ AppPaths: Failed to create directory: " + path);
+                log.error("AppPaths: Failed to create directory: {}", path);
             }
         }
     }

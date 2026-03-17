@@ -95,7 +95,7 @@
                     <VBox.margin><Insets top="8.0" /></VBox.margin>
                 </HBox>
 
-                <Button maxWidth="Infinity" onAction="#handleCheckout" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 15; -fx-font-weight: bold; -fx-background-radius: 8;" text="COMPLETE SALE  [F10]">
+                <Button maxWidth="Infinity" onAction="#handleCheckout" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 15; -fx-font-weight: bold; -fx-background-radius: 8;" text="COMPLETE SALE  [F12]">
                     <VBox.margin><Insets top="8.0" /></VBox.margin>
                 </Button>
             </VBox>

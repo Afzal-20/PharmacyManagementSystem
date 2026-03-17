@@ -5,6 +5,7 @@ import com.my.pharmacy.dao.BatchDAOImpl;
 import com.my.pharmacy.model.Batch;
 import com.my.pharmacy.util.DialogUtil;
 import com.my.pharmacy.util.NotificationService;
+import com.my.pharmacy.util.TimeUtil;
 import com.my.pharmacy.util.UserSession;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -67,12 +68,13 @@ public class ExpiryController {
             @Override
             protected void updateItem(Batch item, boolean empty) {
                 super.updateItem(item, empty);
-                if (item == null || empty) { setStyle(""); return; }
+                getStyleClass().removeAll("row-expired", "row-critical", "row-warning", "row-watch");
+                if (item == null || empty) return;
                 long days = daysUntilExpiry(item.getExpiryDate());
-                if (days < 0)        setStyle("-fx-background-color: #f5b7b1;");
-                else if (days <= 30) setStyle("-fx-background-color: #fadbd8;");
-                else if (days <= 60) setStyle("-fx-background-color: #fdebd0;");
-                else                 setStyle("-fx-background-color: #fef9e7;");
+                if (days < 0)        getStyleClass().add("row-expired");
+                else if (days <= 30) getStyleClass().add("row-critical");
+                else if (days <= 60) getStyleClass().add("row-warning");
+                else                 getStyleClass().add("row-watch");
             }
         });
     }
@@ -80,7 +82,7 @@ public class ExpiryController {
     @FXML
     private void loadExpiryData() {
         List<Batch> all = batchDAO.getAllBatches();
-        LocalDate cutoff = LocalDate.now().plusDays(ALERT_DAYS);
+        LocalDate cutoff = TimeUtil.today().plusDays(ALERT_DAYS);
         List<Batch> expiring = all.stream().filter(b -> {
             try { return !LocalDate.parse(b.getExpiryDate()).isAfter(cutoff); }
             catch (Exception e) { return false; }
@@ -128,7 +130,7 @@ public class ExpiryController {
     }
 
     private long daysUntilExpiry(String expiryDateStr) {
-        try { return ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(expiryDateStr)); }
+        try { return ChronoUnit.DAYS.between(TimeUtil.today(), LocalDate.parse(expiryDateStr)); }
         catch (Exception e) { return Long.MAX_VALUE; }
     }
 }

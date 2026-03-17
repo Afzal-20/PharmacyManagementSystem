@@ -10,6 +10,8 @@ import java.util.List;
 
 public class DealerDAOImpl implements DealerDAO {
 
+    private static final Logger log = LoggerFactory.getLogger(DealerDAOImpl.class);
+
     @Override
     public void addDealer(Dealer d) {
         String sql = "INSERT INTO dealers (name, company_name, phone, address, license_no) VALUES (?, ?, ?, ?, ?)";
@@ -21,7 +23,7 @@ public class DealerDAOImpl implements DealerDAO {
             pstmt.setString(4, d.getAddress());
             pstmt.setString(5, d.getLicenseNo());
             pstmt.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
     }
 
     @Override
@@ -37,7 +39,7 @@ public class DealerDAOImpl implements DealerDAO {
                         rs.getString("phone"), rs.getString("address"), rs.getString("license_no")
                 ));
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
         return dealers;
     }
 
@@ -55,7 +57,7 @@ public class DealerDAOImpl implements DealerDAO {
                     );
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
         return null;
     }
 
@@ -72,7 +74,7 @@ public class DealerDAOImpl implements DealerDAO {
             pstmt.setString(5, d.getLicenseNo());
             pstmt.setInt(6, d.getId());
             pstmt.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
     }
 
     // FIX #11: Fully implemented — was an empty stub before.
@@ -85,6 +87,6 @@ public class DealerDAOImpl implements DealerDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
     }
 }

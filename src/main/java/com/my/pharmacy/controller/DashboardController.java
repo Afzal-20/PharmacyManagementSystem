@@ -3,15 +3,15 @@ package com.my.pharmacy.controller;
 import com.my.pharmacy.config.DatabaseConnection;
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.Batch;
-import com.my.pharmacy.model.Sale;
+import com.my.pharmacy.util.CalculationEngine;
+import com.my.pharmacy.util.TimeUtil;
 import com.my.pharmacy.util.UserSession;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,6 +19,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class DashboardController {
+
+    private static final Logger log = LoggerFactory.getLogger(DashboardController.class);
 
     // Overview Labels
     @FXML private Label lblMonthlySales; // Renamed to represent Month
@@ -29,7 +31,8 @@ public class DashboardController {
     // Daily Closing Labels
     @FXML private Label lblCloseSales;
     @FXML private Label lblCloseCashIn;
-    @FXML private Label lblCloseKhata;
+    @FXML private Label lblCloseKhata;      // New khata billed today only
+    @FXML private Label lblCloseRecovered;  // Old khata recovered today
     @FXML private Label lblCloseRefunds;
 
     // Quick Actions
@@ -64,7 +67,7 @@ public class DashboardController {
                 .count();
         lblLowStock.setText(String.valueOf(lowStockCount));
 
-        LocalDate sixMonthsFromNow = LocalDate.now().plusMonths(6);
+        LocalDate sixMonthsFromNow = TimeUtil.today().plusMonths(6);
         long expiryCount = allBatches.stream().filter(b -> {
             try {
                 return LocalDate.parse(b.getExpiryDate()).isBefore(sixMonthsFromNow);
@@ -83,67 +86,76 @@ public class DashboardController {
     }
 
     private void calculateDailyClosing() {
-        // Step 1: Base metrics from Sales table for TODAY
-        List<Sale> todaySales = saleDAO.getSalesByDate(LocalDate.now());
-        double todayTotalSales = todaySales.stream().mapToDouble(Sale::getTotalAmount).sum();
-        double todayCashFromSales = todaySales.stream().mapToDouble(Sale::getAmountPaid).sum();
-        double todayKhataBilled = todaySales.stream().mapToDouble(Sale::getBalanceDue).sum();
+        // TWO separate queries — avoids LEFT JOIN row-multiplication bug.
+        // (e.g. 3 sales × 4 payments = 12 rows, DISTINCT fails on floats)
 
-        // Step 2: Extract Payments/Refunds strictly from the Ledger for TODAY
-        double cashRecoveries = 0.0;
-        double cashRefunds = 0.0;
-
-        String sql = "SELECT payment_mode, SUM(amount) FROM payments " +
-                "WHERE date(payment_date, 'localtime') = date('now', 'localtime') " +
-                "AND entity_type = 'CUSTOMER' " +
-                "GROUP BY payment_mode";
+        // Query 1: Today's sales totals
+        double totalBilled = 0, cashFromSales = 0, khataBilled = 0;
+        String saleSql = "SELECT TOTAL(total_amount) as total_billed, " +
+                "TOTAL(amount_paid)         as cash_from_sales, " +
+                "TOTAL(balance_due)         as khata_billed " +
+                "FROM sales WHERE " + TimeUtil.sqlToday("sale_date");
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-
-            while (rs.next()) {
-                String mode = rs.getString(1);
-                double amount = rs.getDouble(2);
-
-                if ("CASH".equals(mode)) {
-                    cashRecoveries += amount; // Old debt collected today
-                } else if ("CASH_REFUND".equals(mode)) {
-                    cashRefunds += amount; // Now stored as positive value directly
-                }
+             PreparedStatement ps = conn.prepareStatement(saleSql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                totalBilled   = rs.getDouble("total_billed");
+                cashFromSales = rs.getDouble("cash_from_sales");
+                khataBilled   = rs.getDouble("khata_billed");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
 
-        // Step 3: Compute Net Cash in Drawer
-        double netCashInDrawer = todayCashFromSales + cashRecoveries - cashRefunds;
+        // Query 2: Today's customer payments (recoveries + refunds)
+        double cashRecovered = 0, cashRefunds = 0;
+        String paySql = "SELECT payment_mode, TOTAL(amount) as total " +
+                "FROM payments WHERE entity_type='CUSTOMER' " +
+                "AND " + TimeUtil.sqlToday("payment_date") +
+                " GROUP BY payment_mode";
 
-        // Step 4: Populate UI
-        lblCloseSales.setText(String.format("Rs. %,.0f", todayTotalSales));
-        lblCloseCashIn.setText(String.format("Rs. %,.0f", netCashInDrawer));
-        lblCloseKhata.setText(String.format("Rs. %,.0f", todayKhataBilled));
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(paySql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String mode = rs.getString("payment_mode");
+                double amt  = rs.getDouble("total");
+                if ("CASH".equals(mode))        cashRecovered += amt;
+                if ("CASH_REFUND".equals(mode)) cashRefunds   += amt;
+            }
+        } catch (Exception e) { log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e); }
+
+        // Net cash in drawer = cash collected at POS + old khata recovered - refunds paid out
+        double netCash = CalculationEngine.calculateNetCashInDrawer(cashFromSales, cashRecovered, cashRefunds);
+
+        // Khata Billed  = new credit created today (balance_due from sales)
+        // Khata Recovered = old khata cash collected today — shown separately, NOT subtracted
+        // These are independent figures for the pharmacist's closing report
+
+        lblCloseSales.setText(String.format("Rs. %,.0f", totalBilled));
+        lblCloseCashIn.setText(String.format("Rs. %,.0f", netCash));
+        lblCloseKhata.setText(String.format("Rs. %,.0f", khataBilled));
+        lblCloseRecovered.setText(String.format("Rs. %,.0f", cashRecovered));
         lblCloseRefunds.setText(String.format("Rs. %,.0f", cashRefunds));
     }
 
     // --- Navigation Shortcuts via MainController ---
     @FXML
     private void handleQuickPOS() {
-        if (MainController.instance != null) MainController.instance.showPOS();
+        if (MainController.getInstance() != null) MainController.getInstance().showPOS();
     }
 
     @FXML
     private void handleQuickPurchase() {
-        if (MainController.instance != null) MainController.instance.showPurchaseEntry();
+        if (MainController.getInstance() != null) MainController.getInstance().showPurchaseEntry();
     }
 
     @FXML
     private void handleQuickExpiry() {
-        if (MainController.instance != null) MainController.instance.showExpiry();
+        if (MainController.getInstance() != null) MainController.getInstance().showExpiry();
     }
 
     @FXML
     private void handleQuickBackup() {
-        if (MainController.instance != null) MainController.instance.showBackup();
+        if (MainController.getInstance() != null) MainController.getInstance().showBackup();
     }
 }

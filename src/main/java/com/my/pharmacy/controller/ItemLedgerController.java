@@ -2,6 +2,8 @@ package com.my.pharmacy.controller;
 
 import com.my.pharmacy.dao.*;
 import com.my.pharmacy.model.*;
+import com.my.pharmacy.util.TimeUtil;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -19,6 +21,7 @@ public class ItemLedgerController {
     @FXML private TableColumn<SaleLedgerRecord, String> colSaleDate;
     @FXML private TableColumn<SaleLedgerRecord, Integer> colInvoiceNo, colSaleQty;
     @FXML private TableColumn<SaleLedgerRecord, Double> colSaleRate, colSaleTotal;
+    @FXML private TableColumn<SaleLedgerRecord, String> colSaleCustomer; // Issue 1
 
     @FXML private TableView<PurchaseHistoryRecord> purchaseHistoryTable;
     @FXML private TableColumn<PurchaseHistoryRecord, String> colPurchDate, colDealerName, colInvoiceNoPurch;
@@ -61,13 +64,17 @@ public class ItemLedgerController {
     }
 
     private void setupColumns() {
-        colSaleDate.setCellValueFactory(new PropertyValueFactory<>("saleDate"));
+        // Format UTC Timestamps from DB into local display strings via TimeUtil
+        colSaleDate.setCellValueFactory(data ->
+                new SimpleStringProperty(TimeUtil.format(data.getValue().getSaleDate(), TimeUtil.PATTERN_FULL)));
         colInvoiceNo.setCellValueFactory(new PropertyValueFactory<>("invoiceNo"));
         colSaleQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colSaleRate.setCellValueFactory(new PropertyValueFactory<>("rate"));
         colSaleTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
+        colSaleCustomer.setCellValueFactory(new PropertyValueFactory<>("customerName"));
 
-        colPurchDate.setCellValueFactory(new PropertyValueFactory<>("purchaseDate"));
+        colPurchDate.setCellValueFactory(data ->
+                new SimpleStringProperty(TimeUtil.format(data.getValue().getPurchaseDate(), TimeUtil.PATTERN_FULL)));
         colDealerName.setCellValueFactory(new PropertyValueFactory<>("dealerName"));
         colInvoiceNoPurch.setCellValueFactory(new PropertyValueFactory<>("invoiceNo"));
         colPurchasedQty.setCellValueFactory(new PropertyValueFactory<>("initialBoxes"));

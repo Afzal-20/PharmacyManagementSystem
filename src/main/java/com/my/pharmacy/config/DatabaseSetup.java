@@ -1,5 +1,7 @@
 package com.my.pharmacy.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,6 +11,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 public class DatabaseSetup {
+
+    private static final Logger log = LoggerFactory.getLogger(DatabaseSetup.class);
 
     public static void initialize() {
         try (Connection conn = DatabaseConnection.getConnection();
@@ -20,7 +24,7 @@ public class DatabaseSetup {
             // Load schema from file
             InputStream is = DatabaseSetup.class.getResourceAsStream("/database/schema.sql");
             if (is == null) {
-                System.err.println("❌ CRITICAL: database/schema.sql not found!");
+                log.error("CRITICAL: database/schema.sql not found!");
                 return;
             }
 
@@ -44,7 +48,7 @@ public class DatabaseSetup {
                     try {
                         stmt.execute(sql.toString());
                     } catch (Exception e) {
-                        System.err.println("❌ Error executing SQL: " + sql.toString());
+                        log.error("Error executing SQL: {}", sql.toString());
                         throw e; // Rethrow to stop initialization
                     }
                     sql.setLength(0); // Reset buffer
@@ -72,15 +76,15 @@ public class DatabaseSetup {
                         pstmt.setString(4, "Counter Salesman");
                         pstmt.executeUpdate();
                     }
-                    System.out.println("✅ Default Admin and Salesman accounts created securely using PreparedStatement.");
+                    log.info("Default admin and salesman accounts seeded.");
                 }
             }
 
-            System.out.println("✅ Database schema initialized successfully.");
+            log.info("Database schema initialized successfully.");
 
         } catch (Exception e) {
-            System.err.println("❌ Database Initialization Failed:");
-            e.printStackTrace();
+            log.error("Database initialization failed:");
+            log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage(), e);
         }
     }
 }
